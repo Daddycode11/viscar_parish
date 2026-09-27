@@ -28,7 +28,7 @@ body {
   height: 100%;
   overflow: hidden;
   font-family: 'DM Sans', sans-serif;
-  background: #0D1828;
+  background: #FFFFFF;
 }
 
 .bg-grid {
@@ -36,8 +36,8 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(201,168,76,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(201,168,76,.04) 1px, transparent 1px);
+    linear-gradient(rgba(201,168,76,.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,.10) 1px, transparent 1px);
   background-size: 52px 52px;
 }
 
@@ -51,7 +51,7 @@ body {
   pointer-events: none;
   background: radial-gradient(
     circle,
-    rgba(201,168,76,.12) 0%,
+    rgba(201,168,76,.18) 0%,
     transparent 70%
   );
   transform: translate(-50%, -50%);
@@ -93,7 +93,7 @@ body {
   justify-content: center;
   opacity: 0;
   animation: fadeUp .9s .2s ease forwards;
-  filter: drop-shadow(0 0 30px rgba(201,168,76,.35));
+  filter: drop-shadow(0 0 24px rgba(201,168,76,.28));
 }
 
 .brand-logo img {
@@ -105,10 +105,10 @@ body {
 
 .org-tag {
   margin-bottom: 12px;
-  color: rgba(201,168,76,.7);
+  color: #A8862F;
   font-family: 'Cormorant Garamond', serif;
   font-size: .72rem;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: .2em;
   text-transform: uppercase;
   opacity: 0;
@@ -117,7 +117,7 @@ body {
 
 .title {
   margin-bottom: 8px;
-  color: #FFFFFF;
+  color: #0D1828;
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(2rem, 6vw, 3rem);
   font-weight: 400;
@@ -127,13 +127,13 @@ body {
 }
 
 .title em {
-  color: #E8C97A;
+  color: #B8912F;
   font-style: italic;
 }
 
 .subtitle {
   margin-bottom: 52px;
-  color: rgba(255,255,255,.4);
+  color: rgba(13,24,40,.55);
   font-size: .82rem;
   font-weight: 300;
   letter-spacing: .07em;
@@ -147,7 +147,7 @@ body {
   margin-bottom: 18px;
   overflow: hidden;
   border-radius: 2px;
-  background: rgba(255,255,255,.1);
+  background: rgba(13,24,40,.10);
   opacity: 0;
   animation: fadeUp .6s .85s ease forwards;
 }
@@ -171,7 +171,7 @@ body {
 .status {
   height: 18px;
   margin-bottom: 18px;
-  color: rgba(255,255,255,.3);
+  color: rgba(13,24,40,.5);
   font-size: .72rem;
   letter-spacing: .14em;
   text-transform: uppercase;
@@ -191,7 +191,7 @@ body {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: rgba(201,168,76,.35);
+  background: rgba(201,168,76,.5);
 }
 
 .dot:nth-child(1) {
@@ -246,7 +246,7 @@ body {
 
 .btn-start:hover {
   background: #E8C97A;
-  box-shadow: 0 10px 36px rgba(201,168,76,.55);
+  box-shadow: 0 10px 30px rgba(201,168,76,.4);
   transform: translateY(-2px);
 }
 

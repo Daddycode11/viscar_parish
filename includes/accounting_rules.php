@@ -14,7 +14,8 @@ function current_petty_cash_set(array $actor): int
 
 function replenish_petty_cash(array $actor): void
 {
-    global $conn;accounting_actor($actor);
+    global $conn;
+    must($actor['role']==='secretary' && !empty($actor['parish_id']),'Secretary access required for replenishment.');
     $id=current_petty_cash_set($actor);
     must(!sqlrow("SELECT id FROM accounting_documents WHERE petty_cash_set=? AND status='draft' LIMIT 1",[$id]),'Complete outstanding petty cash drafts before replenishment.');
     must(sqlrow('SELECT id FROM accounting_documents WHERE petty_cash_set=? LIMIT 1',[$id])!==null,'The current set is empty.');
@@ -55,7 +56,7 @@ function create_journal_correction(array $actor,array $input,string $key): int
     $receipt=$m[1]==='receipt';$id=(int)$m[2];
     $original=$receipt
         ?sqlrow('SELECT r.id,r.service_name description,r.receipt_number document_number FROM receipts r JOIN payments p ON p.id=r.payment_id JOIN applications a ON a.id=p.application_id WHERE r.id=? AND a.parish_id=? FOR UPDATE',[$id,$actor['parish_id']])
-        :sqlrow("SELECT id,description,document_number FROM accounting_documents WHERE id=? AND parish_id=? AND document_type<>'journal_voucher' FOR UPDATE",[$id,$actor['parish_id']]);
+        :sqlrow("SELECT id,description,document_number FROM accounting_documents WHERE id=? AND parish_id=? AND document_type='check_voucher' FOR UPDATE",[$id,$actor['parish_id']]);
     must($original!==null,'Original transaction not found.');
     $corrected=input_text($input,'description',5000);$reason=input_text($input,'correction_reason',2000);
     must($corrected!==''&&strlen($reason)>=5,'Enter corrected particulars and a reason.');

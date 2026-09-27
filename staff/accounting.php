@@ -44,23 +44,26 @@ require __DIR__ . '/includes/layout.php';
 <?php else: ?>
 <section class="card"><div class="card-body"><h2><?= h(t(ACCOUNTING_TYPES[$type])) ?></h2>
 <form method="post" enctype="multipart/form-data"><?= csrf_field() ?><input type="hidden" name="document_type" value="<?= h($type) ?>"><input type="hidden" name="request_key" value="<?= bin2hex(random_bytes(32)) ?>">
-<?php foreach (['document_date'=>['Date','date'],'party_name'=>['Payee / payer','text'],'amount'=>['Amount','text'],'description'=>['Description','text'],'reference'=>['Reference','text']] as $key=>[$label,$inputType]): ?>
-<div class="form-group"><label><?= h(t($label)) ?><input name="<?= $key ?>" type="<?= $inputType ?>" value="<?= $key==='document_date'?date('Y-m-d'):'' ?>" <?= $key!=='reference' && $type!=='journal_voucher'?'required':'' ?> maxlength="<?= $key==='description'?5000:255 ?>"></label></div>
+<?php
+$fields=['document_date'=>['Date','date'],'party_name'=>['Payee / payer','text'],'amount'=>['Amount','number'],'description'=>[$type==='deposit'?'Particulars / Source of funds':($type==='petty_cash_voucher'?'Details of purchase / expense':'Particulars'),'text'],'reference'=>[$type==='check_voucher'?'Check Number':'Reference','text']];
+if($type==='journal_voucher')$fields=['document_date'=>['Date','date'],'description'=>['Corrected particulars','text']];
+foreach ($fields as $key=>[$label,$inputType]): ?>
+<div class="form-group"><label><?= h(t($label)) ?><input name="<?= $key ?>" type="<?= $inputType ?>" value="<?= $key==='document_date'?date('Y-m-d'):'' ?>" <?= $key!=='reference'||$type==='check_voucher'?'required':'' ?> <?= $key==='amount'?'min="0.01" step="0.01" '.($type==='check_voucher'?'max="20000"':($type==='petty_cash_voucher'?'max="500"':'')):'' ?> maxlength="<?= $key==='description'?5000:($key==='reference'?100:255) ?>"></label></div>
 <?php endforeach; ?>
 <?php if(in_array($type,['check_voucher','deposit'],true)): ?>
-<label>Bank Name<input name="bank_name" maxlength="255" required></label><label>Bank Account Number<input name="bank_account_number" maxlength="100" required></label>
+<p><?= $type==='deposit'?'Bank receiving the deposit':'Bank providing the funds' ?></p><div class="form-group"><label>Bank Name<input name="bank_name" maxlength="255" required></label></div><div class="form-group"><label>Bank Account Number<input name="bank_account_number" maxlength="100" required></label></div>
 <?php endif; ?>
-<?php if($type==='check_voucher'): ?><p>Maximum: 20,000.00. Enter the Check Number in Reference.</p>
-<?php foreach(['secretary_signatory'=>'Secretary','finance_signatory'=>'Finance VP','priest_signatory'=>'Parish Priest'] as $key=>$label): ?><label><?= h($label) ?><input name="<?= $key ?>" required maxlength="255"></label><?php endforeach; endif; ?>
+<?php if($type==='check_voucher'): ?><p>Maximum: PHP 20,000.00 per voucher.</p>
+<?php foreach(['secretary_signatory'=>'Secretary','finance_signatory'=>'Finance VP','priest_signatory'=>'Parish Priest'] as $key=>$label): ?><div class="form-group"><label><?= h($label) ?><input name="<?= $key ?>" required maxlength="255"></label></div><?php endforeach; endif; ?>
 <?php if($type==='petty_cash_voucher'): ?><p>Maximum per entry: 500.00. Maximum per set: 10,000.00. Combine receipts only for the same transaction date.</p><?php endif; ?>
-<?php if($type==='journal_voucher'): ?><label>Original transaction<select name="original_reference" required>
-<?php foreach(accounting_rows($user,['date_from'=>'2000-01-01','date_to'=>'2100-12-31']) as $original): if($original['document_type']==='journal_voucher') continue; ?><option value="<?= $original['document_type']==='receipt'?'receipt':'document' ?>:<?= (int)$original['id'] ?>"><?= h($original['document_number']) ?></option><?php endforeach; ?></select></label><label>Reason for correction<textarea name="correction_reason" required minlength="5" maxlength="2000"></textarea></label><p>Enter corrected particulars in Description. Amounts and original records remain unchanged.</p><?php endif; ?>
-<label>Receipt / Attachment (PDF, JPG, PNG; up to 5 MB)<input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png"></label><button class="btn-sm btn-navy"><?= h(t('Create document')) ?></button></form></div></section>
+<?php if($type==='journal_voucher'): ?><div class="form-group"><label>Original check voucher or receipt<select name="original_reference" required><option value="">Select original transaction</option>
+<?php foreach(accounting_rows($user,['date_from'=>'2000-01-01','date_to'=>'2100-12-31']) as $original): if(!in_array($original['document_type'],['receipt','check_voucher'],true)) continue; ?><option value="<?= $original['document_type']==='receipt'?'receipt':'document' ?>:<?= (int)$original['id'] ?>"><?= h($original['document_number']) ?></option><?php endforeach; ?></select></label></div><div class="form-group"><label>Reason for correction<textarea name="correction_reason" required minlength="5" maxlength="2000"></textarea></label></div><p>Only particulars are corrected. Amounts and original records remain unchanged.</p><?php else: ?>
+<div class="form-group"><label>Receipt / Attachment (PDF, JPG, PNG; up to 5 MB)<input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png"></label></div><?php endif; ?><button class="btn-sm btn-navy"><?= h(t('Create document')) ?></button></form></div></section>
 <?php endif;
 if($type==='petty_cash_voucher') {
  $set=sqlrow("SELECT id FROM petty_cash_sets WHERE parish_id=? AND status='open' ORDER BY id DESC LIMIT 1",[$user['parish_id']]);
  $used=$set?sqlrow("SELECT COALESCE(SUM(amount),0) amount FROM accounting_documents WHERE petty_cash_set=? AND status IN ('draft','completed')",[$set['id']])['amount']:0;
- echo '<p>Current set: '.h($set['id']??'New').' ? '.number_format((float)$used,2).' / 10,000.00</p><form method="post" onsubmit="return confirm(\'Close this set and record replenishment?\')">'.csrf_field().'<input type="hidden" name="_action" value="replenish"><button>Replenish / New set</button></form>';
+ echo '<p>Current set: '.h($set['id']??'New').' · PHP '.number_format((float)$used,2).' / 10,000.00. Ask the parish Secretary to confirm replenishment after outstanding drafts are completed.</p>';
 }
 $rows=accounting_rows($user,['document_type'=>$type,'date_from'=>'2000-01-01','date_to'=>'2100-12-31']); ?>
 <section class="card"><div class="card-body"><table><thead><tr><th><?= h(t('Reference')) ?></th><th><?= h(t('Date')) ?></th><th><?= h(t('Payee / payer')) ?></th><th><?= h(t('Amount')) ?></th><th><?= h(t('Status')) ?></th><th></th></tr></thead><tbody>

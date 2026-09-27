@@ -19,7 +19,7 @@ $action=$_GET['ajax']??$_POST['_action']??'';
 if ($area==='admin' && in_array($page,['applications','finance','dashboard'],true) && in_array($action,['approve','reject','assign_schedule','request_docs','verify','verify_payment','refund'],true)) fail_request('Parish operations are read-only for administrators.');
 if ($area==='staff' && $page==='parishioners' && ($_SERVER['REQUEST_METHOD']??'GET')==='POST') fail_request('Secretary parishioner access is view-only.');
 if($area==='staff'){
- $financial=['payments','finance','receipts','export','accounting','accounting_report'];$operational=['services','records','applications','approve_application','schedule','faq','announcements','checkin','parishioners','messages','walk_in','record_application','application_details'];
+ $financial=['payments','finance','receipts','export','accounting','accounting_report'];$operational=['services','records','applications','approve_application','schedule','faq','announcements','checkin','parishioners','messages','walk_in','record_application','application_details','petty_cash'];
  if(in_array($page,$financial,true)&&$user['role']!=='bookkeeper')fail_request('Bookkeeper access required.');
  if(in_array($page,$operational,true)&&$user['role']!=='secretary')fail_request('Secretary access required.');
  if($page==='dashboard'&&in_array($action,['approve','reject','assign_schedule','request_docs'],true)&&$user['role']!=='secretary')fail_request('Secretary access required.');
@@ -37,7 +37,7 @@ if ($area === 'admin' && $page === 'requests') fail_request('Request management 
 if ($area==='admin' && (in_array($page,['main_database','backup'],true) || ($page==='applications' && in_array($action,['get_app','get'],true)))) require_sensitive_verification($user);
 // Verify only the sensitive areas named in the client feedback, including their actions.
 $sensitivePages = $user['role'] === 'secretary'
-    ? ['applications', 'approve_application', 'records', 'record_application','application_details']
+    ? ['applications', 'approve_application', 'records', 'record_application','application_details','petty_cash']
     : ['accounting', 'accounting_report', 'receipts', 'export'];
 $sensitiveDashboardAction = $user['role'] === 'secretary' && $page === 'dashboard'
     && in_array($action, ['approve', 'reject', 'request_docs', 'assign_schedule', 'view_application'], true);

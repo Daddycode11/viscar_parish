@@ -146,6 +146,7 @@ try:
  exec(compile((ROOT/'tools/master_checks.py').read_text(encoding='utf-8'), 'master_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/separation_checks.py').read_text(encoding='utf-8'), 'separation_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/attachment_checks.py').read_text(encoding='utf-8'), 'attachment_checks.py', 'exec'), globals())
+ exec(compile((ROOT/'tools/pdf_revision_checks.py').read_text(encoding='utf-8'), 'pdf_revision_checks.py', 'exec'), globals())
 finally:
  server.terminate();server.wait(timeout=10);log.close()
  report={'database':fixture['database'],'tests':results,'passed':sum(r['passed']for r in results),'failed':sum(not r['passed']for r in results)}

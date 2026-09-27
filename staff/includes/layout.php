@@ -87,6 +87,7 @@ if ($staff_role === 'secretary') {
                 ['id' => 'schedule',     'icon' => ui_icon('calendar'), 'label' => 'Schedule',           'href' => 'schedule.php'],
                 ['id' => 'parishioners', 'icon' => ui_icon('user'), 'label' => 'Parishioners',       'href' => 'parishioners.php'],
                 ['id' => 'records',      'icon' => ui_icon('file'), 'label' => 'Sacramental Records','href' => 'records.php'],
+                ['id' => 'petty_cash', 'icon' => ui_icon('file'), 'label' => 'Petty Cash Replenishment', 'href' => 'petty_cash.php'],
             ]
         ],
         'communication' => [

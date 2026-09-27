@@ -42,6 +42,7 @@ function create_accounting_document(array $actor, array $input): int
     $existing=sqlrow('SELECT id FROM accounting_documents WHERE request_key=?',[$key]);
     if ($existing) return (int)$existing['id'];
     if ($type==='journal_voucher') return create_journal_correction($actor,$input,$key);
+    must($type!=='check_voucher' || $reference!=='','Check Number is required.');
     $extra=accounting_extra_fields($actor,$input,$type,$amount);
     $files=save_uploaded_files(validate_uploaded_files(['attachment'=>['required'=>false,'label'=>'Receipt / Attachment']],$_FILES));
     if(isset($files['attachment']))$extra['attachment']=$files['attachment'];
@@ -85,7 +86,11 @@ function complete_accounting_document(array $actor, int $id, array $input=[]): v
         }
     }
     must($row['party_name'] !== '' && $row['description'] !== '' && money_cents($row['amount']) > 0, 'Complete all required document fields.');
-    must(!in_array($row['document_type'], ['check_voucher','deposit'], true) || $row['reference'] !== '', 'A check or deposit reference is required.');
+    if(in_array($row['document_type'],['check_voucher','deposit'],true) && $row['reference']==='') {
+        $reference=input_text($input,'reference',100);
+        must($reference!=='','A check or deposit reference is required.');
+        $conn->execute_query('UPDATE accounting_documents SET reference=? WHERE id=?',[$reference,$id]);
+    }
     $conn->execute_query("UPDATE accounting_documents SET status='completed',approved_by=?,approved_at=NOW() WHERE id=?", [$actor['id'], $id]);
     auditLog($actor['id'], 'complete_accounting', 'accounting_document', $id);
 }

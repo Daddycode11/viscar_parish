@@ -8,9 +8,10 @@ const OTP_TTL_SECONDS  = 600; // 10 minutes
 const OTP_RESEND_COOL  =  60; // 60 s between resends
 const OTP_MAX_ATTEMPTS =   5;
 
-$message = '';
-$success = false;
-$step    = 'form'; // form | verify | done
+$message      = '';
+$message_type = 'error'; // error | info | success
+$success      = false;
+$step         = 'form'; // form | verify | done
 
 /* ─────────── STEP 1 — submit the registration form ─────────── */
 if (isset($_POST['register'])) {
@@ -54,11 +55,13 @@ if (isset($_POST['register'])) {
             $delivery = send_email($email, 'Your verification code', $body);
 
             $step = 'verify';
-            $message = $delivery['ok'] ? 'Your verification email was accepted for sending. Check your inbox and spam folder.' : 'The verification email could not be sent. Wait one minute and use Resend code, or contact your parish.';
+            if ($delivery['ok']) {
+                $message      = 'Your verification email was accepted for sending. Check your inbox and spam folder.';
+                $message_type = 'info';
+            } else {
+                $message = 'The verification email could not be sent. Wait one minute and use Resend code, or contact your parish.';
+            }
         }
-    }
-    if ($message && $step === 'form') {
-        // keep typed-in values for convenience
     }
 }
 
@@ -93,9 +96,10 @@ if (isset($_POST['verify_otp'])) {
         );
         if ($stmt->execute()) {
             unset($_SESSION['signup']);
-            $success = true;
-            $step = 'done';
-            $message = 'Account verified and created. You can now sign in.';
+            $success      = true;
+            $step         = 'done';
+            $message      = 'Account verified and created. You can now sign in.';
+            $message_type = 'success';
         } else {
             $message = 'Failed to create your account. Please try again.';
             $step = 'verify';
@@ -126,7 +130,12 @@ if (isset($_POST['resend_otp'])) {
               . "— Apostolic Vicariate of San Jose";
         $delivery = send_email($session_signup['email'], 'Your new verification code', $body);
 
-        $message = $delivery['ok'] ? 'A new verification email was accepted for sending.' : 'The email could not be sent. Wait one minute and retry, or contact your parish.';
+        if ($delivery['ok']) {
+            $message      = 'A new verification email was accepted for sending.';
+            $message_type = 'info';
+        } else {
+            $message = 'The email could not be sent. Wait one minute and retry, or contact your parish.';
+        }
         $step = 'verify';
     }
 }
@@ -150,125 +159,193 @@ $dev_otp      = (defined('EMAIL_ENABLED') && !EMAIL_ENABLED) ? ($_SESSION['signu
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign Up &mdash; Apostolic Vicariate of San Jose</title>
+<title>Sign Up — Apostolic Vicariate of San Jose</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/login.css">
+<script src="../assets/js/login.js" defer></script>
 <style>
-body { font-family: 'DM Sans', sans-serif; background: #f4f6fa; margin: 0; }
-.modal-overlay { position: fixed; inset: 0; background: rgba(27,42,74,.45); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-.modal-card { background: #fff; border-radius: 18px; padding: 32px 28px; box-shadow: 0 8px 32px rgba(27,42,74,.18); text-align: center; min-width: 320px; max-width: 90vw; }
-.modal-icon { font-size: 2.5rem; margin-bottom: 12px; color: #2A5C3F; }
-.modal-card.error .modal-icon { color: #6B2737; }
-.modal-message { font-size: 1.1rem; margin-bottom: 18px; }
-.modal-close { background: #1B2A4A; color: #fff; border: none; border-radius: 30px; padding: 10px 32px; font-size: 1rem; font-weight: 500; cursor: pointer; }
-.modal-close:hover { background: #C9A84C; color: #1A1510; }
-.form-container { max-width: 420px; margin: 60px auto; background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(27,42,74,.08); padding: 32px 28px; }
-.form-title { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 600; margin-bottom: 4px; color: #1B2A4A; text-align: center; }
-.form-sub { font-size: .85rem; color: #6b7280; text-align: center; margin-bottom: 20px; line-height: 1.5; }
-.form-sub strong { color: #1B2A4A; }
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-size: .92rem; font-weight: 500; margin-bottom: 6px; color: #1B2A4A; }
-.form-group input { width: 100%; padding: 10px 16px; border: 1.5px solid #e0e4ea; border-radius: 8px; font-size: 1rem; background: #f9fafc; box-sizing: border-box; }
-.form-group input:focus { border-color: #C9A84C; outline: none; background: #fff; }
-.btn-submit { width: 100%; padding: 12px; background: #1B2A4A; color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background .2s; }
-.btn-submit:hover { background: #C9A84C; color: #1A1510; }
-.btn-link { background: none; border: none; color: #1B2A4A; font-size: .85rem; text-decoration: underline; cursor: pointer; padding: 0; }
-.btn-link:hover { color: #C9A84C; }
+/* Small additions for the signup flow; everything else comes from login.css */
+.alert.info    { background: #EEF3FB; border-color: #B9C8E4; color: #1B2A4A; }
+.alert.success { background: #EAF5EE; border-color: #A9D1B7; color: #2A5C3F; }
 .otp-input { font-family: monospace; font-size: 1.6rem; letter-spacing: .6em; text-align: center; padding: 14px 16px !important; }
-.aux-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: .82rem; }
-.dev-hint { background: #FFF6D8; border: 1px solid #C9A84C; border-radius: 8px; padding: 10px 14px; font-size: .82rem; color: #6E5208; margin-bottom: 16px; }
+.dev-hint { background: #FFF6D8; border: 1px solid #C9A84C; border-radius: 8px; padding: 10px 14px; font-size: .82rem; color: #6E5208; margin-bottom: 16px; text-align: left; }
 .dev-hint code { font-family: monospace; font-size: 1.1rem; font-weight: 600; letter-spacing: .25em; }
-.foot-link { text-align: center; margin-top: 18px; font-size: .85rem; color: #6b7280; }
-.foot-link a { color: #1B2A4A; font-weight: 500; }
+.dev-hint small code { font-size: .85rem; letter-spacing: .05em; font-weight: 400; }
+.aux-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: .85rem; }
+.btn-link { background: none; border: none; color: #1B2A4A; font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+.btn-link:hover { color: #C9A84C; }
+.btn-as-link { display: block; text-align: center; text-decoration: none; line-height: 1.5; }
+.verify-email { display: block; margin-top: 2px; color: #1B2A4A; font-weight: 500; }
 </style>
 <?php require_once APP_ROOT.'/includes/password_visibility.php'; ?>
 </head>
 <body>
-<div class="form-container">
 
-  <?php if ($step === 'form'): ?>
-    <div class="form-title">Create Account</div>
-    <div class="form-sub">We'll send a verification code to your email.</div>
-    <form method="POST" action="signup.php" novalidate><?= csrf_field() ?>
-      <div class="form-group">
-        <label for="name">Full Name</label>
-        <input type="text" id="name" name="name" placeholder="e.g. Juan dela Cruz" autocomplete="name" required value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>">
-      </div>
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
-      </div>
-      <div class="form-group">
-        <label for="phone">Mobile Number</label>
-        <input type="tel" id="phone" name="phone" placeholder="09XX XXX XXXX" autocomplete="tel" required value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="At least 6 characters" autocomplete="new-password" required>
-      </div>
-      <div class="form-group">
-        <label for="confirm_password">Confirm Password</label>
-        <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password" autocomplete="new-password" required>
-      </div>
-      <button type="submit" name="register" class="btn-submit">Send verification code</button>
-    </form>
-    <div class="foot-link">Already have an account? <a href="login.php">Sign in</a></div>
-
-  <?php elseif ($step === 'verify'): ?>
-    <div class="form-title">Verify your email</div>
-    <div class="form-sub">Enter the 6-digit code we sent to<br><strong><?php echo htmlspecialchars($signup_email); ?></strong></div>
-
-    <?php if ($dev_otp): ?>
-    <div class="dev-hint">
-      <strong>Development mode:</strong> email sending is disabled. Your OTP is <code><?php echo htmlspecialchars($dev_otp); ?></code><br>
-      <span style="font-size:.75rem">(Set <code style="font-size:.85rem;letter-spacing:.05em">EMAIL_ENABLED</code> to <code style="font-size:.85rem;letter-spacing:.05em">true</code> in <code style="font-size:.85rem;letter-spacing:.05em">includes/email_config.php</code> to send for real.)</span>
+<!-- HEADER -->
+<header>
+  <div class="hdr-logo">
+    <img src="../assets/img/church-logo.png" alt="Parish Logo" data-logo-fallback>
+    <div class="hdr-logo-fb">AV</div>
+    <div class="hdr-label">
+      <strong>Apostolic Vicariate of San Jose</strong>
+      <small>Occidental Mindoro</small>
     </div>
-    <?php endif; ?>
+  </div>
+  <div class="hdr-right">
+    <a href="../index.php">← Back to Home</a>
+    <a href="login.php" class="hdr-btn">Sign In</a>
+  </div>
+</header>
 
-    <form method="POST" action="signup.php" novalidate><?= csrf_field() ?>
-      <div class="form-group">
-        <label for="otp">Verification Code</label>
-        <input type="text" id="otp" name="otp" class="otp-input" inputmode="numeric" pattern="\d{6}" maxlength="6" required autocomplete="one-time-code" autofocus>
+<!-- MAIN -->
+<div class="page">
+
+  <!-- LEFT — Welcome Panel -->
+  <div class="panel-left">
+    <div class="pl-grid"></div>
+    <div class="welcome-card">
+      <div class="welcome-cross">[icon:church]</div>
+      <h2>Join the Online Portal</h2>
+      <p class="welcome-parish">St. Joseph the Worker Cathedral Parish</p>
+      <div class="welcome-divider"></div>
+      <p class="welcome-quote">
+        "Just as each of us has one body with many members,<br>so in Christ we, though many, form one body."
+        <cite>— Romans 12:4–5</cite>
+      </p>
+      <p class="welcome-body">
+        Creating an account takes only a minute. Once verified, you can walk with your parish family wherever you are.
+      </p>
+      <ul class="welcome-list">
+        <li>Enter your details and choose a password</li>
+        <li>Receive a 6-digit code by email</li>
+        <li>Verify your email to activate your account</li>
+        <li>Apply for sacraments, reserve Masses, and more</li>
+      </ul>
+      <div class="welcome-footer">
+        We only use your contact details to serve you and keep you informed about parish life.<br><br>
+        <strong>Welcome to the family.</strong>
       </div>
-      <button type="submit" name="verify_otp" class="btn-submit">Verify &amp; Create Account</button>
-    </form>
+    </div>
+  </div>
 
-    <form method="POST" action="signup.php" style="margin-top:14px"><?= csrf_field() ?>
-      <div class="aux-row">
-        <button type="submit" name="resend_otp" class="btn-link">Resend code</button>
-        <a class="btn-link" href="signup.php?cancel=1">Use a different email</a>
+  <!-- RIGHT — Signup Panel -->
+  <div class="panel-right">
+    <div class="login-card">
+
+      <div class="card-logo">
+        <img src="../assets/img/logo-homepage.png" alt="Parish Logo" data-logo-fallback>
+        <div class="card-logo-fb">AV</div>
       </div>
-    </form>
 
-  <?php else: /* done */ ?>
-    <div class="form-title">Welcome!</div>
-    <div class="form-sub">Your account is verified and ready.</div>
-    <a href="login.php" class="btn-submit" style="display:block;text-align:center;text-decoration:none;line-height:1.5">Sign In</a>
-  <?php endif; ?>
+      <?php if ($step === 'form'): ?>
+
+        <h1 class="card-title">Create Account</h1>
+        <p class="card-subtitle">We'll send a verification code to your email</p>
+
+        <?php if ($message): ?>
+          <div class="alert <?php echo htmlspecialchars($message_type); ?>" role="alert"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
+
+        <form method="POST" action="signup.php" novalidate>
+          <?= csrf_field() ?>
+          <div class="field">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Juan dela Cruz"
+                   autocomplete="name" required
+                   value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>">
+          </div>
+          <div class="field">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="you@example.com"
+                   autocomplete="email" required
+                   value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>">
+          </div>
+          <div class="field">
+            <label for="phone">Mobile Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="09XX XXX XXXX"
+                   autocomplete="tel" required
+                   value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="At least 8 characters"
+                   autocomplete="new-password" required>
+          </div>
+          <div class="field">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password"
+                   autocomplete="new-password" required>
+          </div>
+          <button type="submit" name="register" class="btn-submit">Send Verification Code</button>
+        </form>
+
+        <div class="card-or">or</div>
+        <p class="card-register">
+          Already have an account? <a href="login.php">Sign in here</a>
+        </p>
+
+      <?php elseif ($step === 'verify'): ?>
+
+        <h1 class="card-title">Verify Your Email</h1>
+        <p class="card-subtitle">
+          Enter the 6-digit code we sent to
+          <span class="verify-email"><?php echo htmlspecialchars($signup_email); ?></span>
+        </p>
+
+        <?php if ($message): ?>
+          <div class="alert <?php echo htmlspecialchars($message_type); ?>" role="alert"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
+
+        <?php if ($dev_otp): ?>
+          <div class="dev-hint">
+            <strong>Development mode:</strong> email sending is disabled. Your OTP is
+            <code><?php echo htmlspecialchars($dev_otp); ?></code><br>
+            <small>(Set <code>EMAIL_ENABLED</code> to <code>true</code> in <code>includes/email_config.php</code> to send for real.)</small>
+          </div>
+        <?php endif; ?>
+
+        <form method="POST" action="signup.php" novalidate>
+          <?= csrf_field() ?>
+          <div class="field">
+            <label for="otp">Verification Code</label>
+            <input type="text" id="otp" name="otp" class="otp-input"
+                   inputmode="numeric" pattern="\d{6}" maxlength="6"
+                   autocomplete="one-time-code" autofocus required>
+          </div>
+          <button type="submit" name="verify_otp" class="btn-submit">Verify &amp; Create Account</button>
+        </form>
+
+        <form method="POST" action="signup.php">
+          <?= csrf_field() ?>
+          <div class="aux-row">
+            <button type="submit" name="resend_otp" class="btn-link">Resend code</button>
+            <a class="btn-link" href="signup.php?cancel=1">Use a different email</a>
+          </div>
+        </form>
+
+      <?php else: /* done */ ?>
+
+        <h1 class="card-title">Welcome!</h1>
+        <p class="card-subtitle">Your account is verified and ready</p>
+
+        <?php if ($message): ?>
+          <div class="alert <?php echo htmlspecialchars($message_type); ?>" role="alert"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
+
+        <a href="login.php" class="btn-submit btn-as-link">Sign In to Your Account</a>
+
+      <?php endif; ?>
+
+      <div class="card-footer">
+        By creating an account you agree to our terms of service.<br>
+        &copy; <?php echo date('Y'); ?> Apostolic Vicariate of San Jose.
+      </div>
+
+    </div>
+  </div>
 
 </div>
 
-<script>
-function showModal(type, message) {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal-card ${type}">
-      <div class="modal-icon">${type === 'success' ? '[icon:check]' : '[icon:alert]'}</div>
-      <div class="modal-message">${message}</div>
-      <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">OK</button>
-    </div>`;
-  document.body.appendChild(modal);
-}
-window.onload = function() {
-  var msg = <?php echo json_encode($message); ?>;
-  var success = <?php echo json_encode($success); ?>;
-  if (msg && !success && msg.indexOf('We sent') !== 0 && msg.indexOf('A new code') !== 0) {
-    showModal('error', msg);
-  } else if (success) {
-    showModal('success', msg || 'Account created!');
-  }
-};
-</script>
 </body>
 </html>
