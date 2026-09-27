@@ -1,0 +1,343 @@
+{
+  "accounting_documents": [
+    "id",
+    "parish_id",
+    "document_type",
+    "document_number",
+    "document_date",
+    "party_name",
+    "amount",
+    "description",
+    "reference",
+    "status",
+    "approved_by",
+    "approved_at",
+    "created_by",
+    "created_at",
+    "request_key",
+    "bank_name",
+    "bank_account_number",
+    "secretary_signatory",
+    "finance_signatory",
+    "priest_signatory",
+    "attachment",
+    "original_particulars",
+    "correction_reason",
+    "petty_cash_set",
+    "original_document_id",
+    "original_receipt_id"
+  ],
+  "announcements": [
+    "id",
+    "parish_id",
+    "title",
+    "content",
+    "message",
+    "target",
+    "channel",
+    "status",
+    "created_at",
+    "sent_by",
+    "sent_at",
+    "created_by"
+  ],
+  "announcement_deliveries": [
+    "id",
+    "announcement_id",
+    "user_id",
+    "channel",
+    "status",
+    "error_code",
+    "updated_at"
+  ],
+  "announcement_dispatches": [
+    "request_key",
+    "announcement_id"
+  ],
+  "announcement_parishes": [
+    "announcement_id",
+    "parish_id"
+  ],
+  "applications": [
+    "id",
+    "user_id",
+    "parish_id",
+    "service_id",
+    "schedule",
+    "status",
+    "uploaded_files",
+    "payment_status",
+    "qr_code",
+    "created_at",
+    "form_data",
+    "rejection_reason",
+    "fee_snapshot",
+    "checked_in_at",
+    "checked_in_by",
+    "source",
+    "created_by",
+    "form_schema",
+    "requirement_schema"
+  ],
+  "application_attachments": [
+    "id",
+    "application_id",
+    "requirement_key",
+    "original_name",
+    "stored_name",
+    "storage_location",
+    "mime_type",
+    "size_bytes",
+    "created_at"
+  ],
+  "application_document_requests": [
+    "id",
+    "application_id",
+    "documents",
+    "message",
+    "requested_at",
+    "submitted_at"
+  ],
+  "application_requests": [
+    "id",
+    "application_id",
+    "requested_by",
+    "request_type",
+    "reason",
+    "proposed_schedule",
+    "status",
+    "reviewed_by",
+    "review_note",
+    "created_at",
+    "reviewed_at",
+    "completed_at"
+  ],
+  "audit_trail": [
+    "id",
+    "user_id",
+    "action",
+    "entity_type",
+    "entity_id",
+    "details",
+    "ip_address",
+    "created_at"
+  ],
+  "events": [
+    "id",
+    "parish_id",
+    "title",
+    "description",
+    "event_date",
+    "status",
+    "created_at"
+  ],
+  "faqs": [
+    "id",
+    "parish_id",
+    "question",
+    "answer",
+    "category",
+    "sort_order",
+    "status",
+    "created_by",
+    "created_at"
+  ],
+  "help_conversations": [
+    "id",
+    "user_id",
+    "parish_id",
+    "secretary_id",
+    "staff_active",
+    "updated_at"
+  ],
+  "mass_schedules": [
+    "id",
+    "parish_id",
+    "day_of_week",
+    "time_start",
+    "time_end",
+    "mass_type",
+    "language",
+    "status",
+    "created_at"
+  ],
+  "messages": [
+    "id",
+    "sender_id",
+    "receiver_id",
+    "parish_id",
+    "subject",
+    "body",
+    "is_read",
+    "created_at",
+    "is_bot"
+  ],
+  "notifications": [
+    "id",
+    "user_id",
+    "title",
+    "message",
+    "type",
+    "link",
+    "is_read",
+    "created_at"
+  ],
+  "parishes": [
+    "id",
+    "name",
+    "address",
+    "contact_number",
+    "email",
+    "priest_name",
+    "logo",
+    "status",
+    "created_at",
+    "location"
+  ],
+  "parish_subscriptions": [
+    "user_id",
+    "parish_id",
+    "in_app",
+    "email",
+    "sms"
+  ],
+  "password_resets": [
+    "id",
+    "user_id",
+    "token_hash",
+    "expires_at",
+    "used_at",
+    "created_at"
+  ],
+  "payments": [
+    "id",
+    "application_id",
+    "amount",
+    "payment_method",
+    "reference_number",
+    "status",
+    "paid_at",
+    "created_at",
+    "processed_by",
+    "refund_reason",
+    "receipt_number",
+    "verified_by",
+    "verified_at",
+    "refunded_at",
+    "refund_request_id"
+  ],
+  "petty_cash_sets": [
+    "id",
+    "parish_id",
+    "status",
+    "created_by",
+    "created_at",
+    "closed_at"
+  ],
+  "receipts": [
+    "id",
+    "payment_id",
+    "receipt_number",
+    "amount",
+    "parishioner_name",
+    "service_name",
+    "parish_name",
+    "issued_by",
+    "issued_at",
+    "notes",
+    "created_at"
+  ],
+  "reminder_deliveries": [
+    "application_id",
+    "schedule",
+    "sent_at"
+  ],
+  "sacramental_records": [
+    "id",
+    "application_id",
+    "parish_id",
+    "user_id",
+    "record_type",
+    "parishioner_name",
+    "date_of_sacrament",
+    "minister_name",
+    "sponsors",
+    "remarks",
+    "certificate_number",
+    "certificate_generated_at",
+    "status",
+    "created_by",
+    "created_at"
+  ],
+  "security_rate_limits": [
+    "bucket",
+    "attempts",
+    "window_started"
+  ],
+  "services": [
+    "id",
+    "parish_id",
+    "name",
+    "description",
+    "fee",
+    "status",
+    "created_at",
+    "max_daily_limit",
+    "requirements_note",
+    "sacrament_type",
+    "general_type",
+    "classification",
+    "amount_mode"
+  ],
+  "service_fields": [
+    "id",
+    "service_id",
+    "field_name",
+    "field_label",
+    "field_type",
+    "field_options",
+    "is_required",
+    "sort_order",
+    "created_at"
+  ],
+  "service_requirements": [
+    "id",
+    "service_id",
+    "document_name",
+    "description",
+    "is_required",
+    "created_at"
+  ],
+  "settings": [
+    "id",
+    "first_time_setup"
+  ],
+  "site_settings": [
+    "setting_key",
+    "setting_value"
+  ],
+  "staff_audit_log": [
+    "id",
+    "staff_id",
+    "action",
+    "target_type",
+    "target_id",
+    "details",
+    "created_at"
+  ],
+  "users": [
+    "id",
+    "parish_id",
+    "name",
+    "email",
+    "phone",
+    "password",
+    "role",
+    "status",
+    "created_at",
+    "profile_picture",
+    "two_factor_enabled",
+    "language",
+    "auth_version"
+  ]
+}

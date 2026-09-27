@@ -1,0 +1,6 @@
+<?php
+$pid=(int)($user['parish_id']??0);$parish=$conn->execute_query('SELECT name FROM parishes WHERE id=?',[$pid])->fetch_assoc();
+$isStaff=$user['role']!=='parishioner';
+$rows=$conn->execute_query("SELECT a.* FROM announcements a WHERE a.status='active' AND (a.target IN ('All Parishes','All Parishioners') OR EXISTS (SELECT 1 FROM announcement_parishes ap JOIN parish_subscriptions ps ON ps.parish_id=ap.parish_id WHERE ap.announcement_id=a.id AND ps.user_id=? AND ps.in_app=1) OR (a.parish_id IS NOT NULL AND EXISTS (SELECT 1 FROM parish_subscriptions ps WHERE ps.user_id=? AND ps.parish_id=a.parish_id AND ps.in_app=1))) ORDER BY COALESCE(a.sent_at,a.created_at) DESC",[$user['id'],$user['id']])->fetch_all(MYSQLI_ASSOC);
+$page_id='announcements';$page_title='Announcements';require APP_ROOT.'/parishioner/includes/layout.php';
+?><div class="card"><div class="card-body"><h2>Announcements</h2><?php if(!$rows):?><p>No announcements for your parish.</p><?php endif;?><?php foreach($rows as $row):?><article><h3><?=htmlspecialchars($row['title'])?></h3><p><?=nl2br(htmlspecialchars($row['content']))?></p><small><?=htmlspecialchars($row['sent_at']??$row['created_at'])?></small></article><?php endforeach;?></div></div><?php require APP_ROOT.'/parishioner/includes/layout_footer.php';?>

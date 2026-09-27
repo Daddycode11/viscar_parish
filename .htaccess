@@ -1,0 +1,10 @@
+Options -Indexes
+<FilesMatch "^(config\.(local|production|.*\.private)\.php|.*\.(sql|log|bak|zip|ini|env)|.*-(results|manifest)\.json)$">
+Require all denied
+</FilesMatch>
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^(?:admin|staff|parishioner)/includes(?:/|$) - [F,L]
+RewriteRule (^|/)\.(?!well-known(?:/|$)) - [F,L]
+RewriteRule ^(?:audit|revision-evidence|tools|database|system|docs|logs|storage)(?:/|$) - [F,L]
+</IfModule>

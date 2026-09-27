@@ -1,0 +1,47 @@
+# Private configuration and credentials
+/config.local.php
+/config.production.php
+/config.*.private.php
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+# Runtime files: retain access-denial rules only
+/storage/**
+!/storage/.htaccess
+!/storage/private/
+!/storage/private/.htaccess
+/uploads/**
+!/uploads/.htaccess
+!/uploads/requirements/
+!/uploads/requirements/.htaccess
+/logs/**
+!/logs/.htaccess
+*.log
+*.tmp
+*.bak
+*.zip
+*.tar
+*.gz
+*.7z
+__pycache__/
+*.pyc
+# Local tooling, snapshots, database dumps and generated evidence
+/.audit-tools/
+/.browser-tools/
+/.claude/
+/.codex/
+/.agents/
+/audit/
+/revision-evidence/
+/system/
+*.sql
+!/database/migration*.sql
+/*-results.json
+/*-manifest.json
+/*-files.json
+/htaccess
+/deployment-private/

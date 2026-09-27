@@ -1,0 +1,694 @@
+{
+  "php_lint": [
+    {
+      "file": "admin\\analytics.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\announcements.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\applications.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\backup.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\create_staff.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\dashboard.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\finance.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\generate_report.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\main_database.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\notifications.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\parishes.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\reports.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\requests.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\security.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\settings.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\setup_admin.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\users.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\verify_password.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\admin_layout.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\admin_layout_end.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\layout.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\layout_close.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\layout_footer.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\layout_open.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\sidebar.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\includes\\topbar.php",
+      "passed": true
+    },
+    {
+      "file": "admin\\loads\\events.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\accounting.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\accounting_report.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\announcements.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\applications.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\application_details.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\approve_application.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\checkin.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\dashboard.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\export.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\faq.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\finance.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\masses.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\messages.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\notifications.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\parishioners.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\payments.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\receipts.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\records.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\record_application.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\requests.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\schedule.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\security.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\services.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\settings.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\verify_password.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\walk_in.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\bookkeeper\\dashboard.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\includes\\layout.php",
+      "passed": true
+    },
+    {
+      "file": "staff\\includes\\layout_footer.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\announcements.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\application.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\apply_service.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\dashboard.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\documents.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\events.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\faq.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\help.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\messages.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\notifications.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\payments.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\requests.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\security.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\settings.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\includes\\layout.php",
+      "passed": true
+    },
+    {
+      "file": "parishioner\\includes\\layout_footer.php",
+      "passed": true
+    },
+    {
+      "file": "public\\document.php",
+      "passed": true
+    },
+    {
+      "file": "public\\document_view.php",
+      "passed": true
+    },
+    {
+      "file": "public\\forgot_password.php",
+      "passed": true
+    },
+    {
+      "file": "public\\login.php",
+      "passed": true
+    },
+    {
+      "file": "public\\logout.php",
+      "passed": true
+    },
+    {
+      "file": "public\\qr.php",
+      "passed": true
+    },
+    {
+      "file": "public\\receipt.php",
+      "passed": true
+    },
+    {
+      "file": "public\\register.php",
+      "passed": true
+    },
+    {
+      "file": "public\\reset_password.php",
+      "passed": true
+    },
+    {
+      "file": "public\\setup_admin.php",
+      "passed": true
+    },
+    {
+      "file": "public\\signup.php",
+      "passed": true
+    },
+    {
+      "file": "public\\verify.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\access.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\accounting.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\accounting_print.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\accounting_rules.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\analytics.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\announcements_page.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\announcement_delivery.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\announcement_status.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\application_details.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\application_document.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\application_links.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\application_revisions.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\attachments.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\auth.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\backup_service.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\branding_head.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\config.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\dashboard_filter.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\db.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\document_workflows.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\email_config.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\faq_guidance.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\financial_summary.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\financial_totals.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\help.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\icons.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\navigation.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\notifications.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\password_recovery.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\password_visibility.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\pdf.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\qr.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\recovery_form.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\report_data.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\requests_page.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\request_summary.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\request_workflows.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\revision_helpers.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\security_page.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\service_availability.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\service_classification.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\service_classification_form.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\service_editor.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\service_types.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\settings_page.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\settings_service.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\site_settings.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\sms_config.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\smtp_mailer.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\translations.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\workflows.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\workflow_routes.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\translations\\fil.php",
+      "passed": true
+    },
+    {
+      "file": "includes\\vendor\\qrcode.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\deliver_announcements.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\deployment_preflight.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\migrate_attachments.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\migrate_compatibility.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\migrate_master.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\migrate_production.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\migrate_separation.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\reminders.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\revision_fixture.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\setup_local.php",
+      "passed": true
+    },
+    {
+      "file": "tools\\test_master_storage.php",
+      "passed": true
+    },
+    {
+      "file": "index.php",
+      "passed": true
+    },
+    {
+      "file": "loading.php",
+      "passed": true
+    },
+    {
+      "file": "verify_otp.php",
+      "passed": true
+    },
+    {
+      "file": "config.production.example.php",
+      "passed": true
+    },
+    {
+      "file": "config.local.example.php",
+      "passed": true
+    }
+  ],
+  "missing_literal_includes": [],
+  "apache": [
+    {
+      "path": "",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "public/login.php",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "path": "config.local.php",
+      "status": 403,
+      "passed": true
+    },
+    {
+      "path": "storage/private/revision-fixture.json",
+      "status": 403,
+      "passed": true
+    },
+    {
+      "path": "tools/reminders.php",
+      "status": 403,
+      "passed": true
+    },
+    {
+      "path": "database/deployment_schema.json",
+      "status": 403,
+      "passed": true
+    },
+    {
+      "path": "uploads/requirements/test.pdf",
+      "status": 403,
+      "passed": true
+    }
+  ],
+  "include_review": "Two matches were commented-out historical examples, not executable requires. Literal includes resolve; dynamic includes are exercised by the workflow suite.",
+  "functional_checks": {
+    "regression": {
+      "passed": 307,
+      "failed": 0
+    },
+    "password_browser": {
+      "passed": 557,
+      "failed": 0
+    },
+    "attachments_browser": {
+      "passed": 19,
+      "failed": 0
+    },
+    "master_browser": {
+      "passed": 67,
+      "failed": 0
+    }
+  },
+  "migration": "Read-only plan and two successful guarded applies on an isolated synthetic database; row counts preserved. Production schema unverified.",
+  "secret_audit": "Candidate source scan has no unresolved recognized patterns; private configuration and archives excluded. No Git index/history exists here.",
+  "readiness": "BLOCKED: production domain/path/config/schema, Git remote/history and live checks not verified.",
+  "production_config_checks": [
+    {
+      "test": "Production exception hides details",
+      "passed": true
+    },
+    {
+      "test": "Maintenance returns 503",
+      "passed": true
+    },
+    {
+      "test": "Missing production config fails closed",
+      "passed": true
+    }
+  ]
+}
