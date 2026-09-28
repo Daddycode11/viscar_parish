@@ -32,22 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php require_once APP_ROOT.'/includes/password_visibility.php'; ?>
 </head>
 <body>
-
-<!-- HEADER -->
-<header>
-  <div class="hdr-logo">
-    <img src="../assets/img/logo-homepage.png" alt="Parish Logo" data-logo-fallback>
-    <div class="hdr-logo-fb">AV</div>
-    <div class="hdr-label">
-      <strong>Apostolic Vicariate of San Jose</strong>
-      <small>Occidental Mindoro</small>
-    </div>
-  </div>
-  <div class="hdr-right">
-    <a href="../index.php">← Back to Home</a>
-    <a href="register.php" class="hdr-btn">Register</a>
-  </div>
-</header>
+<?php
+$headerCtaHref = 'register.php'; $headerCtaLabel = 'Register'; $headerCtaIcon = 'user';
+require APP_ROOT.'/includes/public_header.php';
+?>
 
 <!-- MAIN -->
 <div class="page">

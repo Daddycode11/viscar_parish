@@ -182,21 +182,10 @@ $dev_otp      = (defined('EMAIL_ENABLED') && !EMAIL_ENABLED) ? ($_SESSION['signu
 </head>
 <body>
 
-<!-- HEADER -->
-<header>
-  <div class="hdr-logo">
-    <img src="../assets/img/church-logo.png" alt="Parish Logo" data-logo-fallback>
-    <div class="hdr-logo-fb">AV</div>
-    <div class="hdr-label">
-      <strong>Apostolic Vicariate of San Jose</strong>
-      <small>Occidental Mindoro</small>
-    </div>
-  </div>
-  <div class="hdr-right">
-    <a href="../index.php">← Back to Home</a>
-    <a href="login.php" class="hdr-btn">Sign In</a>
-  </div>
-</header>
+<?php
+$headerCtaHref = 'login.php'; $headerCtaLabel = 'Sign In'; $headerCtaIcon = 'lock';
+require APP_ROOT.'/includes/public_header.php';
+?>
 
 <!-- MAIN -->
 <div class="page">
