@@ -1,17 +1,25 @@
 <?php
-// Shared white header for login / signup (matches index.php)
+// Shared white header for public/login.php and public/signup.php (matches index.php)
 require_once __DIR__ . '/site_settings.php';
-$ss = site_settings();
-$logoSrc = '../' . ltrim($ss['site_logo'] ?? 'assets/img/church-logo.png', '/');
+if (!function_exists('ui_icon') && is_file(__DIR__ . '/icons.php')) {
+    require_once __DIR__ . '/icons.php';
+}
 
-// Set these before including: $headerCtaHref, $headerCtaLabel, $headerCtaIcon
+$ss      = site_settings();
+$logoSrc = '../' . ltrim($ss['site_logo'] ?? 'assets/img/church-logo.png', '/');
+$siteName = $ss['site_name'] ?? 'Apostolic Vicariate of San Jose';
+
+// Set these BEFORE including this file
 $headerCtaHref  = $headerCtaHref  ?? 'register.php';
 $headerCtaLabel = $headerCtaLabel ?? 'Register';
 $headerCtaIcon  = $headerCtaIcon  ?? 'user';
+$ctaIconHtml    = function_exists('ui_icon') ? ui_icon($headerCtaIcon) : '';
 ?>
 <style>
+/* ── Header (same look as index.php) ───────────────────── */
 header.site-header{
-  position:sticky;top:0;z-index:500;width:100%;height:72px;
+  position:sticky !important;top:0 !important;left:auto !important;right:auto !important;
+  z-index:500;width:100%;height:72px;
   background:rgba(250,247,242,.95);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid rgba(26,21,16,.1);
@@ -40,26 +48,39 @@ header.site-header nav a{
 header.site-header nav a:hover{color:#1A1510;background:rgba(26,21,16,.1)}
 header.site-header nav a.nav-btn{background:#1B2A4A;color:#fff;padding:8px 20px}
 header.site-header nav a.nav-btn:hover{background:#C9A84C;color:#1A1510}
-@media (max-width:1024px){header.site-header .sh-text span:last-child{display:none}}
+
+/* ── Remove leftover space from old fixed-header layout ── */
+body{padding-top:0 !important;margin-top:0 !important}
+header.site-header + .page,
+header.site-header ~ .page{
+  padding-top:0 !important;
+  margin-top:0 !important;
+  min-height:calc(100vh - 72px) !important;
+}
+
+@media (max-width:1024px){
+  header.site-header .sh-text span:last-child{display:none}
+}
 @media (max-width:640px){
   header.site-header{height:64px;padding:0 4vw}
   header.site-header .sh-logo{min-width:0;gap:8px}
   header.site-header .sh-logo img{width:38px;height:38px}
   header.site-header .sh-text span:first-child{white-space:normal;font-size:.9rem}
   header.site-header nav a.nav-btn{padding:8px 12px}
+  header.site-header ~ .page{min-height:calc(100vh - 64px) !important}
 }
 </style>
 
 <header class="site-header">
   <a class="sh-logo" href="../index.php">
-    <img src="<?= htmlspecialchars($logoSrc) ?>" alt="<?= htmlspecialchars($ss['site_name']) ?> Logo">
+    <img src="<?= htmlspecialchars($logoSrc) ?>" alt="<?= htmlspecialchars($siteName) ?> Logo">
     <div class="sh-text">
-      <span><?= htmlspecialchars($ss['site_name']) ?></span>
+      <span><?= htmlspecialchars($siteName) ?></span>
       <span>Parish Service Platform</span>
     </div>
   </a>
   <nav>
-    <a href="../index.php"><?= ui_icon('home') ?> Home</a>
-    <a href="<?= htmlspecialchars($headerCtaHref) ?>" class="nav-btn"><?= ui_icon($headerCtaIcon) ?> <?= htmlspecialchars($headerCtaLabel) ?></a>
+    <a href="../index.php">Home</a>
+    <a href="<?= htmlspecialchars($headerCtaHref) ?>" class="nav-btn"><?= $ctaIconHtml ?> <?= htmlspecialchars($headerCtaLabel) ?></a>
   </nav>
 </header>
