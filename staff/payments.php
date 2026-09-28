@@ -169,7 +169,7 @@ $pillMap = ['completed'=>'pill-green','pending'=>'pill-amber','refunded'=>'pill-
 <!-- View Detail Modal -->
 <div class="modal-wrap" id="viewModal" style="align-items:flex-start;padding:40px 20px;overflow-y:auto">
   <div class="modal" style="max-width:650px;width:100%">
-    <div id="viewContent" style="min-height:200px;display:flex;align-items:center;justify-content:center">
+    <div id="viewContent" style="min-height:200px">
       <div class="spinner" style="border-top-color:var(--navy)"></div>
     </div>
   </div>

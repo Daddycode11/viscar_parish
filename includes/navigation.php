@@ -11,10 +11,10 @@ function navigation_controls(?string $fallback = null): string
         'parishioner' => 'parishioner/dashboard.php',
         default => 'index.php',
     };
-    if (basename($_SERVER['SCRIPT_NAME'] ?? '') === 'dashboard.php') $fallback = 'index.php';
+    $isDashboard = basename($_SERVER['SCRIPT_NAME'] ?? '') === 'dashboard.php';
     $escape = fn ($value) => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     return '<link rel="stylesheet" href="' . $escape(app_url('assets/css/navigation.css')) . '">'
         . '<script defer src="' . $escape(app_url('assets/js/navigation.js')) . '"></script>'
-        . '<nav class="return-navigation no-print" aria-label="Return navigation">'
-        . '<a class="return-link" data-app-back href="' . $escape(app_url($fallback)) . '">&larr; Back</a></nav>';
+        . ($isDashboard ? '' : '<nav class="return-navigation no-print" aria-label="Return navigation">'
+        . '<a class="return-link" data-app-back aria-label="Go back" title="Go back" href="' . $escape(app_url($fallback)) . '">&larr;</a></nav>');
 }

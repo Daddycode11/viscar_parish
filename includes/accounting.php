@@ -98,7 +98,11 @@ function complete_accounting_document(array $actor, int $id, array $input=[]): v
 function accounting_rows(array $actor, array $filters): array
 {
     global $conn;
-    accounting_actor($actor);
+    if ($actor['role']==='admin') {
+        // Read-only audit reports select an explicit parish; write helpers still require Bookkeeper.
+        $actor['parish_id']=(int)($filters['parish_id']??0);
+        must($actor['parish_id']>0,'Select a parish for the audit report.');
+    } else { accounting_actor($actor); }
     $from = input_text($filters, 'date_from') ?: date('Y-m-01');
     $to = input_text($filters, 'date_to') ?: date('Y-m-d');
     [$start, $end] = report_range($from, $to);

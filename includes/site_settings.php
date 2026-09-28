@@ -9,7 +9,7 @@ function site_settings(): array
         'hero_subtitle' => 'Apply for sacraments, track requests and connect with your parish.',
         'homepage_text' => '', 'contact_details' => '',
         'color_gold' => '#C9A84C', 'color_navy' => '#1B2A4A', 'color_wine' => '#6B2737',
-        'site_logo' => 'assets/img/church-logo.png', 'favicon' => '',
+        'site_logo' => 'assets/img/logo-homepage.png', 'favicon' => '',
         'hero_bg_image' => 'assets/img/rightimage.png',
     ];
     try {
@@ -26,7 +26,7 @@ function site_settings(): array
     }
     foreach (['site_logo', 'favicon', 'hero_bg_image'] as $key) {
         if (!preg_match('~^(?:assets/img|uploads/site)/[a-zA-Z0-9_.-]+$~', $defaults[$key])) {
-            $defaults[$key] = $key === 'site_logo' ? 'assets/img/church-logo.png' : '';
+            $defaults[$key] = $key === 'site_logo' ? 'assets/img/logo-homepage.png' : '';
         }
     }
     return $defaults;

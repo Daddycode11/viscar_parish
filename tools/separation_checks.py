@@ -7,7 +7,7 @@ png=b'\x89PNG\r\n\x1a\n'+png_chunk(b'IHDR',struct.pack('!2I5B',1,1,8,2,0,0,0))+p
 
 check('Admin request management URL denied', a.get('/admin/requests.php')['code'] == 403)
 check('Admin cannot use staff request route', a.get('/staff/requests.php')['code'] == 403)
-check('Admin request analytics read-only', 'Completed refunds by parish' in a.get('/admin/analytics.php')['text'])
+check('PDF: finance separate from analytics', 'Financial totals by parish' not in a.get('/admin/analytics.php')['text'] and 'Financial totals by parish' in a.get('/admin/finance.php')['text'])
 for role, client, routes in [
     ('secretary', s, ['accounting', 'accounting_report', 'payments', 'receipts', 'export']),
     ('bookkeeper', b, ['walk_in', 'records', 'record_application', 'announcements', 'services', 'parishioners']),

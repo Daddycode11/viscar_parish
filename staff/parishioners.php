@@ -7,6 +7,7 @@ require_once __DIR__ . '/../includes/workflow_routes.php';
  * Features: paginated list, search, view profile modal and application history
  */
 
+$memberScope=parish_member_sql($scopeParish);
 $page_id    = 'parishioners';
 $page_title = 'Parishioners';
 $page_sub   = 'Member Management';
@@ -19,7 +20,7 @@ if (isset($_GET['ajax'])) {
     // Get parishioner detail
     if ($_GET['ajax'] === 'get' && isset($_GET['id'])) {
         $id = (int)$_GET['id'];
-        $stmt = $conn->prepare("SELECT u.id,u.name,u.email,u.phone,u.status,u.parish_id,u.created_at, p.name AS parish_name FROM (SELECT * FROM users WHERE parish_id = {$scopeParish}) u LEFT JOIN parishes p ON u.parish_id = p.id WHERE u.id=? AND u.role='parishioner'");
+        $stmt = $conn->prepare("SELECT u.id,u.name,u.email,u.phone,u.status,u.parish_id,u.created_at, p.name AS parish_name FROM (SELECT * FROM users WHERE {$memberScope}) u LEFT JOIN parishes p ON u.parish_id = p.id WHERE u.id=? AND u.role='parishioner'");
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $p = $stmt->get_result()->fetch_assoc();
@@ -75,7 +76,7 @@ if ($search) {
 $where_sql = 'WHERE ' . implode(' AND ', $where);
 
 // Count
-$csql = "SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE parish_id = {$scopeParish}) u $where_sql";
+$csql = "SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE {$memberScope}) u $where_sql";
 $stmt = $conn->prepare($csql);
 if ($params) $stmt->bind_param($types, ...$params);
 $stmt->execute();
@@ -87,7 +88,7 @@ $offset = ($page_num - 1) * $per_page;
 // Fetch
 $sql = "SELECT u.id, u.name, u.email, u.phone, u.status, u.parish_id, u.created_at, p.name AS parish_name,
                (SELECT COUNT(*) FROM (SELECT * FROM applications WHERE parish_id = {$scopeParish}) applications WHERE user_id = u.id) AS app_count
-        FROM (SELECT * FROM users WHERE parish_id = {$scopeParish}) u
+        FROM (SELECT * FROM users WHERE {$memberScope}) u
         LEFT JOIN parishes p ON u.parish_id = p.id
         $where_sql
         ORDER BY u.created_at DESC
@@ -100,9 +101,9 @@ $stmt->execute();
 $parishioners = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Total counts
-$cnt_all       = $conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE parish_id = {$scopeParish}) users WHERE role='parishioner'")->fetch_assoc()['t'];
-$cnt_active    = $conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE parish_id = {$scopeParish}) users WHERE role='parishioner' AND status='active'")->fetch_assoc()['t'];
-$cnt_suspended = $conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE parish_id = {$scopeParish}) users WHERE role='parishioner' AND status='suspended'")->fetch_assoc()['t'];
+$cnt_all       = $conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE {$memberScope}) users WHERE role='parishioner'")->fetch_assoc()['t'];
+$cnt_active    = $conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE {$memberScope}) users WHERE role='parishioner' AND status='active'")->fetch_assoc()['t'];
+$cnt_suspended = $conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM users WHERE {$memberScope}) users WHERE role='parishioner' AND status='suspended'")->fetch_assoc()['t'];
 
 // Parishes for filter
 

@@ -7,5 +7,5 @@ $page_title=t('Application details');require __DIR__.'/includes/layout.php';
 ?>
 <section class="card"><div class="card-body"><h1><?= h(t('Application details')) ?> #<?= (int)$recordApplication['id'] ?></h1><p><?= h($recordApplication['source']) ?></p><p><?= h($recordApplication['certificate_number']) ?></p>
 <?php require_once APP_ROOT.'/includes/application_details.php';render_application_details($recordApplication); ?>
-<a href="records.php"><?= h(t('Documents')) ?></a></div></section>
+<a class="btn-sm btn-outline" href="records.php">Back to records</a></div></section>
 <?php require __DIR__.'/includes/layout_footer.php'; ?>

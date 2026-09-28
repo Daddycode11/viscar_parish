@@ -1,4 +1,29 @@
 /* Shared corrections for the revised platform screens. */
+.filter-bar { display:flex;align-items:end;flex-wrap:wrap;gap:10px;padding:12px 16px;margin:0 0 20px;background:var(--white,#fff);border:1px solid var(--ink-10,#ddd);border-radius:10px; }
+.filter-bar label { display:flex;flex-direction:column;gap:5px;flex:0 1 auto;min-width:0;font:500 .75rem var(--fb);color:var(--ink-60); }
+.filter-bar input,.filter-bar select { min-width:0;max-width:100%;min-height:38px;padding:8px 10px;border:1px solid var(--ink-10);border-radius:7px;background:#fff;color:var(--navy);font:inherit; }
+.filter-bar .btn-sm { min-height:38px; }
+.card-body.filter-bar { border:0;margin:0; }
+.profile-avatar { display:flex;align-items:center;justify-content:center;width:80px;height:80px;border:2px solid var(--gold);border-radius:50%;background:var(--navy);color:var(--gold);font:1.8rem var(--fh);overflow:hidden;margin-bottom:20px; }
+.bounded-preview { max-height:420px;overflow:auto; }
+.delivery-status summary,details.card > summary { cursor:pointer;padding:16px 20px;font-weight:500; }
+.money-cell { text-align:right;white-space:nowrap; }
+.card-body td details form { display:grid;gap:10px;min-width:220px;padding:12px 0; }
+.card-body td details form label { display:block; }
+.card-body td details form input,.card-body td details form textarea { width:100%; }
+.card-body td details form button { justify-self:start; }
+.card-body td details summary { cursor:pointer;margin-bottom:8px;white-space:nowrap; }
+.card-body form:has(> input[value="save_preferences"]) { display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px; }
+.card-body form:has(> input[value="save_preferences"]) fieldset { margin:0; }
+.card-body form:has(> input[value="save_preferences"]) > button { justify-self:start;grid-column:1/-1; }
+.announcement-article { padding:20px 0;border-bottom:1px solid var(--ink-10);line-height:1.7;overflow-wrap:anywhere; }
+.announcement-article:first-of-type { padding-top:8px; }
+.announcement-article h3 { margin-bottom:10px; }
+.announcement-article small { display:block;margin-top:10px;color:var(--ink-60); }
+.announcement-article:last-child { border-bottom:0; }
+.request-tabs { display:flex;flex-wrap:wrap;gap:8px;margin:16px 0; }
+.request-tabs a[aria-current="page"] { background:var(--navy);color:white; }
+@media(max-width:640px) { .filter-bar label { flex:1 1 130px; }.filter-bar input,.filter-bar select { width:100%; }.stats-grid { grid-template-columns:repeat(2,minmax(0,1fr))!important; }.sec-head { flex-wrap:wrap;gap:12px; }.grid-1-2 { grid-template-columns:minmax(0,1fr)!important; } }
 .main h1, .main h2, .main h3, main h1, main h2, main h3 { font-family:var(--fh); }
 .card-body > h1, .card-body > h2, .card-body > h3 { font-family:var(--fh); margin-bottom:12px; }
 .card-body > p { font-size:.85rem; line-height:1.65; margin-bottom:14px; }
@@ -10,7 +35,10 @@
 .card-body input, .card-body select, .card-body textarea { font-family:var(--fb); font-size:.83rem; }
 .card-body form > select, .card-body td input, .card-body td select { padding:9px 12px; border:1px solid var(--ink-10); border-radius:8px; max-width:100%; }
 .card-body td form { display:flex; flex-wrap:wrap; gap:8px; min-width:180px; }
-.card-body td button { padding:8px 14px; border:0; border-radius:8px; background:var(--navy); color:white; }
+.card-body td button:not([class]) { padding:8px 14px; border:0; border-radius:8px; background:var(--navy); color:white; }
+.app-row-actions { flex-wrap:wrap;min-width:180px; }
+.act-btn { white-space:nowrap;flex-shrink:0; }
+.sb-brand-text { min-width:0; }
 .form-group input[type=checkbox], .form-group input[type=radio], fieldset input[type=checkbox] { width:16px; height:16px; padding:0; margin:0 8px 0 0; flex:0 0 16px; accent-color:var(--navy); vertical-align:middle; }
 .form-group label:has(input[type=checkbox]), fieldset label { display:inline-flex; align-items:center; gap:6px; margin:6px 18px 6px 0; font-size:.82rem; letter-spacing:normal; text-transform:none; }
 .card-body fieldset { border:1px solid var(--ink-10); border-radius:10px; padding:12px 16px; margin-bottom:14px; }
@@ -18,7 +46,7 @@
 .card-body label > input:not([type=checkbox]):not([type=radio]), .card-body label > select, .card-body label > textarea { display:block; margin-top:6px; }
 .sb-user-avatar { overflow:hidden; aspect-ratio:1; }
 .sb-user-avatar img { display:block; width:100%; height:100%; object-fit:cover; }
-.sb-brand img { border-radius:50%; object-fit:contain; background:white; }
+.sb-brand img { border-radius:50%; object-fit:contain; background:white;flex-shrink:0;aspect-ratio:1; }
 .accounting-tabs { display:flex; gap:6px; flex-wrap:wrap; padding:10px; background:white; border:1px solid var(--ink-10); border-radius:12px; margin:16px 0; }
 .accounting-tabs a { color:var(--ink-60); }
 .accounting-tabs a[aria-current=page] { background:var(--navy); color:white; }

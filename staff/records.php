@@ -92,8 +92,8 @@ if (isset($_GET['ajax'])) {
             exit;
         }
 
-        $stmt = $conn->prepare("UPDATE sacramental_records SET record_type=?, parishioner_name=?, date_of_sacrament=?, minister_name=?, sponsors=?, remarks=? WHERE id=?");
-        $stmt->bind_param('ssssssi', $record_type, $parishioner_name, $date_of_sacrament, $minister_name, $sponsors, $remarks, $id);
+        $stmt = $conn->prepare("UPDATE sacramental_records SET record_type=?, parishioner_name=?, date_of_sacrament=?, minister_name=?, remarks=? WHERE id=?");
+        $stmt->bind_param('sssssi', $record_type, $parishioner_name, $date_of_sacrament, $minister_name, $remarks, $id);
 
         if ($stmt->execute() && $stmt->affected_rows >= 0) {
             auditLog($user['id'], 'update_record', 'sacramental_record', $id, "Updated record: $record_type for $parishioner_name");
@@ -463,10 +463,6 @@ $pillMap = ['active' => 'pill-green', 'archived' => 'pill-wine'];
           <input type="text" id="ed_minister_name" name="minister_name">
         </div>
         <div class="form-group form-full">
-          <label>Sponsors</label>
-          <textarea id="ed_sponsors" name="sponsors" rows="2"></textarea>
-        </div>
-        <div class="form-group form-full">
           <label>Remarks</label>
           <textarea id="ed_remarks" name="remarks" rows="2"></textarea>
         </div>
@@ -702,7 +698,7 @@ function editRecord(id) {
             document.getElementById('ed_parishioner_name').value = d.parishioner_name;
             document.getElementById('ed_date_of_sacrament').value = d.date_of_sacrament;
             document.getElementById('ed_minister_name').value = d.minister_name || '';
-            document.getElementById('ed_sponsors').value = d.sponsors || '';
+
             document.getElementById('ed_remarks').value = d.remarks || '';
             openModal('editModal');
         }).catch(() => { setLoading(false); showToast('Failed to load record.', 'error'); });
@@ -717,7 +713,7 @@ function updateRecord(e) {
     fd.append('parishioner_name', document.getElementById('ed_parishioner_name').value);
     fd.append('date_of_sacrament', document.getElementById('ed_date_of_sacrament').value);
     fd.append('minister_name', document.getElementById('ed_minister_name').value);
-    fd.append('sponsors', document.getElementById('ed_sponsors').value);
+
     fd.append('remarks', document.getElementById('ed_remarks').value);
 
     fetch('records.php?ajax=update', { method: 'POST', body: fd })

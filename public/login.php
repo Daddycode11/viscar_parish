@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- HEADER -->
 <header>
   <div class="hdr-logo">
-    <img src="../assets/img/church-logo.png" alt="Parish Logo" data-logo-fallback>
+    <img src="../assets/img/logo-homepage.png" alt="Parish Logo" data-logo-fallback>
     <div class="hdr-logo-fb">AV</div>
     <div class="hdr-label">
       <strong>Apostolic Vicariate of San Jose</strong>

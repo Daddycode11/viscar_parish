@@ -1,6 +1,15 @@
 (function () {
   if (window.appNavigationLoaded) return;
   window.appNavigationLoaded = true;
+  // Some Admin pages use the shared modal markup without defining its controls.
+  window.openModal = window.openModal || function (id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.add('open');
+  };
+  window.closeModal = window.closeModal || function (id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.classList.remove('open');
+  };
   function safePrevious(value) {
     if (typeof value !== 'string' || !value) return false;
     try {
@@ -36,10 +45,15 @@
   document.querySelectorAll('.modal-wrap').forEach(wrapper => {
     const modal = wrapper.querySelector('.modal');
     if (!modal) return;
-    const close = document.createElement('button');
+    const existingClose = modal.querySelector('button[onclick*="closeModal"],button[onclick*="closeView"]');
+    const close = existingClose || document.createElement('button');
+    if (!existingClose) {
     close.type = 'button'; close.className = 'dialog-return'; close.textContent = 'Close';
     close.setAttribute('aria-label', 'Close dialog');
     modal.prepend(close);
+    } else if (close.textContent.trim() === '×') {
+      close.setAttribute('aria-label', 'Close dialog');
+    }
     let trigger = null, wasOpen = false;
     function dismiss() {
       wrapper.classList.remove('open');
@@ -47,12 +61,17 @@
     }
     close.addEventListener('click', dismiss);
     new MutationObserver(() => {
+      if (!existingClose) {
+        close.hidden = !!modal.querySelector('button[onclick*="closeModal"],button[onclick*="closeView"]');
+      }
       const opened = getComputedStyle(wrapper).display !== 'none';
       if (opened && !wasOpen) {
-        trigger = lastTrigger; close.focus();
+        trigger = lastTrigger;
+        const focusClose = close.hidden ? modal.querySelector('button[onclick*="closeModal"],button[onclick*="closeView"]') : close;
+        if (focusClose) focusClose.focus();
       } else if (!opened && wasOpen && trigger && trigger.isConnected) trigger.focus();
       wasOpen = opened;
-    }).observe(wrapper, {attributes:true, attributeFilter:['class','style']});
+    }).observe(wrapper, {attributes:true, attributeFilter:['class','style'],childList:true,subtree:true});
     dialogs.push({wrapper, dismiss});
   });
   document.addEventListener('keydown', event => {

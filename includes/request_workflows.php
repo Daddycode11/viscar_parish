@@ -20,9 +20,6 @@ function create_change_request(array $actor, array $input): void
     $date = null;
     if ($type === 'cancel') {
         must(in_array($application['status'],['pending','approved'],true),'Only pending or approved applications can be cancelled.');
-        $conn->execute_query("UPDATE applications SET status='cancelled' WHERE id=?",[$application['id']]);
-        $conn->execute_query("UPDATE sacramental_records SET status='archived' WHERE application_id=?",[$application['id']]);
-        $conn->execute_query("UPDATE application_requests SET status='rejected',review_note='Application cancelled by owner',reviewed_at=NOW() WHERE application_id=? AND request_type='reschedule' AND status IN ('pending','approved')",[$application['id']]);
     } elseif ($type === 'refund') {
         must($application['payment_status'] === 'paid', 'Only a verified paid booking can request a refund.');
     } else {
@@ -34,13 +31,12 @@ function create_change_request(array $actor, array $input): void
     $conn->execute_query('INSERT INTO application_requests(application_id,requested_by,request_type,reason,proposed_schedule) VALUES(?,?,?,?,?)',
         [$application['id'], $actor['id'], $type, $reason, $date]);
     $id = $conn->insert_id;
-    if ($type==='cancel') $conn->execute_query("UPDATE application_requests SET status='completed',completed_at=NOW() WHERE id=?",[$id]);
     auditLog($actor['id'], 'request_' . $type, 'application_request', $id);
 
     $role = $type === 'refund' ? 'bookkeeper' : 'secretary';
     $recipients = $conn->execute_query("SELECT id FROM users WHERE parish_id=? AND role=? AND status='active'", [$application['parish_id'], $role]);
     foreach ($recipients as $recipient) {
-        notify($recipient['id'], 'New ' . $type . ' request', 'Review request #' . $id . '.', 'application', 'requests.php');
+        notify($recipient['id'], 'New ' . $type . ' request', 'Review request #' . $id . '.', 'application', 'requests.php?type='.$type);
         $recipientId=(int)$recipient['id'];
         $GLOBALS['after_commit'][]=fn()=>dispatch_to_user($recipientId,'New '.$type.' request','Review request #'.$id.'.',['sms','email'],'application');
     }
@@ -54,7 +50,6 @@ function review_change_request(array $actor, array $input): void
     $note = input_text($input, 'review_note', 2000);
     $previous = sqlrow('SELECT * FROM application_requests WHERE id=?', [$id]);
     must($previous !== null, 'Request not found.');
-    must($previous['request_type']!=='cancel','Cancellation is already recorded.');
     $requiredRole = $previous['request_type'] === 'refund' ? 'bookkeeper' : 'secretary';
     must($actor['role'] === $requiredRole, 'This request belongs to another staff role.');
     must(in_array($decision, ['approve', 'reject', 'complete'], true), 'Invalid decision.');
@@ -76,6 +71,13 @@ function review_change_request(array $actor, array $input): void
         must($request['status'] === 'pending', 'Request already reviewed.');
         $state = $decision === 'approve' ? 'approved' : 'rejected';
         if ($decision === 'reject') { must(strlen($note) >= 5, 'Explain the rejection.'); }
+        if ($decision === 'approve' && $request['request_type'] === 'cancel') {
+            must(!$application['checked_in_at'] && in_array($application['status'],['pending','approved'],true), 'This booking cannot be cancelled.');
+            $conn->execute_query("UPDATE applications SET status='cancelled' WHERE id=?",[$application['id']]);
+            $conn->execute_query("UPDATE sacramental_records SET status='archived' WHERE application_id=?",[$application['id']]);
+            $conn->execute_query("UPDATE application_requests SET status='rejected',review_note='Application cancellation approved',reviewed_at=NOW(),reviewed_by=? WHERE application_id=? AND request_type='reschedule' AND status IN ('pending','approved')",[$actor['id'],$application['id']]);
+            $state='completed';
+        }
         if ($decision === 'approve' && $request['request_type'] === 'refund') {
             must($application['payment_status'] === 'paid'
                 && sqlrow("SELECT id FROM payments WHERE application_id=? AND status='completed'", [$application['id']]) !== null,
@@ -94,6 +96,6 @@ function review_change_request(array $actor, array $input): void
 
     $conn->execute_query("UPDATE application_requests SET status=?,reviewed_by=?,review_note=?,reviewed_at=NOW(),completed_at=IF(?='completed',NOW(),NULL) WHERE id=?", [$state, $actor['id'], $note, $state, $id]);
     auditLog($actor['id'], 'request_' . $decision, 'application_request', $id, $note);
-    notify($application['user_id'], 'Request Updated', 'Request #' . $id . ' is ' . $state . '.', 'application', 'requests.php');
+    notify($application['user_id'], 'Request Updated', 'Request #' . $id . ' is ' . $state . '.', 'application', 'requests.php?type='.$request['request_type']);
     $GLOBALS['after_commit'][]=fn()=>dispatch_to_user($application['user_id'],'Request Updated','Request #'.$id.' is '.$state.'.',['sms','email'],'application');
 }

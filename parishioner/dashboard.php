@@ -132,7 +132,6 @@ function statusPill($status) {
 if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo json_encode(['applications'=>$applications,'digest'=>hash('sha256',json_encode([$applications,$payments]))]);exit;}
 ?>
 <?php render_dashboard_filter(); ?>
-<?php if (!isset($_GET['ajax'])) require APP_ROOT . '/includes/application_links.php'; ?>
 
 <!-- ============================================================ -->
 <!-- Parish Selector -->

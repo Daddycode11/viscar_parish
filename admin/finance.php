@@ -171,7 +171,6 @@ $page_title = 'Financial Oversight';
 $page_sub   = 'Finance';
 include 'includes/layout.php';
 ?>
-<?php require APP_ROOT . '/includes/financial_summary.php'; ?>
 
 <style>
 .toast { position:fixed;bottom:28px;right:28px;padding:12px 20px;border-radius:10px;font-size:.82rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:600;transform:translateY(80px);opacity:0;transition:.3s cubic-bezier(.4,0,.2,1);max-width:360px; }
@@ -221,6 +220,7 @@ include 'includes/layout.php';
   </div>
 </div>
 
+<?php require APP_ROOT . '/includes/financial_summary.php'; ?>
 <div class="grid-2">
   <!-- Revenue by Service Chart -->
   <div class="card">
@@ -240,18 +240,24 @@ include 'includes/layout.php';
     </div>
   </div>
 
-  <!-- Monthly trend (CSS chart) -->
+  <?php
+  $trendEnd=new DateTimeImmutable($financialTo);
+  $trendStart=$trendEnd->modify('first day of this month')->modify('-5 months');
+  $monthly_trend=[];
+  for($month=$trendStart;$month<=$trendEnd;$month=$month->modify('+1 month')) {
+      $monthEnd=min($month->format('Y-m-t'),$financialTo);
+      $monthly_trend[$month->format('M Y')]=financial_totals($month->format('Y-m-01'),$monthEnd)['verified_revenue'];
+  }
+  $max_m=max(1,...array_values($monthly_trend));
+  ?>
+  <!-- Monthly trend uses the same verified-income definition as the summary. -->
   <div class="card">
-    <div class="card-head"><h3>Monthly Revenue Trend</h3><span class="card-tag">Sep 2025 – Feb 2026</span></div>
+    <div class="card-head"><h3>Monthly Revenue Trend</h3><span class="card-tag"><?= h($trendStart->format('M Y').' – '.$trendEnd->format('M Y')) ?></span></div>
     <div class="card-body">
-      <?php
-      $monthly_trend = ['Sep'=>18200,'Oct'=>22100,'Nov'=>31400,'Dec'=>19800,'Jan'=>38750,'Feb'=>34100];
-      $max_m = max($monthly_trend);
-      ?>
       <div style="display:flex;align-items:flex-end;gap:8px;height:130px;margin-bottom:14px">
         <?php foreach($monthly_trend as $m => $v): $h = round(($v/$max_m)*100); ?>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px">
-          <span style="font-size:.66rem;color:var(--ink-60);font-weight:500">₱<?php echo number_format($v/1000,0); ?>k</span>
+        <div style="flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px">
+          <span style="font-size:.66rem;color:var(--ink-60);font-weight:500">₱<?php echo number_format($v); ?></span>
           <div style="width:100%;background:var(--navy);border-radius:5px 5px 0 0;height:<?php echo $h; ?>%;transition:height .6s ease;min-height:6px" title="<?php echo $m; ?>: ₱<?php echo number_format($v); ?>"></div>
           <span style="font-size:.64rem;color:var(--ink-30);text-transform:uppercase"><?php echo $m; ?></span>
         </div>
@@ -259,7 +265,7 @@ include 'includes/layout.php';
       </div>
       <div style="border-top:1px solid var(--ink-10);padding-top:12px;display:flex;justify-content:space-between">
         <span style="font-size:.75rem;color:var(--ink-60)">6-month total: <strong>₱<?php echo number_format(array_sum($monthly_trend)); ?></strong></span>
-        <span style="font-size:.75rem;color:var(--green)">↑ 18% vs prior period</span>
+        <span style="font-size:.75rem;color:var(--ink-60)">Verified income</span>
       </div>
     </div>
   </div>

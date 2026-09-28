@@ -34,10 +34,10 @@ $page_id = 'requests'; $page_title = t($type === 'refund' ? 'Refunds' : ($type==
 require APP_ROOT . '/' . $folder . '/includes/layout.php';
 ?>
 <h1><?= h($page_title) ?></h1>
-<?php if ($isParishioner || $user['role']==='secretary'): ?><nav><?php if($isParishioner): ?><a href="requests.php?type=refund"><?= h(t('Refunds')) ?></a> | <?php endif; ?><a href="requests.php?type=reschedule"><?= h(t('Reschedules')) ?></a> | <a href="requests.php?type=cancel">Cancellations</a></nav><?php endif; ?>
+<?php if ($isParishioner || $user['role']==='secretary'): ?><nav class="request-tabs" aria-label="Request type"><?php foreach(['refund'=>'Refunds','reschedule'=>'Reschedules','cancel'=>'Cancellations'] as $tab=>$label): if(!$isParishioner && $tab==='refund')continue; ?><a href="requests.php?type=<?= $tab ?>" <?= $type===$tab?'aria-current="page"':'' ?>><?= h(t($label)) ?></a><?php endforeach; ?></nav><?php endif; ?>
 <p role="status"><?= h(t($notice ?: (isset($_GET['saved']) ? 'Request saved.' : ''))) ?></p>
 <?php if ($isParishioner): ?>
-<section class="card"><div class="card-body"><form method="post" <?= $type==='cancel'?'onsubmit="return confirm(\'Cancel this application? Any refund follows a separate process.\')"':'' ?>><?= csrf_field() ?>
+<section class="card"><div class="card-body"><?php if($type==='cancel'): ?><p>Your application stays active until the Secretary confirms cancellation. Refunds follow a separate process.</p><?php endif; ?><form method="post" <?= $type==='cancel'?'onsubmit="return confirm(\'Request cancellation? The Secretary will review your reason.\')"':'' ?>><?= csrf_field() ?>
 <input type="hidden" name="request_type" value="<?= h($type) ?>">
 <div class="form-group"><label><?= h(t('Booking')) ?><select name="application_id" required><?php foreach($apps as $app): ?><option value="<?= (int)$app['id'] ?>">#<?= (int)$app['id'] ?> <?= h($app['name']) ?></option><?php endforeach; ?></select></label></div>
 <?php if ($type === 'reschedule'): ?><div class="form-group"><label><?= h(t('New schedule')) ?><input type="datetime-local" name="proposed_schedule" required></label></div><?php endif; ?>

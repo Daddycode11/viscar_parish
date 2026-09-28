@@ -42,7 +42,7 @@ require APP_ROOT . '/' . $folder . '/includes/layout.php';
 <section class="card"><div class="card-body">
 <form method="post" enctype="multipart/form-data"><?= csrf_field() ?>
     <input type="hidden" name="_action" value="save_profile">
-    <div style="width:80px;height:80px"><?= profile_avatar($user) ?></div>
+    <div class="profile-avatar"><?= profile_avatar($user) ?></div>
     <?php foreach (['name'=>'Name','email'=>'Email','phone'=>'Phone'] as $key=>$label): ?>
     <div class="form-group"><label><?= h(t($label)) ?><input name="<?= h($key) ?>" type="<?= $key === 'email' ? 'email' : 'text' ?>" value="<?= h($user[$key]) ?>" <?= $key !== 'phone' ? 'required' : '' ?>></label></div>
     <?php endforeach; ?>

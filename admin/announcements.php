@@ -60,7 +60,6 @@ $page_title = 'Announcements';
 $page_sub   = 'Communication';
 include 'includes/layout.php';
 ?>
-<?php require APP_ROOT . '/includes/announcement_status.php'; ?>
 
 <?php if($flash): [$ftype,$fmsg] = explode(':',$flash,2); ?>
 <div class="notice notice-<?php echo $ftype==='success'?'green':'amber'; ?> flash-msg" style="margin-bottom:20px;transition:opacity .5s">
@@ -77,6 +76,7 @@ include 'includes/layout.php';
   </div>
 </div>
 
+<?php require APP_ROOT . '/includes/announcement_status.php'; ?>
 <div class="grid-1-2">
   <!-- Compose -->
   <div class="card">

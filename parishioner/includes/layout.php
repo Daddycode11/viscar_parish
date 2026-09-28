@@ -55,7 +55,7 @@ $nav = [
     'communication' => [
         'section' => 'Communication',
         'items' => [
-            ['id' => 'messages',      'icon' => ui_icon('mail'), 'label' => 'Help & Messages', 'href' => 'help.php',       'badge' => $msg_count],
+            ['id' => 'messages',      'icon' => ui_icon('mail'), 'label' => 'Messages', 'href' => 'messages.php',       'badge' => $msg_count],
             ['id' => 'notifications', 'icon' => ui_icon('bell'), 'label' => 'Notifications',   'href' => 'notifications.php',  'badge' => $notif_count],
         ]
     ],

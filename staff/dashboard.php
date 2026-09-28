@@ -315,7 +315,6 @@ tbody tr:hover .app-row-actions { opacity: 1; }
   </div>
 </div>
 
-<?php render_dashboard_filter(); ?>
 <!-- PAGE HEADER -->
 <div class="sec-head">
   <div class="sec-head-left">
@@ -338,6 +337,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
 </div>
 
 <!-- STAT CARDS -->
+<?php render_dashboard_filter(); ?>
 <div class="stats-grid">
 <?php if ($staff_role === 'secretary'): ?>
   <div class="stat-card stat-amber">

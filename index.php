@@ -915,6 +915,13 @@ footer {
   .features-content { order: 1; }
 }
 @media (max-width: 640px) {
+  .logo { min-width:0;flex-shrink:1;gap:8px; }
+  .logo-text { min-width:0; }
+  .logo-text span:first-child { white-space:normal; }
+  header nav { flex-shrink:0; }
+  header nav .nav-btn { padding:8px 10px; }
+  .features-content { min-width:0;transform:translateY(20px); }
+  .feature-item > div { min-width:0;overflow-wrap:anywhere; }
   header { padding: 0 4vw; height: 64px; }
   .mobile-nav { top: 64px; }
   .logo-text span:first-child { font-size: .9rem; }

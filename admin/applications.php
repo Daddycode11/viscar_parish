@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/access.php';
 require_once __DIR__ . '/../includes/workflow_routes.php';
+if(!isset($_GET['ajax'])) require_sensitive_verification($user);
 
 /**
  * Applications — Full dynamic version
@@ -226,7 +227,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
 <!-- Application Detail Modal -->
 <div class="modal-wrap" id="viewModal" style="align-items:flex-start;padding:40px 20px;overflow-y:auto">
   <div class="modal" style="max-width:680px;width:100%">
-    <div id="viewModalContent" style="min-height:200px;display:flex;align-items:center;justify-content:center">
+    <div id="viewModalContent" style="min-height:200px">
       <div class="spinner" style="border-top-color:var(--navy)"></div>
     </div>
   </div>

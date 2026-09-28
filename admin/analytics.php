@@ -28,7 +28,6 @@ $page_title = 'Analytics';
 $page_sub   = 'Advanced Analytics';
 include 'includes/layout.php';
 ?>
-<?php require APP_ROOT . '/includes/financial_summary.php'; ?>
 
 <div class="sec-head">
   <div class="sec-head-left">
@@ -39,6 +38,7 @@ include 'includes/layout.php';
 
 </div>
 
+<form method="get" class="filter-bar"><label>From<input type="date" name="date_from" value="<?= h($analyticsFrom) ?>" required></label><label>To<input type="date" name="date_to" value="<?= h($analyticsTo) ?>" required></label><button class="btn-sm btn-navy">Apply period</button></form>
 <p>Selected period: <?=h($analyticsFrom)?> to <?=h($analyticsTo)?>. The monthly chart shows up to the final twelve months within this period.</p>
 <div class="grid-2">
   <!-- Most Requested Services -->

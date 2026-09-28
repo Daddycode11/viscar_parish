@@ -100,6 +100,19 @@ if (isset($_GET['ajax'])) {
         exit;
     }
 
+    // Edit in place: historical application requirement snapshots remain unchanged.
+    if ($_GET['ajax'] === 'update_requirement' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id=(int)($_POST['id']??0);
+        $name=trim($_POST['document_name']??'');
+        $description=trim($_POST['description']??'');
+        if ($name==='' || mb_strlen($name)>255 || mb_strlen($description)>5000) fail_request('Enter a document name (up to 255 characters) and description (up to 5000).',422);
+        $requirement=$conn->execute_query('SELECT r.id FROM service_requirements r JOIN services s ON s.id=r.service_id WHERE r.id=? AND s.parish_id=?',[$id,$parish_id])->fetch_assoc();
+        if(!$requirement) fail_request('Requirement not found.',404);
+        $conn->execute_query('UPDATE service_requirements SET document_name=?,description=?,is_required=? WHERE id=?',[$name,$description,empty($_POST['is_required'])?0:1,$id]);
+        auditLog($user['id'],'update_requirement','service_requirement',$id);
+        echo json_encode(['success'=>true,'message'=>'Requirement updated.']);exit;
+    }
+
     // Add requirement
     if ($_GET['ajax'] === 'add_requirement' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $service_id    = (int)($_POST['service_id'] ?? 0);
@@ -309,6 +322,7 @@ foreach ($services as $s) {
     </div>
     <p id="reqsModalSub">Manage the required documents for this service.</p>
     <input type="hidden" id="reqsServiceId" value="">
+    <input type="hidden" id="reqEditId" value="">
 
     <!-- Add Requirement Form -->
     <div class="card" style="margin-bottom:16px;box-shadow:none;border:1.5px solid var(--ink-10)">
@@ -331,7 +345,8 @@ foreach ($services as $s) {
           </div>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
-          <button onclick="saveRequirement()" class="btn-sm btn-navy" style="font-size:.72rem">Add Requirement</button>
+          <button onclick="resetRequirementEditor()" type="button" class="btn-sm btn-outline">Clear</button>
+          <button id="saveRequirementBtn" onclick="saveRequirement()" class="btn-sm btn-navy" style="font-size:.72rem">Add Requirement</button>
         </div>
       </div>
     </div>
@@ -682,6 +697,7 @@ function deleteField(id) {
 // ── Requirements Management ─────────────────────
 
 function openRequirements(serviceId, serviceName) {
+    resetRequirementEditor();
     document.getElementById('reqsServiceId').value = serviceId;
     document.getElementById('reqsModalTitle').textContent = 'Requirements: ' + serviceName;
     document.getElementById('reqsModalSub').textContent = 'Manage the documents required for this service application.';
@@ -709,16 +725,32 @@ function loadRequirements(serviceId) {
                 html += '<td style="font-weight:500">' + escHtml(r.document_name) + '</td>';
                 html += '<td style="font-size:.8rem;color:var(--ink-60)">' + escHtml(r.description || '—') + '</td>';
                 html += '<td>' + badge + '</td>';
-                html += '<td><button onclick="deleteRequirement(' + r.id + ')" class="act-btn act-wine" style="font-size:.68rem">[icon:close] Remove</button></td>';
+                html += '<td><button type="button" data-edit-requirement="' + Number(r.id) + '" class="act-btn act-gold" aria-label="Edit requirement">[icon:edit]</button> <button onclick="deleteRequirement(' + r.id + ')" class="act-btn act-wine" style="font-size:.68rem">[icon:close] Remove</button></td>';
                 html += '</tr>';
             });
             html += '</tbody></table></div>';
             document.getElementById('reqsList').innerHTML = html;
+            document.querySelectorAll('[data-edit-requirement]').forEach(button => button.addEventListener('click', () => {
+                const requirement=reqs.find(item=>Number(item.id)===Number(button.dataset.editRequirement));
+                document.getElementById('reqEditId').value=requirement.id;
+                document.getElementById('reqDocName').value=requirement.document_name;
+                document.getElementById('reqDescription').value=requirement.description || '';
+                document.getElementById('reqIsRequired').checked=Number(requirement.is_required)===1;
+                document.getElementById('saveRequirementBtn').textContent='Save Requirement';
+                document.getElementById('reqDocName').focus();
+            }));
         }).catch(() => {
             document.getElementById('reqsList').innerHTML = '<p style="text-align:center;padding:20px;color:var(--wine)">Failed to load requirements.</p>';
         });
 }
 
+function resetRequirementEditor() {
+    document.getElementById('reqEditId').value='';
+    document.getElementById('reqDocName').value='';
+    document.getElementById('reqDescription').value='';
+    document.getElementById('reqIsRequired').checked=true;
+    document.getElementById('saveRequirementBtn').textContent='Add Requirement';
+}
 function saveRequirement() {
     const serviceId = document.getElementById('reqsServiceId').value;
     const docName = document.getElementById('reqDocName').value.trim();
@@ -731,11 +763,14 @@ function saveRequirement() {
     fd.append('is_required', document.getElementById('reqIsRequired').checked ? 1 : 0);
 
     setLoading(true);
-    fetch('services.php?ajax=add_requirement', { method: 'POST', body: fd })
+    const editId=document.getElementById('reqEditId').value;
+    if(editId) fd.append('id',editId);
+    fetch('services.php?ajax='+(editId?'update_requirement':'add_requirement'), { method: 'POST', body: fd })
         .then(r => r.json()).then(data => {
             setLoading(false);
             showToast(data.success ? '[icon:check] ' + data.message : data.message, data.success ? 'success' : 'error');
             if (data.success) {
+                resetRequirementEditor();
                 document.getElementById('reqDocName').value = '';
                 document.getElementById('reqDescription').value = '';
                 document.getElementById('reqIsRequired').checked = true;

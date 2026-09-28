@@ -18,5 +18,5 @@ function dashboard_date_sql(string $column): string
 function render_dashboard_filter(): void
 {
     global $dashboardFrom,$dashboardTo;
-    echo '<form method="get" class="accounting-tabs"><label>From<input type="date" name="date_from" value="'.h($dashboardFrom==='1900-01-01'?'':$dashboardFrom).'"></label><label>To<input type="date" name="date_to" value="'.h($dashboardTo==='9999-12-31'?'':$dashboardTo).'"></label><button class="btn-sm btn-navy">Apply period</button><a href="dashboard.php">All time</a></form>';
+    echo '<form method="get" class="filter-bar"><label>From<input type="date" name="date_from" value="'.h($dashboardFrom==='1900-01-01'?'':$dashboardFrom).'"></label><label>To<input type="date" name="date_to" value="'.h($dashboardTo==='9999-12-31'?'':$dashboardTo).'"></label><button class="btn-sm btn-navy">Apply period</button><a class="btn-sm btn-outline" href="dashboard.php">All time</a></form>';
 }

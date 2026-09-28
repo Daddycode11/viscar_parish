@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__.'/auth.php';
+require_once __DIR__.'/parish_members.php';
 function fail_request(string $message, int $status=403): never {
  $message=t($message);
  http_response_code($status);header('Content-Type: application/json');
@@ -83,12 +84,14 @@ if($area==='staff'){
  }
  if($id&&$table){
   $sql=match($table){
+   'users'=>"SELECT id FROM users WHERE id=? AND role='parishioner' AND ".parish_member_sql($scopeParish),
    'payments'=>"SELECT p.id FROM payments p JOIN applications a ON a.id=p.application_id WHERE p.id=? AND a.parish_id=?",
    'receipts'=>"SELECT r.id FROM receipts r JOIN payments p ON p.id=r.payment_id JOIN applications a ON a.id=p.application_id WHERE r.id=? AND a.parish_id=?",
    'service_fields','service_requirements'=>"SELECT f.id FROM $table f JOIN services s ON s.id=f.service_id WHERE f.id=? AND s.parish_id=?",
    default=>"SELECT id FROM $table WHERE id=? AND parish_id=?"
   };
-  if(!$conn->execute_query($sql,[$id,$scopeParish])->fetch_assoc())fail_request('Record not available.',404);
+  $scopeArgs=$table==='users'?[$id]:[$id,$scopeParish];
+  if(!$conn->execute_query($sql,$scopeArgs)->fetch_assoc())fail_request('Record not available.',404);
  }
  if(!empty($_POST['application_id'])&&!$conn->execute_query('SELECT id FROM applications WHERE id=? AND parish_id=?',[(int)$_POST['application_id'],$scopeParish])->fetch_assoc())fail_request('Application not available.',404);
 }

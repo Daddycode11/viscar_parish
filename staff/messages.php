@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/access.php';
+$memberScope=parish_member_sql($scopeParish);
 require_once __DIR__ . '/../includes/workflow_routes.php';
 
 $page_id = 'messages'; $page_title = 'Messages'; $page_sub = 'Communication';
@@ -28,7 +29,7 @@ if (isset($_GET['ajax'])) {
                  ORDER BY m3.created_at DESC LIMIT 1) as last_time,
                 (SELECT COUNT(*) FROM messages m4
                  WHERE m4.parish_id={$scopeParish} AND m4.sender_id=u.id AND m4.receiver_id=? AND m4.is_read=0) as unread_count
-            FROM (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish}) OR id IN (SELECT user_id FROM help_conversations WHERE parish_id = {$scopeParish})) u
+            FROM (SELECT * FROM users WHERE {$memberScope} OR id IN (SELECT user_id FROM help_conversations WHERE parish_id = {$scopeParish})) u
             WHERE u.role='parishioner' AND u.id IN (
                 SELECT DISTINCT sender_id FROM messages WHERE parish_id={$scopeParish} AND receiver_id=?
                 UNION
@@ -49,7 +50,7 @@ if (isset($_GET['ajax'])) {
         $stmt = $conn->prepare("
             SELECT m.*, u.name as sender_name
             FROM messages m
-            JOIN (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish}) OR id IN (SELECT user_id FROM help_conversations WHERE parish_id = {$scopeParish})) u ON u.id = m.sender_id
+            JOIN (SELECT * FROM users WHERE {$memberScope} OR id IN (SELECT user_id FROM help_conversations WHERE parish_id = {$scopeParish})) u ON u.id = m.sender_id
             WHERE m.parish_id={$scopeParish} AND ((m.sender_id=? AND m.receiver_id=?) OR (m.sender_id=? AND m.receiver_id=?))
             ORDER BY m.created_at ASC
         ");
@@ -76,7 +77,8 @@ if (isset($_GET['ajax'])) {
         if(!$recipient || strlen($body)>2000 || strlen($subject)>255)fail_request('Invalid recipient or message length.',422);
         if($user['role']!=='secretary'||$recipient['role']!=='parishioner')fail_request('Secretary-to-parishioner messages only.');
         $thread=$conn->execute_query('SELECT id FROM help_conversations WHERE user_id=? AND parish_id=? AND secretary_id=?',[$receiver_id,$user['parish_id'],$user['id']])->fetch_assoc();
-        if((int)$recipient['parish_id']!==(int)$user['parish_id']&&!$thread)fail_request('Recipient is outside your parish.');
+        $member=$conn->execute_query('SELECT id FROM users WHERE id=? AND '.parish_member_sql($scopeParish),[$receiver_id])->fetch_assoc();
+        if(!$member&&!$thread)fail_request('Recipient is outside your parish.');
         $conn->execute_query('UPDATE help_conversations SET staff_active=1 WHERE user_id=? AND parish_id=? AND secretary_id=?',[$receiver_id,$user['parish_id'],$user['id']]);
         $stmt = $conn->prepare("INSERT INTO messages (sender_id, receiver_id, parish_id, subject, body) VALUES (?, ?, ?, ?, ?)");
         $parish = $user['parish_id'];
@@ -110,7 +112,7 @@ if (isset($_GET['ajax'])) {
     // Search parishioners
     if ($_GET['ajax'] === 'search_users' && isset($_GET['q'])) {
         $q = '%' . trim($_GET['q']) . '%';
-        $stmt = $conn->prepare("SELECT id, name, email FROM (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish}) OR id IN (SELECT user_id FROM help_conversations WHERE parish_id = {$scopeParish})) users WHERE role='parishioner' AND status='active' AND (name LIKE ? OR email LIKE ?) ORDER BY name LIMIT 20");
+        $stmt = $conn->prepare("SELECT id, name, email FROM (SELECT * FROM users WHERE {$memberScope} OR id IN (SELECT user_id FROM help_conversations WHERE parish_id = {$scopeParish})) users WHERE role='parishioner' AND status='active' AND (name LIKE ? OR email LIKE ?) ORDER BY name LIMIT 20");
         $stmt->bind_param('ss', $q, $q);
         $stmt->execute();
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);

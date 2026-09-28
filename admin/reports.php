@@ -59,7 +59,19 @@ require_once __DIR__.'/../includes/report_data.php';
 try{report_range($date_from,$date_to);}catch(DomainException $e){fail_request($e->getMessage(),422);}
 
 // ── LOAD REPORT DATA ──────────────────────────
-switch ($report_type) {
+require_once APP_ROOT.'/includes/accounting.php';
+$auditReport=isset(ACCOUNTING_REPORT_TYPES[$report_type]);
+if ($auditReport) {
+    $report_label=ACCOUNTING_REPORT_TYPES[$report_type].' Audit Report';
+    $report_columns=['Type','Number','Date','Payee / payer','Amount','Particulars','Reference','Status','Parish'];
+    $report_rows=[];
+    foreach($parishes_list as $reportParish) {
+        if($parish_id && (int)$parish_id!==(int)$reportParish['id'])continue;
+        foreach(accounting_rows($user,['document_type'=>$report_type,'date_from'=>$date_from,'date_to'=>$date_to,'parish_id'=>$reportParish['id']]) as $row) {
+            $report_rows[]=[ACCOUNTING_REPORT_TYPES[$row['document_type']],$row['document_number'],$row['document_date'],$row['party_name'],$row['amount'],$row['description'],$row['reference'],$row['status'],$reportParish['name']];
+        }
+    }
+} else switch ($report_type) {
     case 'applications':
         $report_rows    = gen_applications_data($date_from, $date_to, $parish_id);
         $report_label   = 'Applications Report';
@@ -120,6 +132,7 @@ if (isset($_GET['export']) && in_array($_GET['export'], ['csv','excel','pdf'])) 
         report_csv($out, $report_columns);
         // Data rows
         foreach ($report_rows as $row) {
+            if($auditReport) { report_csv($out,$row);continue; }
             switch ($report_type) {
                 case 'financial':
                     report_csv($out, [$row['ref'],$row['date'],$row['parishioner'],$row['service'],$row['parish'],'₱'.$row['amount'],$row['method'],ucfirst($row['status'])]);
@@ -183,7 +196,7 @@ if (isset($_GET['export']) && in_array($_GET['export'], ['csv','excel','pdf'])) 
                     'parish_comparison' => [$rr['parish'],$rr['apps'],$rr['approved'],$rr['rejected'],$rr['pending'],$rr['revenue'],$rr['users'],$rr['services']],
                     'service_demand'    => [$rr['service'],$rr['count'],$rr['revenue'],$rr['avg_fee'],$rr['completion_rate'].'%'],
                     'user_activity'     => [$rr['user'],$rr['role'],$rr['parish'],$rr['logins'],$rr['apps_processed'],$rr['last_active']],
-                    default             => []
+                    default             => $auditReport ? $rr : []
                 };
                 foreach ($vals as $ci => $v) {
                     $sheet->setCellValue(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($ci + 1) . $row_i, $v);
@@ -209,7 +222,7 @@ if (isset($_GET['export']) && in_array($_GET['export'], ['csv','excel','pdf'])) 
                 'parish_comparison' => [$rr['parish'],$rr['apps'],$rr['approved'],$rr['rejected'],$rr['pending'],'₱'.$rr['revenue'],$rr['users'],$rr['services']],
                 'service_demand'    => [$rr['service'],$rr['count'],'₱'.$rr['revenue'],'₱'.$rr['avg_fee'],$rr['completion_rate'].'%'],
                 'user_activity'     => [$rr['user'],$rr['role'],$rr['parish'],$rr['logins'],$rr['apps_processed'],$rr['last_active']],
-                default => []
+                default => $auditReport ? $rr : []
             });
         }
         fclose($out);
@@ -290,6 +303,7 @@ include 'includes/layout.php';
             <option value="parish_comparison" <?php echo $report_type==='parish_comparison'?'selected':''; ?>>Parish Comparison</option>
             <option value="service_demand"    <?php echo $report_type==='service_demand'?'selected':''; ?>>Service Demand</option>
             <option value="user_activity"     <?php echo $report_type==='user_activity'?'selected':''; ?>>User Activity</option>
+            <?php foreach(ACCOUNTING_REPORT_TYPES as $key=>$label): ?><option value="<?= h($key) ?>" <?= $report_type===$key?'selected':'' ?>><?= h($label) ?></option><?php endforeach; ?>
           </select>
         </div>
 
@@ -504,6 +518,7 @@ include 'includes/layout.php';
               <td style="text-align:center;font-weight:600"><?php echo $row['logins']; ?></td>
               <td style="text-align:center;font-weight:600;color:var(--navy)"><?php echo $row['apps_processed']; ?></td>
               <td style="font-size:.75rem;color:var(--ink-30)"><?php echo date('M j, Y', strtotime($row['last_active'])); ?></td>
+            <?php elseif($auditReport): foreach($row as $value): ?><td><?= h($value) ?></td><?php endforeach; ?>
             <?php endif; ?>
           </tr>
           <?php endforeach; ?>

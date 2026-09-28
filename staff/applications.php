@@ -267,7 +267,8 @@ tbody tr:hover .app-row-actions { opacity: 1; }
             <td style="font-size:.73rem;color:var(--ink-30)"><?php echo date('M j, Y', strtotime($a['created_at'])); ?></td>
             <td>
               <div class="app-row-actions" style="display:flex;gap:4px;flex-wrap:wrap">
-                <button onclick="requestApplicationDocs(<?php echo $a['id']; ?>)" class="act-btn act-gold" title="Request Documents">Documents</button>
+                <button onclick="requestApplicationDocs(<?php echo $a['id']; ?>)" class="act-btn act-gold" title="Request Documents">Request Docs</button>
+                <?php if(in_array($a['status'],['pending','approved'],true)): ?><a class="act-btn act-gold" title="Correct application answers" href="application_details.php?id=<?= (int)$a['id'] ?>&amp;edit=1#corrections">[icon:edit]</a><?php endif; ?>
                 <button onclick="viewApp(<?php echo $a['id']; ?>)" class="act-btn act-navy" title="View">[icon:eye]</button>
                 <?php if ($a['status'] === 'pending'): ?>
                 <button onclick="approveApp(<?php echo $a['id']; ?>, '<?php echo htmlspecialchars(addslashes($a['parishioner_name'])); ?>')" class="act-btn act-green" title="Approve">[icon:check]</button>

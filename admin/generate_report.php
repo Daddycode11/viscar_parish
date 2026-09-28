@@ -212,6 +212,7 @@ require_once __DIR__ . '/../includes/workflow_routes.php';
           <td style="text-align:center"><?php echo $row['logins']; ?></td>
           <td style="text-align:center;font-weight:600"><?php echo $row['apps_processed']; ?></td>
           <td><?php echo date('M j, Y', strtotime($row['last_active'])); ?></td>
+        <?php elseif(!empty($auditReport)): foreach($row as $value): ?><td><?= h($value) ?></td><?php endforeach; ?>
         <?php endif; ?>
       </tr>
       <?php endforeach; ?>
