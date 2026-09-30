@@ -10,7 +10,11 @@ try {
 function dashboard_date_sql(string $column): string
 {
     global $dashboardStart,$dashboardEnd;
-    if(!preg_match('/^[a-z_.]+$/i',$column))throw new LogicException('Invalid date column.');
+    $allowedExpressions=[
+        'effective_payment_date'=>'COALESCE(pay.verified_at,pay.paid_at,pay.created_at)',
+    ];
+    if(isset($allowedExpressions[$column]))$column=$allowedExpressions[$column];
+    elseif(!preg_match('/^[a-z_.]+$/i',$column))throw new LogicException('Invalid date column.');
     // Both timestamps originate exclusively from strict date parsing above.
     return "$column BETWEEN '$dashboardStart' AND '$dashboardEnd'";
 }

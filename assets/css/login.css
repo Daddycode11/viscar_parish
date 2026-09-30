@@ -414,3 +414,6 @@ header {
   .hdr-right a:not(.hdr-btn) { display: none; }
   .login-card { border-radius: 16px; }
 }
+
+/* Lighter navy requested in the final client reference. */
+:root{--navy:#2d4263;--navy-deep:#23344d}

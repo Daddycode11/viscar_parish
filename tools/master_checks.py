@@ -18,7 +18,7 @@ if sid:
     field={'service_id':sid,'field_name':'participant','field_label':'Participant "Name"','field_type':'text','is_required':1,'sort_order':1,'field_options':''}
     r=s.get('/staff/services.php?ajax=add_field',field);fid=sql(f'SELECT MAX(id) FROM service_fields WHERE service_id={sid}')
     check('Form field creation',r['json'].get('success'),r['json'])
-    booking_data={'parish_id':1,'service_id':sid,'schedule':'2035-05-10T09:00','amount':'77.25','form_data':json.dumps({'participant':'Original Participant'})}
+    booking_data={'payment_method':'cash','parish_id':1,'service_id':sid,'schedule':'2035-05-10T09:00','amount':'77.25','form_data':json.dumps({'participant':'Original Participant'})}
     r=p.get('/parishioner/apply_service.php?ajax=submit',dict(booking_data,amount='-1'));check('User-defined fee rejects negative',r['code']==422)
     r=p.get('/parishioner/apply_service.php?ajax=submit',dict(booking_data,amount='1.234'));check('User-defined fee rejects precision loss',r['code']==422)
     r=p.get('/parishioner/apply_service.php?ajax=submit',booking_data);master_app=r['json'].get('app_id')

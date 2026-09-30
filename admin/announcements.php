@@ -85,21 +85,10 @@ include 'includes/layout.php';
       <form method="POST" action="announcements.php">
         <input type="hidden" name="_action" value="send_announcement">
         <input type="hidden" name="request_key" value="<?= bin2hex(random_bytes(32)) ?>">
-        <fieldset><legend><?= h(t('Selected parishes')) ?></legend><?php foreach($parishes_list as $parish): ?><label><input type="checkbox" name="parish_ids[]" value="<?= (int)$parish['id'] ?>"> <?= h($parish['name']) ?></label><?php endforeach; ?></fieldset>
+        <fieldset><button type="button" class="btn-sm btn-outline" onclick="this.parentElement.querySelectorAll('input[type=checkbox]').forEach(el=>el.checked=true)">Select All</button><legend><?= h(t('Selected parishes')) ?></legend><?php foreach($parishes_list as $parish): ?><label><input type="checkbox" name="parish_ids[]" value="<?= (int)$parish['id'] ?>"> <?= h($parish['name']) ?></label><?php endforeach; ?></fieldset>
         <div class="form-group">
           <label>Send To *</label>
-          <select name="target" required>
-            <option value="Selected Parishes"><?= h(t('Selected parishes')) ?></option>
-            <option value="All Parishioners">All Parishioners</option>
-            <option value="All Staff">All Staff</option>
-            <option value="All Parishes">Everyone (All Parishes)</option>
-            <option value="Staff Only">Staff Only</option>
-            <optgroup label="Specific Parish">
-              <?php foreach($parishes_list as $pl): ?>
-              <option value="<?php echo htmlspecialchars($pl['name']); ?>"><?php echo htmlspecialchars($pl['name']); ?></option>
-              <?php endforeach; ?>
-            </optgroup>
-          </select>
+          <select name="target" required><option value="All Parishes">Everyone</option><option value="Staff Only">Staff Only</option><option value="All Parishioners">Parishioners Only</option></select>
         </div>
         <div class="form-group">
           <label>Subject *</label>

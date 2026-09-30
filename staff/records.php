@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/access.php';
 require_once __DIR__ . '/../includes/workflow_routes.php';
+require_once __DIR__.'/../includes/application_revisions.php';
 
 /**
  * Sacramental Records & Certificate Generation — Secretary Role
@@ -17,14 +18,20 @@ require_once __DIR__ . '/../includes/notifications.php';
 
 
 if($_SERVER['REQUEST_METHOD']==='POST' && in_array($_GET['ajax']??'', ['create','update'],true)) {
+ if(!in_array($_POST['record_type']??'',SACRAMENT_TYPES,true))fail_request('Select a sacramental record type.',422);
  $d=DateTimeImmutable::createFromFormat('!Y-m-d',$_POST['date_of_sacrament']??'');
  if(!$d || $d->format('Y-m-d')!==($_POST['date_of_sacrament']??''))fail_request('Enter a valid sacrament date.',422);
  if(!empty($_POST['application_id'])) {
-  $application=$conn->execute_query("SELECT * FROM applications WHERE id=? AND parish_id=? AND status='approved'",[(int)$_POST['application_id'],$user['parish_id']])->fetch_assoc();
+  $application=$conn->execute_query("SELECT a.* FROM applications a JOIN services s ON s.id=a.service_id WHERE a.id=? AND a.parish_id=? AND a.status='approved' AND s.classification='Sacramental'",[(int)$_POST['application_id'],$user['parish_id']])->fetch_assoc();
   if(!$application)fail_request('Select an approved application in your parish.',422);
  }
 }
 // ── AJAX HANDLERS ─────────────────────────────
+if(($_GET['ajax']??'')==='manual_fields'){
+    $service=sqlrow("SELECT id FROM services WHERE parish_id=? AND classification='Sacramental' AND sacrament_type=? ORDER BY status='active' DESC,id LIMIT 1",[$user['parish_id'],input_text($_GET,'type')]);
+    $serviceId=$service['id']??0;$scalarFieldsOnly=true;
+    header('Content-Type: text/html; charset=UTF-8');require APP_ROOT.'/includes/service_form.php';exit;
+}
 if (isset($_GET['ajax'])) {
     header('Content-Type: application/json');
 
@@ -38,6 +45,12 @@ if (isset($_GET['ajax'])) {
         $remarks          = trim($_POST['remarks'] ?? '');
         $application_id   = !empty($_POST['application_id']) ? (int)$_POST['application_id'] : null;
 
+        $manualSchema=[];$manualAnswers=[];
+        if(!$application_id){
+            $manualService=sqlrow("SELECT id FROM services WHERE parish_id=? AND classification='Sacramental' AND sacrament_type=? ORDER BY status='active' DESC,id LIMIT 1",[$user['parish_id'],$record_type]);
+            if($manualService)$manualSchema=$conn->execute_query("SELECT * FROM service_fields WHERE service_id=? AND field_type<>'file' ORDER BY sort_order,id",[$manualService['id']])->fetch_all(MYSQLI_ASSOC);
+            try { foreach($manualSchema as $field){$key=$field['field_name']?:'field_'.$field['id'];$value=input_text($_POST['fields']??[],$key,10000);must(!$field['is_required']||$value!=='','Required: '.$field['field_label']);if($value!=='')validate_field_value($field,$value);$manualAnswers[$key]=$value;} }catch(DomainException $error){fail_request($error->getMessage(),422);}
+        }
         $conn->begin_transaction();
         if ($application_id) {
             $conn->execute_query('SELECT id FROM applications WHERE id=? FOR UPDATE', [$application_id]);
@@ -68,6 +81,7 @@ if (isset($_GET['ajax'])) {
 
         if ($stmt->execute()) {
             $new_id = $conn->insert_id;
+            if(!$application_id)$conn->execute_query('UPDATE sacramental_records SET form_data=?,form_schema=? WHERE id=?',[json_encode($manualAnswers),json_encode($manualSchema),$new_id]);
             auditLog($user['id'], 'create_record', 'sacramental_record', $new_id, "Created record: $record_type for $parishioner_name");
             $conn->commit();
             echo json_encode(['success' => true, 'message' => 'Record created successfully.', 'id' => $new_id]);
@@ -109,7 +123,7 @@ if (isset($_GET['ajax'])) {
         $id = (int)$_GET['id'];
         $stmt = $conn->prepare("SELECT sr.*, p.name AS parish_name, p.address AS parish_address, p.priest_name,
                                        u.name AS created_by_name
-                                FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sr
+                                FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sr
                                 LEFT JOIN parishes p ON sr.parish_id = p.id
                                 LEFT JOIN (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish})) u ON sr.created_by = u.id
                                 WHERE sr.id = ?");
@@ -125,7 +139,7 @@ if (isset($_GET['ajax'])) {
     if ($_GET['ajax'] === 'print_record' && isset($_GET['id'])) {
         $id = (int)$_GET['id'];
         $stmt = $conn->prepare("SELECT sr.*, p.name AS parish_name, p.address AS parish_address, u.name AS created_by_name
-                                FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sr
+                                FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sr
                                 LEFT JOIN parishes p ON sr.parish_id = p.id
                                 LEFT JOIN (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish})) u ON sr.created_by = u.id
                                 WHERE sr.id = ?");
@@ -192,7 +206,8 @@ table.kv td:last-child { font-weight: 500; color:#1A1510; }
   <span>Apostolic Vicariate of San Jose &middot; '.$parish_n.'</span>
   <span>For internal record-keeping &mdash; not a substitute for the official certificate.</span>
 </div>
-<script>window.onload=function(){window.print();};</script>
+<script>
+window.onload=function(){window.print();};</script>
 </body></html>';
 
         echo json_encode(['success' => true, 'html' => $html]);
@@ -203,7 +218,7 @@ table.kv td:last-child { font-weight: 500; color:#1A1510; }
     if ($_GET['ajax'] === 'generate_cert' && isset($_GET['id'])) {
         $id = (int)$_GET['id'];
         $stmt = $conn->prepare("SELECT sr.*, p.name AS parish_name, p.address AS parish_address, p.priest_name
-                                FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sr
+                                FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sr
                                 LEFT JOIN parishes p ON sr.parish_id = p.id
                                 WHERE sr.id = ?");
         $stmt->bind_param('i', $id);
@@ -244,7 +259,7 @@ table.kv td:last-child { font-weight: 500; color:#1A1510; }
     // Toggle archive
     if ($_GET['ajax'] === 'toggle_archive' && isset($_GET['id'])) {
         $id = (int)$_GET['id'];
-        $stmt = $conn->prepare("SELECT status FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sacramental_records WHERE id=?");
+        $stmt = $conn->prepare("SELECT status FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sacramental_records WHERE id=?");
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $rec = $stmt->get_result()->fetch_assoc();
@@ -326,7 +341,7 @@ if ($status_filter && in_array($status_filter, ['active','archived'])) {
 $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
 // Count
-$csql = "SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sr $where_sql";
+$csql = "SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sr $where_sql";
 $stmt = $conn->prepare($csql);
 if ($params) $stmt->bind_param($types, ...$params);
 $stmt->execute();
@@ -338,7 +353,7 @@ $offset = ($page_num - 1) * $per_page;
 // Fetch records
 $sql = "SELECT sr.id, sr.application_id, sr.record_type, sr.parishioner_name, sr.date_of_sacrament, sr.minister_name,
                sr.certificate_number, sr.certificate_generated_at, sr.status, sr.created_at
-        FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sr
+        FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sr
         $where_sql
         ORDER BY sr.created_at DESC
         LIMIT ? OFFSET ?";
@@ -350,18 +365,18 @@ $stmt->execute();
 $records = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Stat counts
-$cnt_total      = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sacramental_records")->fetch_assoc()['t'];
-$cnt_month      = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sacramental_records WHERE MONTH(created_at)=MONTH(CURDATE()) AND YEAR(created_at)=YEAR(CURDATE())")->fetch_assoc()['t'];
-$cnt_certs      = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sacramental_records WHERE certificate_number IS NOT NULL")->fetch_assoc()['t'];
-$cnt_active     = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sacramental_records WHERE status='active'")->fetch_assoc()['t'];
+$cnt_total      = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sacramental_records")->fetch_assoc()['t'];
+$cnt_month      = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sacramental_records WHERE MONTH(created_at)=MONTH(CURDATE()) AND YEAR(created_at)=YEAR(CURDATE())")->fetch_assoc()['t'];
+$cnt_certs      = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sacramental_records WHERE certificate_number IS NOT NULL")->fetch_assoc()['t'];
+$cnt_active     = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sacramental_records WHERE status='active'")->fetch_assoc()['t'];
 
 // Approved applications for dropdown
 $app_stmt = $conn->prepare("SELECT a.id, u.name AS parishioner_name, s.name AS service_name, a.schedule
                             FROM (SELECT * FROM applications WHERE parish_id = {$scopeParish}) a
                             JOIN (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish})) u ON a.user_id = u.id
                             LEFT JOIN services s ON a.service_id = s.id
-                            WHERE a.status = 'approved'
-                            AND a.id NOT IN (SELECT application_id FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish}) sacramental_records WHERE application_id IS NOT NULL)
+                            WHERE a.status = 'approved' AND s.classification='Sacramental'
+                            AND a.id NOT IN (SELECT application_id FROM (SELECT * FROM sacramental_records WHERE parish_id = {$scopeParish} AND (application_id IS NULL OR application_id IN (SELECT a.id FROM applications a JOIN services s ON s.id=a.service_id WHERE s.classification='Sacramental'))) sacramental_records WHERE application_id IS NOT NULL)
                             ORDER BY a.created_at DESC");
 $app_stmt->execute();
 $approved_apps = $app_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -373,7 +388,7 @@ $parish_stmt->execute();
 $parish_info = $parish_stmt->get_result()->fetch_assoc();
 $default_minister = $parish_info['priest_name'] ?? '';
 
-$record_types = ['Baptism','Wedding','Confirmation','Funeral','Blessing','Mass Intention'];
+$record_types = SACRAMENT_TYPES;
 $pillMap = ['active' => 'pill-green', 'archived' => 'pill-wine'];
 ?>
 
@@ -398,7 +413,7 @@ $pillMap = ['active' => 'pill-green', 'archived' => 'pill-wine'];
       <div class="form-grid">
         <div class="form-group">
           <label>Record Type *</label>
-          <select id="cr_record_type" name="record_type" required style="width:100%;padding:9px 14px;border:1.5px solid var(--ink-10);border-radius:8px;font-family:var(--fb);font-size:.83rem;outline:none;background:#FAFAF8">
+          <select onchange="loadManualFields()" id="cr_record_type" name="record_type" required style="width:100%;padding:9px 14px;border:1.5px solid var(--ink-10);border-radius:8px;font-family:var(--fb);font-size:.83rem;outline:none;background:#FAFAF8">
             <option value="">Select type</option>
             <?php foreach ($record_types as $rt): ?>
             <option value="<?php echo $rt; ?>"><?php echo $rt; ?></option>
@@ -426,7 +441,7 @@ $pillMap = ['active' => 'pill-green', 'archived' => 'pill-wine'];
           <textarea id="cr_remarks" name="remarks" rows="2" placeholder="Additional notes"></textarea>
         </div>
       </div>
-      <div class="modal-actions">
+      <div id="manualFields"></div><div class="modal-actions">
         <button type="button" onclick="closeModal('createModal')" class="btn-sm btn-outline">Cancel</button>
         <button type="submit" class="btn-sm btn-navy">Create Record</button>
       </div>
@@ -599,7 +614,7 @@ $pillMap = ['active' => 'pill-green', 'archived' => 'pill-wine'];
                 <button onclick="editRecord(<?php echo $r['id']; ?>)" class="act-btn act-gold" title="Edit">[icon:edit]</button>
                 <button onclick="printRecord(<?php echo $r['id']; ?>)" class="act-btn act-navy" title="Print Record" style="border-color:rgba(27,42,74,.3)">[icon:print] Print</button>
                 <button onclick="generateCert(<?php echo $r['id']; ?>)" class="act-btn act-green" title="Generate Certificate">[icon:file] Cert</button>
-                <button onclick="toggleArchive(<?php echo $r['id']; ?>)" class="act-btn act-wine" title="<?php echo $r['status']==='active'?'Archive':'Restore'; ?>" id="arch-btn-<?php echo $r['id']; ?>">
+                <button onclick="toggleArchive(<?php echo $r['id']; ?>)" class="act-btn act-wine" title="<?php echo $r['status']==='active'?'Delete from active records':'Restore'; ?>" id="arch-btn-<?php echo $r['id']; ?>">
                   <?php echo $r['status']==='active' ? '[icon:archive]' : '[icon:refresh]'; ?>
                 </button>
               </div>
@@ -634,7 +649,9 @@ $pillMap = ['active' => 'pill-green', 'archived' => 'pill-wine'];
 </div>
 
 <script>
+async function loadManualFields(){const box=document.getElementById('manualFields');box.replaceChildren();if(document.getElementById('cr_application_id').value)return;try{const result=await fetch('records.php?ajax=manual_fields&type='+encodeURIComponent(document.getElementById('cr_record_type').value));if(!result.ok)throw Error();box.innerHTML=await result.text();}catch(e){showToast('Unable to load record fields. Please retry.','error');}}
 function loadApplication(appId) {
+    loadManualFields();
     if (!appId) {
         document.getElementById('cr_record_type').value = '';
         document.getElementById('cr_parishioner_name').value = '';
@@ -665,7 +682,7 @@ function loadApplication(appId) {
 function createRecord(e) {
     e.preventDefault();
     setLoading(true);
-    const fd = new FormData();
+    const fd = new FormData(document.getElementById('createForm'));
     fd.append('record_type', document.getElementById('cr_record_type').value);
     fd.append('parishioner_name', document.getElementById('cr_parishioner_name').value);
     fd.append('date_of_sacrament', document.getElementById('cr_date_of_sacrament').value);
@@ -735,6 +752,7 @@ function viewRecord(id) {
         .then(r => r.json()).then(data => {
             if (!data.success) { document.getElementById('viewContent').innerHTML = '<p style="color:var(--wine);padding:20px">' + data.message + '</p>'; return; }
             const d = data.data;
+            const original={...d};const safe=value=>{const el=document.createElement('span');el.textContent=value??'';return el.innerHTML;};for(const key of ['parishioner_name','record_type','minister_name','parish_name','sponsors','remarks','certificate_number','created_by_name'])d[key]=safe(d[key]);
             const sc = d.status === 'active' ? 'green' : 'wine';
             document.getElementById('viewContent').innerHTML = `
               <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
@@ -772,6 +790,8 @@ function viewRecord(id) {
                 <button onclick="closeModal('viewModal');editRecord(${d.id})" class="btn-sm btn-gold">[icon:edit] Edit</button>
                 <button onclick="closeModal('viewModal')" class="btn-sm btn-outline">Close</button>
               </div>`;
+            const answers=JSON.parse(original.form_data||'{}'),schema=JSON.parse(original.form_schema||'[]');
+            for(const field of schema){const row=document.createElement('p');row.textContent=field.field_label+': '+(answers[field.field_name||'field_'+field.id]||'');document.getElementById('viewContent').append(row);}
         });
 }
 
@@ -804,7 +824,7 @@ function generateCert(id) {
 
 function toggleArchive(id) {
     const action = document.getElementById('arch-btn-' + id).title;
-    if (!confirm(action + ' this record?')) return;
+    if (!confirm(action + ' this record? History and issued certificates are retained.')) return;
     setLoading(true);
     fetch('records.php?ajax=toggle_archive&id=' + id)
         .then(r => r.json()).then(data => {
@@ -818,7 +838,7 @@ function toggleArchive(id) {
                 }
                 const btn = document.getElementById('arch-btn-' + id);
                 if (btn) {
-                    btn.title = data.new_status === 'active' ? 'Archive' : 'Restore';
+                    btn.title = data.new_status === 'active' ? 'Delete from active records' : 'Restore';
                     btn.innerHTML = data.new_status === 'active' ? '[icon:archive]' : '[icon:refresh]';
                 }
             } else { showToast(data.message, 'error'); }

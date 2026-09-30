@@ -6,6 +6,8 @@
 .card-body.filter-bar { border:0;margin:0; }
 .profile-avatar { display:flex;align-items:center;justify-content:center;width:80px;height:80px;border:2px solid var(--gold);border-radius:50%;background:var(--navy);color:var(--gold);font:1.8rem var(--fh);overflow:hidden;margin-bottom:20px; }
 .bounded-preview { max-height:420px;overflow:auto; }
+.dashboard-table-preview { max-height:520px;overflow:auto; }
+.dashboard-table-preview table { min-width:720px; }
 .delivery-status summary,details.card > summary { cursor:pointer;padding:16px 20px;font-weight:500; }
 .money-cell { text-align:right;white-space:nowrap; }
 .card-body td details form { display:grid;gap:10px;min-width:220px;padding:12px 0; }
@@ -96,3 +98,10 @@ a[href*="requests.php?type="] { display:inline-block;padding:8px 14px;border:1px
 .availability-grid .past { background:#eee;color:#666;border-color:#ccc; }
 .availability-grid .selected { outline:3px solid #1b2a4a;outline-offset:1px; }
 @media(max-width:640px){.card-body dl{grid-template-columns:1fr}.card-body dd{margin-bottom:10px}.accounting-tabs>*{max-width:100%}.availability-grid{gap:4px}}
+
+/* Latest client PDF: readable cards, compact actions and responsive record details. */
+.svc-card p,.file-input-wrap small{color:#515b69!important}
+.app-row-actions{opacity:1!important}
+#applicationsTable th:last-child,#applicationsTable td:last-child{width:1%;white-space:nowrap}
+#viewContent{min-width:0;overflow-wrap:anywhere}
+@media(max-width:600px){#viewContent>div[style*="grid-template-columns"]{grid-template-columns:1fr!important}}

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/access.php';
 require_once __DIR__ . '/../includes/workflow_routes.php';
 
 require_once __DIR__.'/../includes/dashboard_filter.php';
-$appDateFilter=dashboard_date_sql('a.created_at');$paymentDateFilter=dashboard_date_sql('pay.created_at');$eventDateFilter=dashboard_date_sql('event_date');
+$appDateFilter=dashboard_date_sql('a.created_at');$paymentDateFilter=dashboard_date_sql('effective_payment_date');$eventDateFilter=dashboard_date_sql('event_date');
 $page_id = 'dashboard'; $page_title = 'Dashboard'; $page_sub = 'Overview';
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/../includes/qr.php';
@@ -46,6 +46,9 @@ $uid = $user['id'];
 $q = $conn->prepare("SELECT COUNT(*) as c FROM applications WHERE user_id=? AND created_at BETWEEN ? AND ?");
 $q->bind_param('iss', $uid,$dashboardStart,$dashboardEnd); $q->execute();
 $total_apps = (int) $q->get_result()->fetch_assoc()['c'];
+$applicationPages=max(1,(int)ceil($total_apps/50));
+$applicationPage=min($applicationPages,max(1,(int)($_GET['applications_page']??1)));
+$applicationOffset=($applicationPage-1)*50;
 
 // Pending
 $q = $conn->prepare("SELECT COUNT(*) as c FROM applications WHERE user_id=? AND created_at BETWEEN ? AND ? AND status='pending'");
@@ -71,7 +74,7 @@ $q = $conn->prepare("
     LEFT JOIN services s ON a.service_id = s.id
     LEFT JOIN parishes p ON a.parish_id = p.id
     WHERE a.user_id = ? AND a.created_at BETWEEN ? AND ?
-    ORDER BY a.created_at DESC LIMIT 50
+    ORDER BY a.created_at DESC,a.id DESC LIMIT 50 OFFSET {$applicationOffset}
 ");
 $q->bind_param('iss', $uid,$dashboardStart,$dashboardEnd); $q->execute();
 $applications = $q->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -83,10 +86,10 @@ $q = $conn->prepare("
     SELECT pay.*, a.id AS app_id
     FROM payments pay
     INNER JOIN applications a ON pay.application_id = a.id
-    WHERE a.user_id = ? AND pay.created_at BETWEEN ? AND ?
-    ORDER BY pay.created_at DESC LIMIT 50
+    WHERE a.user_id = ? AND {$paymentDateFilter}
+    ORDER BY COALESCE(pay.verified_at,pay.paid_at,pay.created_at) DESC LIMIT 50
 ");
-$q->bind_param('iss', $uid,$dashboardStart,$dashboardEnd); $q->execute();
+  $q->bind_param('i', $uid); $q->execute();
 $payments = $q->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // ---------------------------------------------------------------------------
@@ -199,17 +202,17 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
 <div class="card">
   <div class="card-head">
     <h3>My Applications</h3>
-    <span class="card-tag"><?php echo count($applications); ?> Total</span>
+    <span class="card-tag"><?= count($applications) ?> of <?= $total_apps ?> matching applications</span>
   </div>
   <div class="card-body" style="padding:0">
     <?php if (empty($applications)): ?>
       <div class="empty-state">
         <div class="empty-icon"><?= ui_icon('file') ?></div>
-        <p>You have no applications yet.</p>
+        <p>No applications match the selected period.</p>
         <a href="apply_service.php" class="btn-sm btn-navy">Apply for a Service</a>
       </div>
     <?php else: ?>
-      <div class="tbl-wrap">
+      <div class="tbl-wrap dashboard-table-preview">
         <table>
           <thead>
             <tr>
@@ -256,9 +259,15 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
 <!-- ============================================================ -->
 <!-- Payment History -->
 <!-- ============================================================ -->
+<?php if($applicationPages>1): ?><nav class="filter-bar" aria-label="Application pages">
+<?php if($applicationPage>1): ?><a class="btn-sm btn-outline" href="?<?= h(http_build_query(['date_from'=>$dashboardFrom,'date_to'=>$dashboardTo,'applications_page'=>$applicationPage-1])) ?>">Previous applications</a><?php endif; ?>
+<span>Page <?= $applicationPage ?> of <?= $applicationPages ?></span>
+<?php if($applicationPage<$applicationPages): ?><a class="btn-sm btn-outline" href="?<?= h(http_build_query(['date_from'=>$dashboardFrom,'date_to'=>$dashboardTo,'applications_page'=>$applicationPage+1])) ?>">Next applications</a><?php endif; ?>
+</nav><?php endif; ?>
 <div class="card">
   <div class="card-head">
     <h3>Payment History</h3>
+    <a class="btn-sm btn-outline" href="payments.php">View all payments</a>
     <span class="card-tag"><?php echo count($payments); ?> Records</span>
   </div>
   <div class="card-body" style="padding:0">
@@ -268,7 +277,7 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
         <p>No payment records found.</p>
       </div>
     <?php else: ?>
-      <div class="tbl-wrap">
+      <div class="tbl-wrap dashboard-table-preview">
         <table>
           <thead>
             <tr>

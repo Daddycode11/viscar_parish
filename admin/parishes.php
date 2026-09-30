@@ -85,8 +85,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($act === 'delete_parish') {
     $id = (int)$_POST['id'];
-    $conn->query("DELETE FROM parishes WHERE id=$id");
-    $flash = 'success:Parish deleted.';
+    try {
+      $conn->begin_transaction();
+      must(sqlrow('SELECT id FROM parishes WHERE id=? FOR UPDATE',[$id])!==null,'Parish not found.');
+      // Inspect all declared relationships before deleting, including cascading foreign keys.
+      $references=$conn->query("SELECT TABLE_NAME,COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND COLUMN_NAME='parish_id' UNION SELECT TABLE_NAME,COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME='parishes' AND REFERENCED_COLUMN_NAME='id'");
+      foreach($references as $reference){
+        $table=str_replace('`','``',$reference['TABLE_NAME']);$column=str_replace('`','``',$reference['COLUMN_NAME']);
+        must(!$conn->execute_query("SELECT 1 FROM `$table` WHERE `$column`=? LIMIT 1",[$id])->fetch_row(),'This parish has linked records. Set it inactive to preserve its history.');
+      }
+      $conn->execute_query('DELETE FROM parishes WHERE id=?',[$id]);
+      auditLog($user['id'],'delete_parish','parish',$id);$conn->commit();$flash='success:Parish deleted.';
+    } catch(Throwable $error) { $conn->rollback();http_response_code(422);$flash='error:'.($error instanceof DomainException?$error->getMessage():'This parish cannot be deleted while linked records exist. Set it inactive instead.'); }
   }
 }
 
@@ -327,7 +337,7 @@ include 'includes/layout.php';
 <div class="modal-wrap" id="deleteParishModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9000;align-items:center;justify-content:center">
   <div class="modal" style="max-width:420px;background:#fff;border-radius:14px;padding:32px 28px;box-shadow:0 8px 32px rgba(0,0,0,.18)">
     <h2 style="color:var(--wine);margin-bottom:8px">Delete Parish</h2>
-    <p style="color:var(--ink-60);margin-bottom:20px">Are you sure you want to permanently delete <strong id="deleteParishName"></strong>? This will also remove all associated services and applications. This cannot be undone.</p>
+    <p style="color:var(--ink-60);margin-bottom:20px">Are you sure you want to permanently delete <strong id="deleteParishName"></strong>? Deletion is permitted only when no linked records exist. Otherwise, set the parish inactive to preserve its history.</p>
     <form method="POST" id="deleteParishForm">
       <input type="hidden" name="_action" value="delete_parish">
       <input type="hidden" name="id" id="deleteParishId" value="">

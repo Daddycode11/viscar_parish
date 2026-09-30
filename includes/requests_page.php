@@ -33,7 +33,7 @@ $folder = $isParishioner ? 'parishioner' : 'staff';
 $page_id = 'requests'; $page_title = t($type === 'refund' ? 'Refunds' : ($type==='cancel'?'Cancellations':'Reschedules'));
 require APP_ROOT . '/' . $folder . '/includes/layout.php';
 ?>
-<h1><?= h($page_title) ?></h1>
+<div class="sec-head"><div class="sec-head-left"><div class="sec-tag"><?= $type==='refund'?'Financial Management':'Application Requests' ?></div><h1 class="sec-title"><?= h($page_title) ?></h1><p class="sec-sub">Review and track <?= h(strtolower($page_title)) ?>.</p></div></div>
 <?php if ($isParishioner || $user['role']==='secretary'): ?><nav class="request-tabs" aria-label="Request type"><?php foreach(['refund'=>'Refunds','reschedule'=>'Reschedules','cancel'=>'Cancellations'] as $tab=>$label): if(!$isParishioner && $tab==='refund')continue; ?><a href="requests.php?type=<?= $tab ?>" <?= $type===$tab?'aria-current="page"':'' ?>><?= h(t($label)) ?></a><?php endforeach; ?></nav><?php endif; ?>
 <p role="status"><?= h(t($notice ?: (isset($_GET['saved']) ? 'Request saved.' : ''))) ?></p>
 <?php if ($isParishioner): ?>

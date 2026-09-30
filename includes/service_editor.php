@@ -49,6 +49,13 @@ if (($_SERVER['REQUEST_METHOD']??'GET')==='POST' && in_array($action,['create','
             $args=[$name,input_text($_POST,'description',10000),$fee,$limit,input_text($_POST,'requirements_note',10000),$status,$general,$classification,$mode,$sacrament];
             if ($existing) $conn->execute_query('UPDATE services SET name=?,description=?,fee=?,max_daily_limit=?,requirements_note=?,status=?,general_type=?,classification=?,amount_mode=?,sacrament_type=? WHERE id=?',[...$args,$id]);
             else { $conn->execute_query('INSERT INTO services(name,description,fee,max_daily_limit,requirements_note,status,general_type,classification,amount_mode,sacrament_type,parish_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',[...$args,$user['parish_id']]);$id=$conn->insert_id; }
+            if (isset($_POST['weekdays_present'])) {
+                $days=$_POST['available_weekdays']??[];
+                must(is_array($days)&&count($days)>0,'Select at least one available weekday.');
+                foreach($days as $day)must(is_scalar($day)&&preg_match('/^[1-7]$/',(string)$day)===1,'Invalid weekday.');
+                $days=array_values(array_unique(array_map('intval',$days)));sort($days);
+                $conn->execute_query('UPDATE services SET available_weekdays=? WHERE id=?',[json_encode($days),$id]);
+            }
             auditLog($user['id'],$action.'_service','service',$id);
             return ['id'=>$id,'message'=>'Service saved.'];
         });

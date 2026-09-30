@@ -7,7 +7,7 @@ function faq_words(string $text):array {
 function faq_answer(int $pid,string $question):?string {
  global $conn;$scores=[];$questionWords=faq_words($question);
  if(!$questionWords)return null;
- foreach($conn->execute_query("SELECT question,answer FROM faqs WHERE parish_id=? AND status='active'",[$pid]) as $faq){
+ foreach($conn->execute_query("SELECT question,answer FROM faqs WHERE (parish_id=? OR parish_id IS NULL) AND status='active'",[$pid]) as $faq){
   $words=faq_words($faq['question']);$union=array_unique(array_merge($words,$questionWords));$score=count(array_intersect($words,$questionWords))/max(1,count($union));
   $scores[]=['score'=>$score,'answer'=>$faq['answer']];
  }

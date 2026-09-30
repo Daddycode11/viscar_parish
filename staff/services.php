@@ -217,6 +217,7 @@ foreach ($services as $s) {
         <input type="number" id="svcMaxDaily" min="0" value="0" placeholder="0 = unlimited">
       </div>
       <div class="form-group form-full">
+        <fieldset><legend>Available weekdays</legend><?php foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $dayIndex=>$dayName): ?><label><input type="checkbox" class="service-weekday" value="<?= $dayIndex+1 ?>" checked> <?= h($dayName) ?></label><?php endforeach; ?></fieldset>
         <label>Requirements Note</label>
         <textarea id="svcReqNote" rows="2" placeholder="General notes about requirements..."></textarea>
       </div>
@@ -465,6 +466,7 @@ function openCreate() {
     document.getElementById('svcDescription').value = '';
     document.getElementById('svcFee').value = '0.00';
     document.getElementById('svcMaxDaily').value = '0';
+    document.querySelectorAll('.service-weekday').forEach(el=>el.checked=true);
     document.getElementById('svcReqNote').value = '';
     document.getElementById('svcStatus').value = 'active';
     openModal('serviceModal');
@@ -488,6 +490,7 @@ function openEdit(id) {
             document.getElementById('svcDescription').value = s.description || '';
             document.getElementById('svcFee').value = parseFloat(s.fee || 0).toFixed(2);
             document.getElementById('svcMaxDaily').value = s.max_daily_limit || 0;
+            const days=JSON.parse(s.available_weekdays||'[1,2,3,4,5,6,7]');document.querySelectorAll('.service-weekday').forEach(el=>el.checked=days.includes(Number(el.value)));
             document.getElementById('svcReqNote').value = s.requirements_note || '';
             document.getElementById('svcStatus').value = s.status;
             openModal('serviceModal');
@@ -515,6 +518,7 @@ function saveService() {
     fd.append('max_daily_limit', document.getElementById('svcMaxDaily').value);
     fd.append('requirements_note', document.getElementById('svcReqNote').value.trim());
     fd.append('status', document.getElementById('svcStatus').value);
+    fd.append('weekdays_present','1');document.querySelectorAll('.service-weekday:checked').forEach(el=>fd.append('available_weekdays[]',el.value));
 
     let action = 'create';
     if (id) { action = 'update'; fd.append('id', id); }

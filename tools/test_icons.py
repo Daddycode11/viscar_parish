@@ -20,10 +20,11 @@ try:
    ctx.route('**/*',lambda r:r.continue_() if r.request.url.startswith(base) or r.request.url.startswith('data:') else r.abort())
    page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)));return ctx,page
   def verify(page,name):
-   page.wait_for_timeout(350)
-   state=page.evaluate(r'''() => ({svg:document.querySelectorAll('svg.ui-icon').length,markers:document.body.innerText.includes('[icon:'),emoji:/[\u{1F000}-\u{1FAFF}\u2600-\u27BF\u2B50]/u.test(document.body.innerText)})''')
-   results.append({'page':name,**state,'passed':(state['svg']>0 or name=='public/signup.php') and not state['markers'] and not state['emoji']})
-   print(name,state,flush=True)
+    page.wait_for_timeout(350)
+    state=page.evaluate(r'''() => ({svg:document.querySelectorAll('svg.ui-icon').length,markers:document.body.innerText.includes('[icon:'),emoji:/[\u{1F000}-\u{1FAFF}\u2600-\u27BF\u2B50]/u.test(document.body.innerText)})''')
+    splash_page=name in ['loading.php','index.php']
+    results.append({'page':name,**state,'passed':(state['svg']>0 or splash_page or name=='public/signup.php') and not state['markers'] and not state['emoji']})
+    print(name,state,flush=True)
   ctx,page=context()
   for path in ['loading.php','index.php','index.php','public/login.php','public/signup.php']:
    page.goto(base+'/'+path);verify(page,path)

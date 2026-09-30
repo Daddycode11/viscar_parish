@@ -349,7 +349,7 @@ tbody tr:hover{background:rgba(201,168,76,.04)}
     </div>
   </div>
   <div class="topbar-right"><a href="settings.php" aria-label="<?= h(t('Settings')) ?>" style="display:block;width:34px;height:34px"><?= profile_avatar($user) ?></a>
-    <div class="topbar-search">
+    <form class="topbar-search" action="applications.php" method="get" role="search">
       <span><?= ui_icon('search') ?></span>
       <input type="text" placeholder="Search…">
     </div>

@@ -301,6 +301,7 @@ $pillMap = ['completed'=>'pill-green','pending'=>'pill-amber','refunded'=>'pill-
                 <button onclick="viewPayment(<?php echo $p['id']; ?>)" class="act-btn act-navy" title="View">[icon:eye]</button>
                 <?php if ($p['status'] === 'pending'): ?>
                 <button onclick="verifyPayment(<?php echo $p['id']; ?>)" class="act-btn act-green" title="Verify">[icon:check] Verify</button>
+                <button type="button" class="act-btn act-wine" onclick="markFailed(<?= (int)$p['id'] ?>)">Failed / Did not pay</button>
                 <?php elseif ($p['status'] === 'completed'): ?>
                 <a href="requests.php" class="act-btn act-wine"><?= h(t('Refunds')) ?></a>
                 <?php endif; ?>
@@ -337,6 +338,7 @@ $pillMap = ['completed'=>'pill-green','pending'=>'pill-amber','refunded'=>'pill-
 
 <script>
 let refundId = null;
+async function markFailed(id){const reason=prompt('Why did this payment fail?');if(!reason||!reason.trim())return;const data=new FormData();data.append('id',id);data.append('reason',reason);try{const response=await fetch('payments.php?ajax=fail_payment',{method:'POST',body:data});const result=await response.json();showToast(result.message,result.success?'success':'error');if(result.success)location.reload();}catch(e){showToast('Unable to save. Please retry.','error');}}
 
 function verifyPayment(id) {
     if (!confirm('Verify payment #' + id + ' as completed?')) return;
@@ -385,6 +387,7 @@ function viewPayment(id) {
         .then(r => r.json()).then(data => {
             if (!data.success) { document.getElementById('viewContent').innerHTML = '<p style="color:var(--wine);padding:20px">' + data.message + '</p>'; return; }
             const p = data.data;
+            const safe=value=>{const el=document.createElement('span');el.textContent=value??'';return el.innerHTML;};for(const key of ['parishioner_name','parishioner_email','parishioner_phone','parish_name','reference_number','failure_reason','service_name'])p[key]=safe(p[key]);
             const sc = {completed:'green',pending:'amber',refunded:'wine'}[p.status] || 'amber';
             document.getElementById('viewContent').innerHTML = `
               <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
@@ -399,7 +402,7 @@ function viewPayment(id) {
                 <div style="font-family:var(--fh);font-size:2.2rem;font-weight:600;color:var(--green)">\u20B1${Number(p.amount).toLocaleString(undefined,{minimumFractionDigits:2})}</div>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-                ${[['Parishioner',p.parishioner_name],['Email',p.parishioner_email],['Phone',p.parishioner_phone||'\u2014'],['Parish',p.parish_name||'\u2014'],['Payment Method',p.payment_method||'\u2014'],['Reference #',p.reference_number||'\u2014'],['Service Fee',p.service_fee?'\u20B1'+Number(p.service_fee).toLocaleString():'\u2014'],['Schedule',p.schedule?new Date(p.schedule).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Paid At',p.paid_at?new Date(p.paid_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Created',new Date(p.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})]].map(([l,v])=>`
+                ${[['Parishioner',p.parishioner_name],['Email',p.parishioner_email],['Phone',p.parishioner_phone||'\u2014'],['Parish',p.parish_name||'\u2014'],['Payment Method',p.payment_method||'\u2014'],['Reference #',p.reference_number||'\u2014'],['Failure reason',p.failure_reason||'\u2014'],['Failed at',p.failed_at||'\u2014'],['Service Fee',p.service_fee?'\u20B1'+Number(p.service_fee).toLocaleString():'\u2014'],['Schedule',p.schedule?new Date(p.schedule).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Paid At',p.paid_at?new Date(p.paid_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Created',new Date(p.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})]].map(([l,v])=>`
                   <div style="background:#F8F6F2;border-radius:8px;padding:10px 12px">
                     <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-60);margin-bottom:3px">${l}</div>
                     <div style="font-size:.83rem;font-weight:500;color:var(--ink)">${v}</div>

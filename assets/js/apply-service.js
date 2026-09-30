@@ -56,7 +56,7 @@
     }
 
     if (n === 4) loadFields();
-    if (n === 6) buildReview();
+    if (n === 6) {buildReview();document.getElementById('bookingPayment').style.display=(S.service_fee>0||S.amount_mode==='user_defined')?'':'none';}
 
     S.step = n;
     for (var i = 1; i <= 7; i++) {
@@ -348,6 +348,12 @@
 
   /* ─── Submit application ─── */
   window.submitApplication = function() {
+    if(S.app_id)return;
+    const method=document.querySelector('[name=booking_payment_method]:checked')?.value||'';
+    const reference=document.getElementById('bookingPaymentReference').value.trim();
+    if(S.service_fee>0&&!method){showToast('Choose a payment method before submitting.','error');return;}
+    if(S.service_fee>0&&method==='gcash'&&!/^[A-Za-z0-9-]{6,100}$/.test(reference)){showToast('Enter a valid GCash reference.','error');return;}
+
     var amountInput = document.getElementById('userAmount');
     if (amountInput && (!/^\d{1,8}(\.\d{1,2})?$/.test(amountInput.value) || !amountInput.reportValidity())) {
       amountInput.setCustomValidity('Enter an amount with at most two decimal places.');
@@ -375,6 +381,7 @@
     fd.append('amount', S.service_fee.toFixed(2));
     fd.append('schedule', S.schedule);
     fd.append('form_data', JSON.stringify(formDataObj));
+    fd.append('payment_method',method);fd.append('reference_number',reference);
 
     fd.append('attachment_count', S.requirements.reduce((n,r)=>n+(document.getElementById('req_'+r.id)?.files.length||0),0));
     /* Attach files */
@@ -423,103 +430,11 @@
     html += '<p style="font-size:.8rem;color:var(--ink-60)">Present this QR code at the parish office</p>';
     html += '</div>';
 
-    /* Payment section */
-    if (S.service_fee > 0) {
-      html += '<div style="border-top:1px solid var(--ink-10);padding-top:20px;margin-top:12px">';
-      html += '<h4 style="font-family:var(--fh);font-size:1.05rem;margin-bottom:4px">Payment Required</h4>';
-      html += '<p style="font-size:.83rem;color:var(--ink-60);margin-bottom:16px">Service fee: <strong>₱ ' + S.service_fee.toFixed(2) + '</strong></p>';
-
-      html += '<div class="payment-option" onclick="pickPay(this,\'gcash\')" data-method="gcash">';
-      html += '<input type="radio" name="pay_method" value="gcash"> <div><strong style="font-size:.85rem">GCash</strong><br><span style="font-size:.76rem;color:var(--ink-60)">Pay via GCash transfer</span></div></div>';
-
-      html += '<div class="payment-option" onclick="pickPay(this,\'cash\')" data-method="cash">';
-      html += '<input type="radio" name="pay_method" value="cash"> <div><strong style="font-size:.85rem">Cash</strong><br><span style="font-size:.76rem;color:var(--ink-60)">Pay at the parish office</span></div></div>';
-
-      html += '<div id="payGcash" style="display:none;margin-top:12px">';
-      html += '<div class="form-group"><label for="gcashRef">GCash Reference Number</label><input type="text" id="gcashRef" placeholder="e.g. 1234567890"></div>';
-      html += '</div>';
-
-      html += '<div id="payCash" style="display:none;margin-top:12px">';
-      html += '<div class="notice notice-amber">Please proceed to the parish office to complete your payment. Bring your QR code or reference number.</div>';
-      html += '</div>';
-
-      html += '<div style="display:flex;gap:10px;margin-top:16px">';
-      html += '<button class="btn-sm btn-gold" id="btnPay" onclick="submitPayment()" disabled>Submit Payment</button>';
-      html += '<a href="dashboard.php" class="btn-sm btn-outline">Go to Dashboard</a>';
-      html += '</div>';
-      html += '</div>';
-    } else {
-      html += '<div style="display:flex;justify-content:center;margin-top:16px">';
-      html += '<a href="dashboard.php" class="btn-sm btn-navy">Go to Dashboard</a>';
-      html += '</div>';
-    }
-
-    document.getElementById('step7Body').innerHTML = html;
+    /* Payment is recorded atomically with the application. */
+    html += '<p>'+(S.service_fee>0?'Payment selection saved for Bookkeeper verification.':'No payment is required for this service.')+'</p><a href="dashboard.php" class="btn-sm btn-navy">Go to Dashboard</a>';
+    document.getElementById('step7Body').innerHTML = html;return;
   }
 
-  /* ─── Payment method selection ─── */
-  window.pickPay = function(el, method) {
-    document.querySelectorAll('.payment-option').forEach(function(o){ o.classList.remove('selected'); o.querySelector('input[type=radio]').checked = false; });
-    el.classList.add('selected');
-    el.querySelector('input[type=radio]').checked = true;
-
-    document.getElementById('payGcash').style.display = (method === 'gcash') ? '' : 'none';
-    document.getElementById('payCash').style.display = (method === 'cash') ? '' : 'none';
-    document.getElementById('btnPay').disabled = false;
-  };
-
-  /* ─── Submit payment ─── */
-  window.submitPayment = function() {
-    var method = '';
-    var radios = document.querySelectorAll('input[name=pay_method]');
-    radios.forEach(function(r){ if (r.checked) method = r.value; });
-
-    if (!method) { showToast('Please select a payment method', 'error'); return; }
-
-    var reference = '';
-    if (method === 'gcash') {
-      reference = document.getElementById('gcashRef').value.trim();
-      if (!reference) { showToast('Please enter GCash reference number', 'error'); return; }
-    }
-
-    var btn = document.getElementById('btnPay');
-    btn.disabled = true;
-    btn.textContent = 'Processing...';
-    setLoading(true);
-
-    var fd = new FormData();
-    fd.append('application_id', S.app_id);
-    fd.append('amount', S.service_fee);
-    fd.append('payment_method', method);
-    fd.append('reference_number', reference);
-
-    fetch('apply_service.php?ajax=payment', {method:'POST', body:fd})
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        setLoading(false);
-        if (d.ok) {
-          showToast('Payment recorded successfully!', 'success');
-          btn.textContent = 'Payment Submitted';
-          if (method === 'cash') {
-            document.getElementById('payCash').innerHTML = '<div class="notice notice-green">[icon:check] Payment record created. Please pay at the parish office.</div>';
-          } else {
-            document.getElementById('payGcash').innerHTML = '<div class="notice notice-green">[icon:check] GCash payment recorded. Reference: ' + esc(reference) + '</div>';
-          }
-        } else {
-          showToast(d.msg || 'Payment failed', 'error');
-          btn.disabled = false;
-          btn.textContent = 'Submit Payment';
-        }
-      })
-      .catch(function(){
-        setLoading(false);
-        showToast('Network error', 'error');
-        btn.disabled = false;
-        btn.textContent = 'Submit Payment';
-      });
-  };
-
-  /* ─── Helpers ─── */
   function esc(s) {
     if (!s) return '';
     var d = document.createElement('div');
@@ -527,6 +442,12 @@
     return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  let dirty=false;
+  document.querySelector('.page-content')?.addEventListener('input',()=>{dirty=true;});
+  document.addEventListener('click',event=>{if(event.target.closest('.svc-card'))dirty=true;const link=event.target.closest('a[href]');if(link&&dirty&&!S.app_id&&!link.getAttribute('href').startsWith('#')){if(confirm('Discard this unfinished application?'))dirty=false;else event.preventDefault();}});
+  window.addEventListener('beforeunload',event=>{if(dirty&&!S.app_id){event.preventDefault();event.returnValue='';}});
+  /* Selected File objects stay in the original, hidden DOM inputs between steps.
+     No temporary upload or server draft exists before final submission. */
   /* Init step bar */
   updateStepBar(1);
 })();

@@ -73,3 +73,21 @@ for kind in ['revenue','refund','receipt','check_voucher','petty_cash_voucher','
     check('Final PDF: Admin audit CSV '+kind,r['code']==200 and 'Payee / payer' in r['text'] and '<html' not in r['text'])
     r=a.get('/admin/reports.php?type='+kind+'&date_from=2020-01-01&date_to=2040-01-01&format=print')
     check('Final PDF: Admin printable audit '+kind,r['code']==200 and 'Audit Report' in r['text'] and 'Fatal error' not in r['text'])
+
+# Dashboard dates and pagination use one selected period without losing older records.
+for i in range(55):
+    sql("INSERT INTO applications(user_id,parish_id,service_id,schedule,status,created_at) VALUES(4,1,1,'2036-01-20 09:00:00','pending','2036-01-10 10:00:00')")
+dashboard_app=sql('SELECT MAX(id) FROM applications')
+sql(f"INSERT INTO payments(application_id,amount,status,created_at,paid_at,verified_at,reference_number) VALUES({dashboard_app},342.21,'completed','2035-12-20 10:00:00','2036-01-11 10:00:00','2036-01-12 10:00:00','DASHBOARD-PERIOD-PROBE')")
+dashboard_payment=sql('SELECT MAX(id) FROM payments')
+period='/parishioner/dashboard.php?date_from=2036-01-01&date_to=2036-01-31'
+first=p.get(period+'&ajax=live')['json'];second=p.get(period+'&applications_page=2&ajax=live')['json']
+check('Final PDF: dashboard pagination reaches all matching applications',len(first.get('applications',[]))==50 and len(second.get('applications',[]))==5 and not ({x['id'] for x in first['applications']} & {x['id'] for x in second['applications']}))
+check('Final PDF: dashboard payment history uses verification date','DASHBOARD-PERIOD-PROBE' in p.get(period)['text'])
+earlier=p.get('/parishioner/dashboard.php?date_from=2035-12-01&date_to=2035-12-31')['text']
+check('Final PDF: original payment creation date does not bypass period','DASHBOARD-PERIOD-PROBE' not in earlier)
+html=p.get(period)['text']
+check('Final PDF: filtered payment total agrees with history','342.21' in html and 'Next applications' in html and 'date_from=2036-01-01' in html)
+check('Final PDF: backup CSRF remains enforced',a.get('/admin/backup.php',{'_action':'manual_backup'},csrf=False)['code']==403)
+check('Final PDF: backup remains Admin-only',s.get('/admin/backup.php')['code']==403 and p.get('/admin/backup.php')['code']==403)
+check('Final PDF: restore rejects missing confirmation',a.get('/admin/backup.php',{'_action':'restore','confirmation':'wrong'})['code']==422)

@@ -45,8 +45,22 @@ try:
   page.locator('.availability-calendar input[type=month]').fill('2037-04');page.locator('.availability-calendar input[type=month]').dispatch_event('change');page.wait_for_timeout(300);page.locator('.availability-grid button[data-date="2037-04-10"]').click();page.locator('#btnStep3').click();page.locator('#btnStep4').click();page.locator('#btnStep5').click();page.locator('#userAmount').fill('42.25');page.locator('#userAmount').dispatch_event('change')
   check('User-defined amount control validates cents',page.locator('#userAmount').input_value()=='42.25')
   # Submit through the existing browser confirmation control.
-  page.locator('#btnSubmit').click();page.wait_for_timeout(1200)
+  page.locator('[name=booking_payment_method][value=cash]').check();page.locator('#btnSubmit').click();page.wait_for_timeout(1200)
   check('Browser booking stores selected amount',sql(f"SELECT fee_snapshot FROM applications WHERE service_id={service} ORDER BY id DESC LIMIT 1")=='42.25')
+  login(1);visit('/admin/backup.php')
+  create_form=page.locator('form').filter(has=page.locator('input[name="_action"][value="manual_backup"]'))
+  create_form.locator('button').click();page.wait_for_timeout(1500)
+  check('Backup page dispatches create action','Backup created:' in page.locator('[role="status"]').inner_text())
+  backup_link=page.locator('a[href*="download="]').first
+  with page.expect_download() as download_info: backup_link.click()
+  backup_path=download_info.value.path()
+  login(1);visit('/admin/backup.php')
+  restore_form=page.locator('form').filter(has=page.locator('input[name="_action"][value="restore"]'))
+  restore_form.locator('input[type="file"]').set_input_files({'name':download_info.value.suggested_filename,'mimeType':'application/zip','buffer':Path(backup_path).read_bytes()})
+  restore_form.locator('input[name="confirmation"]').fill('RESTORE')
+  page.once('dialog',lambda dialog:dialog.accept())
+  restore_form.locator('button').click();page.wait_for_url('**/public/login.php?restored=1')
+  check('Backup page dispatches restore action',page.url.endswith('/public/login.php?restored=1'))
   for uid,paths in [(1,['/admin/dashboard.php','/admin/analytics.php','/admin/main_database.php','/admin/announcements.php','/admin/backup.php']),(2,['/staff/services.php','/staff/applications.php','/staff/application_details.php?id=1','/staff/parishioners.php','/staff/schedule.php','/staff/checkin.php']),(3,['/staff/finance.php','/staff/accounting.php?type=check_voucher','/staff/accounting.php?type=petty_cash_voucher','/staff/accounting.php?type=journal_voucher','/staff/accounting_report.php']),(4,['/parishioner/dashboard.php','/parishioner/events.php','/parishioner/requests.php?type=cancel'])]:
    login(uid)
    for width in [1440,768,390]:

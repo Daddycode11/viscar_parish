@@ -1,0 +1,57 @@
+"""13-page PDF regression additions; executed in the isolated HTTP runner."""
+service={'name':'Weekday Probe','general_type':'Other / Custom','classification':'Non-Sacramental','fee':'25','max_daily_limit':0,'status':'active','weekdays_present':1,'available_weekdays[]':'1'}
+r=s.get('/staff/services.php?ajax=create',service);day_service=r['json'].get('id')
+check('Latest PDF: weekdays persist through service editor',bool(day_service) and sql(f'SELECT available_weekdays FROM services WHERE id={day_service}')=='[1]',r['json'])
+if day_service:
+    fields={'parish_id':1,'service_id':day_service,'schedule':'2037-01-05T09:00','form_data':'{}','payment_method':'cash'} # Monday
+    before=sql(f'SELECT COUNT(*) FROM applications WHERE service_id={day_service}')
+    missing=dict(fields);missing.pop('payment_method')
+    check('Latest PDF: no application without payment choice',p.get('/parishioner/apply_service.php?ajax=submit',missing)['code']==422 and sql(f'SELECT COUNT(*) FROM applications WHERE service_id={day_service}')==before)
+    check('Latest PDF: disallowed weekday rejected server-side',p.get('/parishioner/apply_service.php?ajax=submit',dict(fields,schedule='2037-01-06T09:00'))['code']==422)
+    availability=p.get(f'/parishioner/apply_service.php?ajax=availability&parish_id=1&service_id={day_service}&month=2037-01')['json']
+    check('Latest PDF: calendar marks unavailable weekdays',any(x['date']=='2037-01-06' and x.get('unavailable') for x in availability.get('days',[])))
+    check('Latest PDF: invalid GCash rolls back application',p.get('/parishioner/apply_service.php?ajax=submit',dict(fields,payment_method='gcash',reference_number='bad'))['code']==422 and sql(f'SELECT COUNT(*) FROM applications WHERE service_id={day_service}')==before)
+    r=p.get('/parishioner/apply_service.php?ajax=submit',fields);app_id=r['json'].get('app_id')
+    check('Latest PDF: application and payment created together',bool(app_id) and sql(f"SELECT COUNT(*) FROM payments WHERE application_id={app_id} AND status='pending'")=='1',r['json'])
+    if app_id:
+        payment_id=sql(f'SELECT id FROM payments WHERE application_id={app_id}')
+        check('Latest PDF: duplicate submit does not duplicate payment',p.get('/parishioner/apply_service.php?ajax=submit',fields)['code']==422 and sql(f'SELECT COUNT(*) FROM payments WHERE application_id={app_id}')=='1')
+        check('Latest PDF: Application tab reschedule respects weekday',s.get('/staff/applications.php?ajax=assign_schedule',{'id':app_id,'schedule':'2037-01-06T10:00'})['code']==422)
+        check('Latest PDF: failure requires reason',b.get('/staff/payments.php?ajax=fail_payment',{'id':payment_id,'reason':''})['code']==422)
+        check('Latest PDF: failure requires CSRF',b.get('/staff/payments.php?ajax=fail_payment',{'id':payment_id,'reason':'Did not pay'},csrf=False)['code']==403)
+        check('Latest PDF: Secretary cannot fail payments',s.get('/staff/payments.php?ajax=fail_payment',{'id':payment_id,'reason':'Did not pay'})['code']==403)
+        check('Latest PDF: cross-parish failure denied',b.get('/staff/payments.php?ajax=fail_payment',{'id':2,'reason':'Did not pay'})['code'] in [403,404,422])
+        r=b.get('/staff/payments.php?ajax=fail_payment',{'id':payment_id,'reason':'Did not pay at appointment'})
+        check('Latest PDF: failed payment stores actor time reason',r['json'].get('success') and sql(f"SELECT COUNT(*) FROM payments WHERE id={payment_id} AND status='failed' AND failed_by=3 AND failed_at IS NOT NULL AND failure_reason='Did not pay at appointment'")=='1',r['json'])
+        check('Latest PDF: failed payment cannot verify or receipt',b.get('/staff/payments.php?ajax=verify',{'id':payment_id})['code']==422 and b.get('/staff/receipts.php?ajax=generate',{'payment_id':payment_id})['code']==422)
+        check('Latest PDF: repeated failure refused',b.get('/staff/payments.php?ajax=fail_payment',{'id':payment_id,'reason':'Again'})['code']==422)
+        check('Latest PDF: failed payment preserves active unpaid application',sql(f"SELECT CONCAT(status,':',payment_status) FROM applications WHERE id={app_id}")=='pending:pending')
+        check('Latest PDF: retry payment remains possible',p.get('/parishioner/apply_service.php?ajax=payment',{'application_id':app_id,'amount':25,'payment_method':'cash'})['json'].get('success'))
+    walk=dict(fields,user_id=4,schedule='2037-01-12T09:00')
+    r=s.get('/staff/walk_in.php',walk);walk_id=sql(f"SELECT MAX(id) FROM applications WHERE service_id={day_service} AND source='walk_in'")
+    if walk_id!='NULL':
+        payment_id=sql(f'SELECT id FROM payments WHERE application_id={walk_id}')
+        check('Latest PDF: walk-in Secretary approval',s.get('/staff/applications.php?ajax=approve',{'id':walk_id})['json'].get('success'))
+        check('Latest PDF: walk-in reaches Bookkeeper verification',b.get('/staff/payments.php?ajax=verify',{'id':payment_id})['json'].get('success'))
+        check('Latest PDF: walk-in reaches receipt',b.get('/staff/receipts.php?ajax=generate',{'payment_id':payment_id})['json'].get('success'))
+    else: check('Latest PDF: walk-in reaches Bookkeeper',False,r['text'][:100])
+
+notice={'_action':'send_announcement','target':'Staff Only','parish_ids[]':1,'subject':'Scoped staff probe','message':'Only staff in parish one','channel':'All Channels'}
+r=a.get('/admin/announcements.php',notice);notice_id=sql("SELECT MAX(id) FROM announcements WHERE title='Scoped staff probe'")
+check('Latest PDF: staff/parish recipients intersect',notice_id!='NULL' and sql(f'SELECT GROUP_CONCAT(DISTINCT user_id ORDER BY user_id) FROM announcement_deliveries WHERE announcement_id={notice_id}')=='2,3')
+check('Latest PDF: staff-only announcement absent from Parishioner feed','Scoped staff probe' not in p.get('/parishioner/announcements.php')['text'])
+check('Latest PDF: publisher excluded',sql(f'SELECT COUNT(*) FROM announcement_deliveries WHERE announcement_id={notice_id} AND user_id=1')=='0')
+check('Latest PDF: in-app email SMS share scope',sql(f'SELECT COUNT(*) FROM announcement_deliveries WHERE announcement_id={notice_id}')=='6')
+check('Latest PDF: parish with dependencies cannot delete',a.get('/admin/parishes.php',{'_action':'delete_parish','id':1})['code']==422 and sql('SELECT COUNT(*) FROM parishes WHERE id=1')=='1')
+sql("INSERT INTO parishes(name,status) VALUES('Disposable empty parish','active')")
+empty_parish=sql('SELECT MAX(id) FROM parishes')
+check('Latest PDF: empty parish deletes safely',a.get('/admin/parishes.php',{'_action':'delete_parish','id':empty_parish})['code']==200 and sql(f'SELECT COUNT(*) FROM parishes WHERE id={empty_parish}')=='0')
+check('Latest PDF: selected event parish persists',('value="2" selected' in p.get('/parishioner/events.php?parish_id=2&month=2037-01')['text']))
+check('Latest PDF: record schema reused','fields[child_name]' in s.get('/staff/records.php?ajax=manual_fields&type=Baptism')['text'])
+record={'record_type':'Baptism','parishioner_name':'Manual Schema Probe','date_of_sacrament':'2025-01-01','fields[child_name]':'Manual Child'}
+r=s.get('/staff/records.php?ajax=create',record);manual_id=r['json'].get('id')
+check('Latest PDF: manual record retains answer and label snapshot',bool(manual_id) and 'Manual Child' in sql(f'SELECT form_data FROM sacramental_records WHERE id={manual_id}') and 'child_name' in sql(f'SELECT form_schema FROM sacramental_records WHERE id={manual_id}'),r['json'])
+check('Latest PDF: non-sacramental manual type rejected',s.get('/staff/records.php?ajax=create',dict(record,record_type='Mass Intention'))['code']==422)
+sql("INSERT INTO faqs(parish_id,question,answer,category,status) VALUES(2,'General selection probe','Visible answer','General','active')")
+check('Latest PDF: General all-parishes FAQ selector includes General category','General selection probe' in p.get('/parishioner/faq.php?parish_id=general')['text'])
+check('Latest PDF: long FAQ has no fixed answer cap','max-height: 500px' not in p.get('/parishioner/faq.php')['text'])

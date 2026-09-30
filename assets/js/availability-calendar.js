@@ -17,8 +17,8 @@
    const query=new URLSearchParams({ajax:'availability',service_id:S.service_id,parish_id:S.parish_id,month:month.value});
    const result=await fetch('apply_service.php?'+query);const data=await result.json();if(request!==serial)return;
    if(!data.ok)throw Error(data.message||'Unable to load availability.');
-   status.textContent='Green: available. Red: full. Grey: past. Select a date, then choose a time.';
-   for(const day of data.days){const button=document.createElement('button');button.type='button';button.textContent=String(Number(day.date.slice(-2)));button.disabled=day.full||day.past;button.className=day.past?'past':day.full?'full':'available';button.dataset.date=day.date;button.setAttribute('aria-label',day.date+(day.full?' full':day.past?' past':' available'));button.onclick=()=>{schedule.value=day.date+'T09:00';schedule.dispatchEvent(new Event('change'));};grid.append(button);}
+   status.textContent='Green: available. Red: full. Grey: past or unavailable weekday. Select a date, then choose a time.';
+   for(const day of data.days){const button=document.createElement('button');button.type='button';button.textContent=String(Number(day.date.slice(-2)));button.disabled=day.full||day.past||day.unavailable;button.className=(day.past||day.unavailable)?'past':day.full?'full':'available';button.dataset.date=day.date;button.setAttribute('aria-label',day.date+(day.unavailable?' unavailable':day.full?' full':day.past?' past':' available'));button.onclick=()=>{schedule.value=day.date+'T09:00';schedule.dispatchEvent(new Event('change'));};grid.append(button);}
    markSelected();
   }catch(error){if(request===serial)status.textContent=error.message;}
  };

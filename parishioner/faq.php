@@ -27,7 +27,7 @@ if (isset($_GET['parish_id']) && $_GET['parish_id'] !== '') {
 
 if ($selected_parish === 'general') {
     // General FAQs only (parish_id IS NULL)
-    $stmt = $conn->prepare("SELECT * FROM faqs WHERE status='active' AND parish_id IS NULL ORDER BY sort_order ASC, created_at DESC");
+    $stmt = $conn->prepare("SELECT * FROM faqs WHERE status='active' ORDER BY sort_order ASC, created_at DESC");
 } else {
     // Selected parish + general FAQs
     $stmt = $conn->prepare("SELECT * FROM faqs WHERE status='active' AND (parish_id = ? OR parish_id IS NULL) ORDER BY sort_order ASC, created_at DESC");
@@ -51,14 +51,14 @@ foreach ($faqs as $f) {
 $categories = array_keys($cat_set);
 sort($categories);
 ?>
-<?php require APP_ROOT . '/includes/faq_guidance.php'; ?>
+
 
 <style>
 .faq-item { border: 1px solid var(--ink-10); border-radius: var(--r); margin-bottom: 10px; overflow: hidden; }
 .faq-question { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 500; transition: background var(--ease); }
 .faq-question:hover { background: rgba(201,168,76,.04); }
 .faq-answer { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .3s ease; }
-.faq-item.open .faq-answer { max-height: 500px; padding: 0 20px 16px; }
+.faq-item.open .faq-answer { max-height: none; overflow-wrap:anywhere; padding: 0 20px 16px; }
 .faq-item.open .faq-question { background: var(--gold-dim); }
 .faq-arrow { transition: transform .3s ease; }
 .faq-item.open .faq-arrow { transform: rotate(180deg); }

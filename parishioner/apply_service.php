@@ -50,19 +50,18 @@ if (isset($_GET['ajax'])) {
             echo json_encode(['ok' => false, 'msg' => 'Missing data']);
             exit;
         }
-        // Get max limit
-        $lm = $conn->prepare("SELECT max_daily_limit FROM services WHERE id=?");
-        $lm->bind_param('i', $sid);
-        $lm->execute();
-        $limit = (int)($lm->get_result()->fetch_assoc()['max_daily_limit'] ?? 0);
-
+        $service=sqlrow("SELECT * FROM services WHERE id=? AND parish_id=? AND status='active'",[$sid,$pid]);
+        $parsed=DateTimeImmutable::createFromFormat('!Y-m-d',$date);
+        if(!$service||!$parsed||$parsed->format('Y-m-d')!==$date)fail_request('Choose an active service and valid date.',422);
+        $limit=(int)$service['max_daily_limit'];
+        $unavailable=!service_day_allowed($service,$date);
         $sc = $conn->prepare("SELECT COUNT(*) as c FROM applications WHERE parish_id=? AND service_id=? AND DATE(schedule)=? AND status IN ('pending','approved')");
         $sc->bind_param('iis', $pid, $sid, $date);
         $sc->execute();
         $count = (int)($sc->get_result()->fetch_assoc()['c'] ?? 0);
 
         $full = ($limit > 0 && $count >= $limit);
-        echo json_encode(['ok' => true, 'count' => $count, 'limit' => $limit, 'full' => $full]);
+        echo json_encode(['ok' => true, 'count' => $count, 'limit' => $limit, 'full' => $full || $unavailable,'unavailable'=>$unavailable]);
         exit;
     }
 
@@ -79,7 +78,7 @@ $parishes = $conn->query("SELECT id, name FROM parishes WHERE status='active' OR
   <div class="card-body" style="padding:16px 22px">
     <div id="stepBar" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
       <?php
-      $steps = ['Parish','Service','Schedule','Form','Documents','Review','Payment'];
+      $steps = ['Parish','Service','Schedule','Form','Documents','Payment & Review','Confirmation'];
       foreach ($steps as $i => $label): $n = $i + 1; ?>
         <div class="step-dot" data-step="<?= $n ?>" style="display:flex;align-items:center;gap:4px;<?= $n < count($steps) ? 'flex:1;' : '' ?>">
           <span class="step-num" id="stepDot<?= $n ?>" style="width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:.72rem;font-weight:600;border:2px solid var(--ink-10);color:var(--ink-30);background:var(--white);flex-shrink:0;transition:var(--ease)"><?= $n ?></span>
@@ -218,6 +217,7 @@ $parishes = $conn->query("SELECT id, name FROM parishes WHERE status='active' OR
     <div class="card-body">
       <p style="font-size:.83rem;color:var(--ink-60);margin-bottom:16px">Please review your application details before submitting.</p>
       <div id="reviewSummary"></div>
+      <fieldset id="bookingPayment"><legend>Payment method</legend><p>Select payment before final submission. Payment remains pending until verified by the Bookkeeper.</p><label><input type="radio" name="booking_payment_method" value="cash"> Cash at the parish office</label><label><input type="radio" name="booking_payment_method" value="gcash"> GCash</label><label>GCash reference (required for GCash)<input id="bookingPaymentReference" maxlength="100"></label></fieldset>
       <div style="display:flex;justify-content:space-between;margin-top:20px">
         <button class="btn-sm btn-outline" onclick="goStep(5)">&larr; Back</button>
         <button class="btn-sm btn-green" onclick="submitApplication()" id="btnSubmit">[icon:check] Submit Application</button>

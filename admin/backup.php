@@ -5,8 +5,9 @@ require_sensitive_verification($user);
 $notice='';
 if($_SERVER['REQUEST_METHOD']==='POST') {
  try {
-  if($action==='manual_backup') {$file=create_system_backup($user);$notice='Backup created: '.$file;}
-  elseif($action==='restore') {
+    $action=$_POST['_action']??'';
+    if($action==='manual_backup') {$file=create_system_backup($user);$notice='Backup created: '.$file;}
+    elseif($action==='restore') {
    must(($_POST['confirmation']??'')==='RESTORE','Type RESTORE to confirm replacement of current records.');
    $file=$_FILES['backup_file']??[];
    must(($file['error']??-1)===UPLOAD_ERR_OK && ($file['size']??0)<=67108864 && is_uploaded_file($file['tmp_name']??'') && strtolower(pathinfo($file['name'],PATHINFO_EXTENSION))==='zip','Upload a VISCAR ZIP backup up to 64 MB.');

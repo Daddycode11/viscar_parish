@@ -15,7 +15,7 @@ r=s.get('/staff/services.php?ajax=create',{'name':'Attachment Test','general_typ
 attachment_service=r['json']['id']
 sql(f"INSERT INTO service_requirements(service_id,document_name,is_required) VALUES({attachment_service},'Valid ID',1)")
 requirement=sql(f'SELECT id FROM service_requirements WHERE service_id={attachment_service}')
-base={'parish_id':1,'service_id':attachment_service,'schedule':'2039-04-10T08:00','form_data':'{}'}
+base={'payment_method':'cash','parish_id':1,'service_id':attachment_service,'schedule':'2039-04-10T08:00','form_data':'{}'}
 pdf=b'%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n%%EOF'
 route='/parishioner/apply_service.php?ajax=submit'
 r=upload_many(p,route,base,[(f'req_{requirement}','single.png',png)])

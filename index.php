@@ -15,10 +15,10 @@ $ss = site_settings();
 // Fetch latest 5 active announcements
 // =====================================
 $announcements = $conn->query("
-    SELECT * 
-    FROM announcements 
-    WHERE status = 'active' AND target='All Parishes' 
-    ORDER BY created_at DESC 
+    SELECT a.*,u.role publisher_role,p.name publisher_parish
+    FROM announcements a LEFT JOIN users u ON u.id=a.sent_by LEFT JOIN parishes p ON p.id=u.parish_id
+    WHERE a.status = 'active' AND target='All Parishes' AND NOT EXISTS(SELECT 1 FROM announcement_parishes ap WHERE ap.announcement_id=a.id) 
+    ORDER BY a.created_at DESC 
     LIMIT 5
 ");
 
@@ -26,9 +26,9 @@ $announcements = $conn->query("
 // Fetch next 5 upcoming events
 // =====================================
 $events = $conn->query("
-    SELECT * 
-    FROM events 
-    WHERE status = 'active' 
+    SELECT e.*,p.name publisher_parish
+    FROM events e LEFT JOIN parishes p ON p.id=e.parish_id
+    WHERE e.status = 'active' 
       AND event_date >= CURDATE() 
     ORDER BY event_date ASC 
     LIMIT 5
@@ -949,6 +949,10 @@ footer {
   #cta { padding: 80px 5vw; }
   .section-header { margin-bottom: 36px; }
 }
+.about-grid{grid-template-columns:1fr}.stats-inner{grid-template-columns:repeat(3,1fr)}
+#services{background:#2d4263}.service-card:nth-child(3n+1) .service-icon{color:#f0cf74}.service-card:nth-child(3n+2) .service-icon{color:#a9dec5}.service-card:nth-child(3n) .service-icon{color:#d7c4ed}
+.ann-card,.event-info{min-width:0;overflow-wrap:anywhere}.event-date-box{flex-shrink:0}
+@media(max-width:600px){.event-row{align-items:flex-start;flex-wrap:wrap}.event-info{flex-basis:100%}.section{padding-top:40px;padding-bottom:40px}}
 </style>
 <style>
 :root {
@@ -1021,13 +1025,10 @@ footer {
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-item">
-      <div class="stat-num">6+</div>
-      <div class="stat-label">Sacramental Services</div>
+      <div class="stat-num">8+</div>
+      <div class="stat-label">Parish Services</div>
     </div>
-    <div class="stat-item">
-      <div class="stat-num">3</div>
-      <div class="stat-label">User Roles</div>
-    </div>
+
     <div class="stat-item">
       <div class="stat-num">24/7</div>
       <div class="stat-label">Online Access</div>
@@ -1050,7 +1051,7 @@ footer {
     <div class="ann-grid">
       <?php if($announcements->num_rows > 0): ?>
         <?php while($ann = $announcements->fetch_assoc()): ?>
-          <div class="ann-card">
+          <div class="ann-card"><span class="ann-date"><?= h(date('F d, Y',strtotime($ann['sent_at']??$ann['created_at']))) ?> &middot; <?= h($ann['publisher_role']==='admin'?'Admin':($ann['publisher_parish']??'Parish')) ?></span>
             <h3><?php echo htmlspecialchars($ann['title']); ?></h3>
             <p><?php echo htmlspecialchars($ann['content']); ?></p>
             <span class="ann-date"><?php echo date('F d, Y', strtotime($ann['sent_at'] ?? $ann['created_at'])); ?></span>
@@ -1083,7 +1084,7 @@ footer {
               <div class="day"><?php echo date('d', $ts); ?></div>
               <div class="month"><?php echo date('M', $ts); ?></div>
             </div>
-            <div class="event-info">
+            <div class="event-info"><small><?= h($ev['publisher_parish']??'Parish') ?></small>
               <h3><?php echo htmlspecialchars($ev['title']); ?></h3>
               <p><?php echo htmlspecialchars($ev['description']); ?></p>
             </div>
@@ -1103,11 +1104,13 @@ footer {
 <section class="section" id="services">
   <div class="section-inner">
     <div class="section-header">
-      <div class="section-tag">Sacramental Services</div>
+      <div class="section-tag">Parish Services</div>
       <h2 style="color:var(--white);">What We Offer</h2>
       <p>Apply online for the sacred milestones of your faith journey.</p>
     </div>
     <div class="services-grid">
+      <div class="service-card"><div class="service-icon">[icon:calendar]</div><h3>Mass Request</h3><p>Request a Mass and coordinate the schedule with your parish.</p></div>
+      <div class="service-card"><div class="service-icon">[icon:heart]</div><h3>Anointing of the Sick</h3><p>Contact the parish for pastoral care and the sacrament of anointing.</p></div>
       <div class="service-card">
         <div class="service-icon">[icon:church]</div>
         <h3>Baptism</h3>
@@ -1256,12 +1259,7 @@ footer {
           <p>"Serve one another humbly in love."<br>— Galatians 5:13</p>
         </div>
       </div>
-      <div class="about-visual">
-        <div class="about-img-card" style="background:var(--navy);">[icon:church]</div>
-        <div class="about-img-card" style="background:linear-gradient(135deg,#6B2737,#3A1220);">[icon:church]</div>
-        <div class="about-img-card" style="background:linear-gradient(135deg,#C9A84C,#8B6914);">[icon:church]</div>
-        <div class="about-img-card" style="background:linear-gradient(135deg,#1B2A4A,#0D1828);">[icon:church]</div>
-      </div>
+
     </div>
   </div>
 </section>

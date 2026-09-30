@@ -146,7 +146,8 @@ $totals = $conn->query("
     FROM payments
 ")->fetch_assoc();
 require_once APP_ROOT.'/includes/financial_totals.php';
-$total_collected = financial_totals('1900-01-01','9999-12-31')['verified_revenue'];
+$lifetimeFinancial=financial_totals('1900-01-01','9999-12-31');
+$total_collected = $lifetimeFinancial['verified_revenue'];
 $today_collected = financial_totals(date('Y-m-d'),date('Y-m-d'))['verified_revenue'];
 $monthly_amt = financial_totals(date('Y-m-01'),date('Y-m-t'))['verified_revenue'];
 $pending_count   = (int)$totals['pending_count'];
@@ -193,7 +194,7 @@ include 'includes/layout.php';
 </div>
 
 <!-- Stats -->
-<div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+<div class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))"><div class="stat-card stat-green"><div class="stat-label">Net Revenue</div><div class="stat-value">?<?= number_format($lifetimeFinancial['net_revenue'],2) ?></div></div>
   <div class="stat-card stat-gold">
     <div class="stat-icon">₱</div>
     <div class="stat-label">Total Collected</div>

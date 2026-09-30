@@ -270,6 +270,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
                 <button onclick="requestApplicationDocs(<?php echo $a['id']; ?>)" class="act-btn act-gold" title="Request Documents">Request Docs</button>
                 <?php if(in_array($a['status'],['pending','approved'],true)): ?><a class="act-btn act-gold" title="Correct application answers" href="application_details.php?id=<?= (int)$a['id'] ?>&amp;edit=1#corrections">[icon:edit]</a><?php endif; ?>
                 <button onclick="viewApp(<?php echo $a['id']; ?>)" class="act-btn act-navy" title="View">[icon:eye]</button>
+                <?php if(in_array($a['status'],['pending','approved'],true)): ?><button type="button" class="act-btn act-gold" onclick="rescheduleApplication(<?= (int)$a['id'] ?>)" title="Reschedule">Reschedule</button><?php endif; ?>
                 <?php if ($a['status'] === 'pending'): ?>
                 <button onclick="approveApp(<?php echo $a['id']; ?>, '<?php echo htmlspecialchars(addslashes($a['parishioner_name'])); ?>')" class="act-btn act-green" title="Approve">[icon:check]</button>
                 <button onclick="openRejectModal(<?php echo $a['id']; ?>)" class="act-btn act-wine" title="Reject">[icon:close]</button>
@@ -306,6 +307,8 @@ tbody tr:hover .app-row-actions { opacity: 1; }
 </div>
 
 <script>
+async function rescheduleApplication(id){const schedule=prompt('New schedule (YYYY-MM-DD HH:MM)');if(!schedule)return;const fd=new FormData();fd.append('id',id);fd.append('schedule',schedule);try{const r=await fetch('applications.php?ajax=assign_schedule',{method:'POST',body:fd});const d=await r.json();showToast(d.message||'Schedule updated',d.success?'success':'error');if(d.success)location.reload();}catch(e){showToast('Unable to save schedule.','error');}}
+
 function requestApplicationDocs(id) {
  const docs=prompt('Required documents and instructions:'); if(!docs || !docs.trim())return;
  const data=new FormData();data.append('id',id);data.append('docs',docs);data.append('message',docs);

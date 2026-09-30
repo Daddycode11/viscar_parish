@@ -21,11 +21,11 @@ function publish_announcement(array $actor,array $input): array
         must($parish!==null,'Select a valid audience.');$parishes=[(int)$parish['id']];$target='Selected Parishes';
     }
     $parishes=array_values(array_unique(array_map('intval',$parishes)));sort($parishes);
-    if($target==='Selected Parishes') {
-        must(count($parishes)>0,'Select at least one parish.');
+    if($target==='Selected Parishes')must(count($parishes)>0,'Select at least one parish.');
+    if($parishes) {
         $active=array_map('intval',array_column($conn->query("SELECT id FROM parishes WHERE status='active'")->fetch_all(MYSQLI_ASSOC),'id'));
         must(!array_diff($parishes,$active),'Select active parishes.');
-    } else { $parishes=[]; }
+    }
     $channels=['in-app'];$channel=input_text($input,'channel')?:'In-App';
     must(in_array($channel,['In-App','SMS','Email','All Channels'],true),'Select a valid channel.');
     if(!empty($input['send_sms'])||in_array($channel,['SMS','All Channels'],true))$channels[]='sms';
@@ -43,14 +43,15 @@ function publish_announcement(array $actor,array $input): array
         $id=(int)$conn->insert_id;
         $conn->execute_query('INSERT INTO announcement_dispatches(request_key,announcement_id) VALUES(?,?)',[$key,$id]);
         foreach($parishes as $pid) { $conn->execute_query('INSERT INTO announcement_parishes(announcement_id,parish_id) VALUES(?,?)',[$id,$pid]); }
-        if($target==='Selected Parishes') {
+        $roleFilter=match($target){'All Parishioners','Selected Parishes'=>" AND u.role='parishioner'",'All Staff','Staff Only'=>" AND u.role IN ('secretary','bookkeeper','admin')",default=>''};
+        if($parishes) {
             $placeholders=implode(',',array_fill(0,count($parishes),'?'));
-            $recipients=$conn->execute_query("SELECT u.id,MAX(s.in_app) in_app,MAX(s.email) email,MAX(s.sms) sms FROM users u JOIN parish_subscriptions s ON s.user_id=u.id WHERE u.status='active' AND u.role='parishioner' AND s.parish_id IN ($placeholders) GROUP BY u.id",$parishes)->fetch_all(MYSQLI_ASSOC);
+            $recipients=$conn->execute_query("SELECT u.id,MAX(CASE WHEN u.role='parishioner' THEN COALESCE(s.in_app,0) ELSE 1 END) in_app,MAX(CASE WHEN u.role='parishioner' THEN COALESCE(s.email,0) ELSE 1 END) email,MAX(CASE WHEN u.role='parishioner' THEN COALESCE(s.sms,0) ELSE 1 END) sms FROM users u LEFT JOIN parish_subscriptions s ON s.user_id=u.id AND s.parish_id IN ($placeholders) WHERE u.status='active' AND ((u.role='parishioner' AND s.user_id IS NOT NULL) OR (u.role<>'parishioner' AND u.parish_id IN ($placeholders))) $roleFilter GROUP BY u.id",[...$parishes,...$parishes])->fetch_all(MYSQLI_ASSOC);
         } else {
-            $roleFilter=match($target){'All Parishioners'=>" AND role='parishioner'",'All Staff','Staff Only'=>" AND role IN ('secretary','bookkeeper','admin')",default=>''};
-            $recipients=$conn->query("SELECT id,1 in_app,1 email,1 sms FROM users WHERE status='active'$roleFilter")->fetch_all(MYSQLI_ASSOC);
+            $recipients=$conn->query("SELECT u.id,1 in_app,1 email,1 sms FROM users u WHERE u.status='active' $roleFilter")->fetch_all(MYSQLI_ASSOC);
         }
         foreach($recipients as $recipient) {
+            if((int)$recipient['id']===(int)$actor['id'])continue;
             foreach($channels as $deliveryChannel) {
                 $preference=$deliveryChannel==='in-app'?'in_app':$deliveryChannel;
                 if(!$recipient[$preference])continue;

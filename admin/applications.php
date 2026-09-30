@@ -563,7 +563,7 @@ function viewApp(id) {
               </div>
               <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--ink-10)">
                 ${a.status === 'pending' ? `
-                  <button onclick="closeModal('viewModal');approveApp(${a.id},'${a.name}')" class="btn-sm btn-green">[icon:check] Approve</button>
+                  
                 ` : ''}
                 <button onclick="closeModal('viewModal')" class="btn-sm btn-outline">Close</button>
               </div>

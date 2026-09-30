@@ -15,6 +15,14 @@ function add_revision_column(string $table, string $column, string $definition):
     }
 }
 
+$paymentStatus=$conn->query("SHOW COLUMNS FROM payments LIKE 'status'")->fetch_assoc()['Type'];
+if(str_starts_with($paymentStatus,'enum(')&&!str_contains($paymentStatus,"'failed'"))$conn->query("ALTER TABLE payments MODIFY status ENUM('pending','completed','refunded','failed') DEFAULT 'pending'");
+add_revision_column('sacramental_records','form_data','LONGTEXT NULL');
+add_revision_column('sacramental_records','form_schema','LONGTEXT NULL');
+add_revision_column('services','available_weekdays','VARCHAR(32) NULL');
+add_revision_column('payments','failure_reason','TEXT NULL');
+add_revision_column('payments','failed_by','INT NULL');
+add_revision_column('payments','failed_at','DATETIME NULL');
 add_revision_column('users', 'language', "VARCHAR(3) NOT NULL DEFAULT 'en'");
 add_revision_column('users', 'auth_version', 'INT NOT NULL DEFAULT 1');
 add_revision_column('applications', 'source', "VARCHAR(10) NOT NULL DEFAULT 'online'");

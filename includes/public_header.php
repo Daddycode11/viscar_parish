@@ -63,7 +63,10 @@ header.site-header ~ .page{
 }
 @media (max-width:640px){
   header.site-header{height:64px;padding:0 4vw}
-  header.site-header .sh-logo{min-width:0;gap:8px}
+  header.site-header .sh-logo{min-width:0;gap:8px;flex-shrink:1}
+  header.site-header .sh-text{min-width:0;overflow-wrap:anywhere}
+  header.site-header nav{flex-shrink:0}
+  header.site-header nav a{padding:7px 8px}
   header.site-header .sh-logo img{width:38px;height:38px}
   header.site-header .sh-text span:first-child{white-space:normal;font-size:.9rem}
   header.site-header nav a.nav-btn{padding:8px 12px}

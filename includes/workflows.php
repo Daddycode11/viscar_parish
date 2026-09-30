@@ -4,6 +4,7 @@ require_once __DIR__ . '/notifications.php';
 require_once __DIR__ . '/qr.php';
 require_once __DIR__ . '/service_types.php';
 require_once __DIR__.'/attachments.php';
+require_once __DIR__.'/service_days.php';
 
 function sqlrow(string $sql, array $args = []): ?array
 {
@@ -65,6 +66,7 @@ function owned_application(int $id, array $actor, bool $lock = false): array
 
 function capacity(array $service, string $schedule, int $exclude = 0): void
 {
+    must(service_day_allowed($service,$schedule),'This service is unavailable on the selected weekday.');
     $sameSchedule = sqlrow(
         "SELECT id
          FROM applications
@@ -189,6 +191,7 @@ function submit_booking(array $actor, array $input, array $files): array
     $serviceFee = ($service['amount_mode']??'fixed')==='user_defined'
         ? service_money(input_text($input,'amount')) : $service['fee'];
 
+    must((float)$serviceFee<=0||in_array($input['payment_method']??'', ['cash','gcash'],true),'Choose a payment method before submitting.');
     $conn->execute_query(
         "INSERT INTO applications
             (user_id, parish_id, service_id, schedule, status, uploaded_files,
@@ -229,6 +232,7 @@ function submit_booking(array $actor, array $input, array $files): array
         'applications.php'
     );
 
+    if((float)$serviceFee>0)record_payment($actor,['application_id'=>$applicationId,'amount'=>$serviceFee,'payment_method'=>$input['payment_method'],'reference_number'=>$input['reference_number']??'']);
     auditLog($actor['id'], 'submit', 'application', $applicationId);
     $GLOBALS['after_commit'][]=fn()=>dispatch_to_user($actor['id'],'Application Submitted','Your booking #'.$applicationId.' is pending review.',['sms','email'],'application');
 
@@ -732,4 +736,20 @@ function issue_certificate(array $actor, int $id): array
         'certificate_number' => $record['certificate_number'],
         'html' => $html,
     ];
+}
+
+
+function fail_payment(array $actor,int $id,string $reason): array {
+    global $conn;
+    must($actor['role']==='bookkeeper','Bookkeeper access required.');
+    must(trim($reason)!==''&&mb_strlen($reason)<=1000,'Enter a failure reason (up to 1000 characters).');
+    $payment=sqlrow('SELECT p.* FROM payments p JOIN applications a ON a.id=p.application_id WHERE p.id=? AND a.parish_id=? FOR UPDATE',[$id,$actor['parish_id']]);
+    must($payment!==null&&$payment['status']==='pending','Only a pending payment in your parish can be marked failed.');
+    $application=owned_application((int)$payment['application_id'],$actor,true);
+    must(in_array($application['status'],['pending','approved'],true),'This application is no longer active.');
+    $conn->execute_query("UPDATE payments SET status='failed',failure_reason=?,failed_by=?,failed_at=NOW() WHERE id=?",[trim($reason),$actor['id'],$id]);
+    // Do not cancel the booking or alter verified totals. A new payment may be submitted.
+    auditLog($actor['id'],'fail_payment','payment',$id,trim($reason));
+    notify($application['user_id'],'Payment failed',trim($reason),'payment','payments.php');
+    return ['message'=>'Payment marked failed. No receipt issued; the application may be paid again.'];
 }

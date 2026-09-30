@@ -115,7 +115,7 @@ $cnt_suspended = $conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM users WH
 <!-- View/Edit Modal -->
 <div class="modal-wrap" id="viewModal" style="align-items:flex-start;padding:40px 20px;overflow-y:auto">
   <div class="modal" style="max-width:700px;width:100%">
-    <div id="viewContent" style="min-height:200px;display:flex;align-items:center;justify-content:center">
+    <div id="viewContent" style="min-height:200px;display:block;overflow-wrap:anywhere">
       <div class="spinner" style="border-top-color:var(--navy)"></div>
     </div>
   </div>

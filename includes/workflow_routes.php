@@ -15,6 +15,7 @@ if(in_array($area,['admin','staff'],true)){
  if($page==='records'&&$action==='generate_cert')$run=fn()=>issue_certificate($user,(int)($_GET['id']??$_POST['id']??0));
  if(in_array($page,['finance','payments'],true)&&$action==='refund')$run=function(){throw new DomainException('Review and complete an approved refund in Requests.');};
 }
+if($area==='staff'&&$page==='payments'&&$action==='fail_payment')$run=fn()=>fail_payment($user,(int)($_POST['id']??0),input_text($_POST,'reason',1000));
 if($run){
  if($_SERVER['REQUEST_METHOD']!=='POST')fail_request('Use POST for this action.',405);
  $GLOBALS['new_uploads']=[];$GLOBALS['after_commit']=[];

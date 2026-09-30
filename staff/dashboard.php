@@ -274,6 +274,7 @@ $sql = "SELECT a.id, a.service_id, a.status, a.created_at, u.name AS parishioner
 $r = $conn->query($sql);
 if ($r) { while ($row = $r->fetch_assoc()) $recent_activity[] = $row; }
 
+$serviceNames=array_column($conn->execute_query('SELECT id,name FROM services WHERE parish_id=?',[$scopeParish])->fetch_all(MYSQLI_ASSOC),'name','id');
 $pillMap = ['approved'=>'pill-green','rejected'=>'pill-wine','pending'=>'pill-amber'];
 $role_label = ucfirst($staff_role);
 ?>
@@ -418,7 +419,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
         <a href="applications.php" class="btn-sm btn-outline">View All</a>
       </div>
       <div class="card-body" style="padding:0">
-        <div class="tbl-wrap">
+        <div class="tbl-wrap dashboard-table-preview">
           <table>
             <thead>
               <tr><th>#</th><th>Parishioner</th><th>Service</th><th>Schedule</th><th>Payment</th><th>Actions</th></tr>
@@ -437,7 +438,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
                   <div style="font-weight:500"><?php echo htmlspecialchars($app['parishioner_name']); ?></div>
                   <div style="font-size:.72rem;color:var(--ink-30)"><?php echo htmlspecialchars($app['parishioner_email']); ?></div>
                 </td>
-                <td><?php echo htmlspecialchars($app['service_id']); ?></td>
+                <td><?php echo h($serviceNames[$app['service_id']]??'Unavailable service'); ?></td>
                 <td style="font-size:.78rem;color:var(--ink-60)"><?php echo $sched; ?>
                   <button onclick="openScheduleModal(<?php echo $app['id']; ?>, '<?php echo htmlspecialchars(addslashes($app['schedule'])); ?>')" class="btn-sm btn-outline" style="margin-left:6px;font-size:.7rem;padding:2px 8px">Set</button>
                 </td>
@@ -499,7 +500,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
         <a href="payments.php" class="btn-sm btn-outline">View All</a>
       </div>
       <div class="card-body" style="padding:0">
-        <div class="tbl-wrap">
+        <div class="tbl-wrap dashboard-table-preview">
           <table>
             <thead>
               <tr><th>#</th><th>Parishioner</th><th>Service</th><th>Method</th><th>Amount</th><th>Actions</th></tr>
@@ -512,7 +513,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
               <tr id="pay-row-<?php echo $pay['id']; ?>">
                 <td style="color:var(--ink-30);font-size:.72rem">#<?php echo $pay['id']; ?></td>
                 <td style="font-weight:500"><?php echo htmlspecialchars($pay['parishioner_name']); ?></td>
-                <td><?php echo htmlspecialchars($pay['service_id']); ?></td>
+                <td><?php echo h($serviceNames[$pay['service_id']]??'Unavailable service'); ?></td>
                 <td><span class="pill pill-navy"><?php echo htmlspecialchars($pay['payment_method']); ?></span></td>
                 <td style="font-weight:600;color:var(--green)">₱<?php echo number_format($pay['amount']); ?></td>
                 <td>
@@ -550,7 +551,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
             <div class="month"><?php echo date('M', $dt); ?></div>
           </div>
           <div class="sched-info">
-            <div class="title">Service #<?php echo htmlspecialchars($sched['service_id']); ?></div>
+            <div class="title"><?php echo h($serviceNames[$sched['service_id']]??'Unavailable service'); ?></div>
             <div class="meta"><?php echo htmlspecialchars($sched['parishioner_name']); ?> &middot; <?php echo date('g:i A', $dt); ?></div>
           </div>
           <span class="pill pill-green">Confirmed</span>
@@ -611,7 +612,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
           ?>
           <div>
             <div class="bar-top">
-              <span class="bar-label">Service #<?php echo htmlspecialchars($sc['service_id']); ?></span>
+              <span class="bar-label"><?php echo h($serviceNames[$sc['service_id']]??'Unavailable service'); ?></span>
               <span class="bar-val"><?php echo $sc['cnt']; ?></span>
             </div>
             <div class="bar-track"><div class="bar-fill" style="width:<?php echo $pct; ?>%;background:<?php echo $color; ?>"></div></div>
@@ -650,7 +651,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
           <div style="width:7px;height:7px;border-radius:50%;background:var(--<?php echo $dot; ?>);flex-shrink:0;margin-top:5px"></div>
           <div style="font-size:.79rem;color:var(--ink);flex:1;line-height:1.4">
             <?php echo htmlspecialchars($act['parishioner_name']); ?> &mdash;
-            Service #<?php echo htmlspecialchars($act['service_id']); ?>
+            <?php echo h($serviceNames[$act['service_id']]??'Unavailable service'); ?>
             <span class="pill <?php echo $pillMap[$act['status']] ?? 'pill-amber'; ?>" style="font-size:.6rem;padding:1px 6px"><?php echo ucfirst($action_word); ?></span>
           </div>
           <div style="font-size:.68rem;color:var(--ink-30);white-space:nowrap"><?php echo $time_ago; ?></div>
@@ -698,7 +699,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
             $pct = $max_rev > 0 ? round(($rv['revenue'] / $max_rev) * 100) : 0;
           ?>
           <tr>
-            <td style="font-weight:500">Service #<?php echo htmlspecialchars($rv['service_id']); ?></td>
+            <td style="font-weight:500"><?php echo h($serviceNames[$rv['service_id']]??'Unavailable service'); ?></td>
             <td style="text-align:center"><?php echo $rv['app_count']; ?></td>
             <td style="text-align:center">
               <span class="pill pill-green"><?php echo $rv['paid_count']; ?> paid</span>

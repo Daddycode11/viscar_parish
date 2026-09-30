@@ -77,7 +77,7 @@ try:
  r=p.get('/parishioner/apply_service.php?ajax=submit',{'parish_id':1,'service_id':1,'schedule':'2030-01-15T09:00','form_data':'{}'});check('Full schedule rejected',r['code']==422,r['json'])
  r=p.get('/parishioner/apply_service.php?ajax=submit',{'parish_id':1,'service_id':2,'schedule':'2030-01-20T09:00','form_data':'{}'});check('Mismatched service rejected',r['code']==422)
  def upload(payload):
-  boundary='RevisionTestBoundary';fields={'parish_id':1,'service_id':1,'schedule':'2030-02-21T09:00','form_data':json.dumps({'child_name':'Revision Child'})};data=b''
+  boundary='RevisionTestBoundary';fields={'payment_method':'cash','parish_id':1,'service_id':1,'schedule':'2030-02-21T09:00','form_data':json.dumps({'child_name':'Revision Child'})};data=b''
   for k,v in fields.items():data+=f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode()
   data+=f'--{boundary}\r\nContent-Disposition: form-data; name="req_1"; filename="document.png"\r\nContent-Type: image/png\r\n\r\n'.encode()+payload+f'\r\n--{boundary}--\r\n'.encode()
   return p.get('/parishioner/apply_service.php?ajax=submit',raw=data,content_type='multipart/form-data; boundary='+boundary)
@@ -147,6 +147,7 @@ try:
  exec(compile((ROOT/'tools/separation_checks.py').read_text(encoding='utf-8'), 'separation_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/attachment_checks.py').read_text(encoding='utf-8'), 'attachment_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/pdf_revision_checks.py').read_text(encoding='utf-8'), 'pdf_revision_checks.py', 'exec'), globals())
+ exec(compile((ROOT/'tools/latest_pdf_checks.py').read_text(encoding='utf-8'), 'latest_pdf_checks.py', 'exec'), globals())
 finally:
  server.terminate();server.wait(timeout=10);log.close()
  report={'database':fixture['database'],'tests':results,'passed':sum(r['passed']for r in results),'failed':sum(not r['passed']for r in results)}

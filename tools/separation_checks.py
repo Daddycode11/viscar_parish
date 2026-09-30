@@ -75,7 +75,7 @@ sql("INSERT INTO accounting_documents(parish_id,document_type,document_number,do
 other_document=sql('SELECT MAX(id) FROM accounting_documents')
 check('Accounting other parish document hidden',b.get('/staff/accounting.php?print='+other_document)['code']==404)
 
-walk={'parish_id':1,'service_id':1,'user_id':4,'schedule':'2032-02-15T09:00','fields[child_name]':'Walk-in Child'}
+walk={'payment_method':'cash','parish_id':1,'service_id':1,'user_id':4,'schedule':'2032-02-15T09:00','fields[child_name]':'Walk-in Child'}
 response=multipart(s,'/staff/walk_in.php',walk,'req_1',png)
 walk_id=sql("SELECT MAX(id) FROM applications WHERE source='walk_in'")
 check('Walk-in booking with shared documents',response['code']==200 and walk_id!='NULL',response['code'])
@@ -166,7 +166,7 @@ check('Reset CSRF enforced',reset_client.get('/public/reset_password.php',{'toke
 check('Bookkeeper refund rejection',b.get('/staff/requests.php',{'id':refund_id,'decision':'reject','review_note':'Synthetic rejection'})['code']==200 and sql('SELECT status FROM application_requests WHERE id='+refund_id)=='rejected')
 check('Secretary reschedule rejection',s.get('/staff/requests.php',{'id':reschedule_id,'decision':'reject','review_note':'Synthetic rejection'})['code']==200 and sql('SELECT status FROM application_requests WHERE id='+reschedule_id)=='rejected')
 check('Walk-in source visible in Secretary list','Walk-in application' in s.get('/staff/applications.php')['text'])
-failed_walk={'parish_id':1,'service_id':1,'user_id':4,'schedule':'2034-05-15T09:00','fields[child_name]':'Atomic approval test'}
+failed_walk={'payment_method':'cash','parish_id':1,'service_id':1,'user_id':4,'schedule':'2034-05-15T09:00','fields[child_name]':'Atomic approval test'}
 multipart(s,'/staff/walk_in.php',failed_walk,'req_1',png)
 failed_id=sql('SELECT MAX(id) FROM applications')
 sql("CREATE TRIGGER separation_reject_record BEFORE INSERT ON sacramental_records FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='synthetic record failure'")

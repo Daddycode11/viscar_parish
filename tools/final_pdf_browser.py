@@ -31,6 +31,7 @@ try:
     check(f'{name} {width}: one close control',page.locator('#viewModal button:visible').filter(has_text='Close').count()==1)
     page.screenshot(path=str(out/f'{name}-{width}.png'),full_page=True)
   routes={0:['/index.php','/public/login.php','/public/forgot_password.php'],1:['/admin/dashboard.php','/admin/analytics.php','/admin/finance.php','/admin/main_database.php','/admin/applications.php','/admin/announcements.php','/admin/reports.php?type=check_voucher&date_from=2020-01-01&date_to=2040-01-01'],2:['/staff/dashboard.php','/staff/services.php','/staff/parishioners.php','/staff/messages.php','/staff/application_details.php?id=1','/staff/requests.php?type=cancel','/staff/security.php'],3:['/staff/dashboard.php','/staff/payments.php','/staff/accounting.php?type=check_voucher','/staff/accounting.php?type=journal_voucher','/staff/export.php'],4:['/parishioner/dashboard.php','/parishioner/settings.php','/parishioner/announcements.php','/parishioner/apply_service.php','/parishioner/events.php','/parishioner/requests.php?type=cancel']}
+  routes[0].append('/public/signup.php')
   for uid,paths in routes.items():
    if uid:
     page.goto(BASE+'/public/logout.php');page.goto(BASE+'/public/login.php')
@@ -57,7 +58,8 @@ try:
     page.screenshot(path=str(out/'admin-application-modal.png'),full_page=True)
    if uid==2:
     page.goto(BASE+'/staff/services.php');page.evaluate("openRequirements(1,'Audit Baptism A')");page.wait_for_timeout(250)
-    page.locator('[data-edit-requirement="1"]').click();page.locator('#reqDescription').fill('Browser reviewed description');page.locator('#saveRequirementBtn').click();page.wait_for_timeout(300)
+    page.locator('[data-edit-requirement="1"]').click();page.locator('#reqDescription').fill('Browser reviewed description');page.locator('#saveRequirementBtn').click()
+    page.locator('#reqsList').get_by_text('Browser reviewed description',exact=True).wait_for(timeout=15000)
     check('Requirement editor saves and refreshes description','Browser reviewed description' in page.locator('#reqsList').inner_text())
     check('Requirement modal has one close control',page.locator('#reqsModal .dialog-return').count()==0 and page.locator('#reqsModal button[aria-label="Close dialog"]').count()==1)
     page.screenshot(path=str(out/'requirement-editor-mobile.png'),full_page=True)
