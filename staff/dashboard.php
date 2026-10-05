@@ -430,7 +430,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
               <?php endif; ?>
               <?php foreach ($recent_apps as $app):
                 $ppill = $app['payment_status'] === 'paid' ? 'pill-green' : 'pill-wine';
-                $sched = $app['schedule'] ? date('M j, Y', strtotime($app['schedule'])) : '—';
+                $sched = $app['schedule'] ? date('M j, Y g:i A', strtotime($app['schedule'])) : '—';
               ?>
               <tr id="app-row-<?php echo $app['id']; ?>">
                 <td style="color:var(--ink-30);font-size:.72rem">#<?php echo $app['id']; ?></td>
@@ -449,6 +449,15 @@ tbody tr:hover .app-row-actions { opacity: 1; }
                     <button onclick="openRejectModal(<?php echo $app['id']; ?>)" class="act-btn act-wine" title="Reject">[icon:close] Reject</button>
                     <button onclick="openDocRequestModal(<?php echo $app['id']; ?>)" class="act-btn act-navy" title="Request Documents">[icon:attachment] Request Docs</button>
                   </div>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
                 <!-- Request Documents Modal -->
                 <div class="modal-wrap" id="docRequestModal">
                   <div class="modal">
@@ -468,8 +477,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
                     </div>
                   </div>
                 </div>
-                </td>
-              </tr>
+
               <!-- Schedule Modal -->
               <div class="modal-wrap" id="scheduleModal">
                 <div class="modal">
@@ -485,12 +493,6 @@ tbody tr:hover .app-row-actions { opacity: 1; }
                   </div>
                 </div>
               </div>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
     <?php else: // bookkeeper ?>
     <!-- PENDING PAYMENTS TABLE -->
@@ -729,14 +731,8 @@ function openScheduleModal(id, current) {
   scheduleActionId = id;
   const input = document.getElementById('scheduleInput');
   if (current && current !== 'null' && current !== 'undefined' && current !== '0000-00-00 00:00:00') {
-    // Format for datetime-local
-    let dt = new Date(current);
-    if (!isNaN(dt.getTime())) {
-      let iso = dt.toISOString();
-      input.value = iso.substring(0,16);
-    } else {
-      input.value = '';
-    }
+    // Stored schedules are parish wall-clock values, not UTC instants.
+    input.value = current.replace(' ', 'T').substring(0,16);
   } else {
     input.value = '';
   }

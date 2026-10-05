@@ -675,7 +675,7 @@ document.querySelectorAll('a[href*="export="], a[href*="format=print"]').forEach
                     link.href.includes('export=excel') ? 'Excel' : 'PDF';
         const history = document.getElementById('exportHistory');
         const now = new Date();
-        const time = now.toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+        const time = now.toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit',hour12:true});
         const existing = history.querySelector('.export-empty');
         if (existing) existing.remove();
         const div = document.createElement('div');

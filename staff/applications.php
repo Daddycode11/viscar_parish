@@ -307,7 +307,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
 </div>
 
 <script>
-async function rescheduleApplication(id){const schedule=prompt('New schedule (YYYY-MM-DD HH:MM)');if(!schedule)return;const fd=new FormData();fd.append('id',id);fd.append('schedule',schedule);try{const r=await fetch('applications.php?ajax=assign_schedule',{method:'POST',body:fd});const d=await r.json();showToast(d.message||'Schedule updated',d.success?'success':'error');if(d.success)location.reload();}catch(e){showToast('Unable to save schedule.','error');}}
+async function rescheduleApplication(id){const entered=prompt('New schedule (YYYY-MM-DD h:mm AM/PM), for example 2030-01-15 1:30 PM');if(!entered)return;const parts=entered.trim().match(/^(\d{4}-\d{2}-\d{2})\s+(.+)$/);const time=parts&&ViscarTime.parse(parts[2]);if(!time){showToast('Enter a date and time with AM or PM.','error');return;}const schedule=parts[1]+'T'+time;const fd=new FormData();fd.append('id',id);fd.append('schedule',schedule);try{const r=await fetch('applications.php?ajax=assign_schedule',{method:'POST',body:fd});const d=await r.json();showToast(d.message||'Schedule updated',d.success?'success':'error');if(d.success)location.reload();}catch(e){showToast('Unable to save schedule.','error');}}
 
 function requestApplicationDocs(id) {
  const docs=prompt('Required documents and instructions:'); if(!docs || !docs.trim())return;

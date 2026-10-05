@@ -771,9 +771,9 @@ function viewRecord(id) {
                   ['Sponsors', d.sponsors || '\u2014'],
                   ['Remarks', d.remarks || '\u2014'],
                   ['Certificate #', d.certificate_number || 'Not generated'],
-                  ['Certificate Date', d.certificate_generated_at ? new Date(d.certificate_generated_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '\u2014'],
+                  ['Certificate Date', d.certificate_generated_at ? new Date(d.certificate_generated_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) : '\u2014'],
                   ['Created By', d.created_by_name || '\u2014'],
-                  ['Created At', new Date(d.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})]
+                  ['Created At', new Date(d.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true})]
                 ].map(([l,v])=>`
                   <div style="background:#F8F6F2;border-radius:8px;padding:10px 12px">
                     <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-60);margin-bottom:3px">${l}</div>

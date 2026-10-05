@@ -469,7 +469,7 @@ function viewAnn(id) {
                   <span class="pill pill-${sc}" style="font-size:.78rem;padding:5px 14px">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
                 </div>
                 <div style="font-size:.75rem;color:var(--ink-30)">
-                  By ${a.author_name || 'Unknown'} &middot; ${new Date(a.sent_at || a.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}
+                  By ${a.author_name || 'Unknown'} &middot; ${new Date(a.sent_at || a.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true})}
                 </div>
               </div>
               <div style="background:#F8F6F2;border-radius:10px;padding:20px;font-size:.88rem;line-height:1.8;color:var(--ink);white-space:pre-wrap;margin-bottom:20px">${a.content}</div>

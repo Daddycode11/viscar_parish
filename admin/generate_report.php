@@ -238,7 +238,7 @@ require_once __DIR__ . '/../includes/workflow_routes.php';
   <!-- Footer -->
   <div class="report-footer">
     <span>Apostolic Vicariate of San Jose · Parish Service Platform</span>
-    <span>Page 1 of 1 · Generated <?php echo date('Y-m-d H:i:s'); ?></span>
+    <span>Page 1 of 1 · Generated <?php echo date('Y-m-d g:i:s A'); ?></span>
     <span>CONFIDENTIAL — For internal use only</span>
   </div>
 

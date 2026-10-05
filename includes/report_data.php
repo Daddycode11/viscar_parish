@@ -9,7 +9,8 @@ function gen_financial_data($from,$to,$pid):array {
 }
 function gen_applications_data($from,$to,$pid):array {
  global $conn;[$from,$to]=report_range($from,$to);
- return $conn->execute_query('SELECT a.id,DATE(a.created_at) date,u.name parishioner,u.email,s.name service,p.name parish,a.schedule,a.status,a.payment_status payment FROM applications a JOIN users u ON u.id=a.user_id JOIN services s ON s.id=a.service_id JOIN parishes p ON p.id=a.parish_id WHERE a.created_at BETWEEN ? AND ? AND (?=0 OR a.parish_id=?) ORDER BY a.created_at DESC',[$from,$to,(int)$pid,(int)$pid])->fetch_all(MYSQLI_ASSOC);
+ $rows=$conn->execute_query('SELECT a.id,DATE(a.created_at) date,u.name parishioner,u.email,s.name service,p.name parish,a.schedule,a.status,a.payment_status payment FROM applications a JOIN users u ON u.id=a.user_id JOIN services s ON s.id=a.service_id JOIN parishes p ON p.id=a.parish_id WHERE a.created_at BETWEEN ? AND ? AND (?=0 OR a.parish_id=?) ORDER BY a.created_at DESC',[$from,$to,(int)$pid,(int)$pid])->fetch_all(MYSQLI_ASSOC);
+ foreach($rows as &$row)$row['schedule']=display_datetime($row['schedule']);unset($row);return $rows;
 }
 function gen_parish_comparison($from,$to):array {
  global $conn;[$start,$end]=report_range($from,$to);

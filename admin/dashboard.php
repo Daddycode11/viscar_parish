@@ -158,7 +158,7 @@ include 'includes/layout.php';
       </div>
       <div class="card-body" style="padding:0" id="activityFeed">
         <?php
-        $activity=[]; foreach($conn->query('SELECT action,entity_type,entity_id,created_at FROM audit_trail ORDER BY id DESC LIMIT 6') as $entry)$activity[]=['navy',$entry['action'].' '.$entry['entity_type'].' #'.$entry['entity_id'],$entry['created_at']];
+        $activity=[]; foreach($conn->query('SELECT action,entity_type,entity_id,created_at FROM audit_trail ORDER BY id DESC LIMIT 6') as $entry)$activity[]=['navy',$entry['action'].' '.$entry['entity_type'].' #'.$entry['entity_id'],display_datetime($entry['created_at'])];
         foreach($activity as [$dot,$msg,$time]): ?>
         <div style="display:flex;gap:12px;padding:11px 20px;border-bottom:1px solid var(--ink-10)">
           <div style="width:7px;height:7px;border-radius:50%;background:var(--<?php echo $dot; ?>);flex-shrink:0;margin-top:5px"></div>

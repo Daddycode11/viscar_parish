@@ -16,7 +16,7 @@ $page_title=t('Application details');require __DIR__.'/includes/layout.php';
 ?>
 <style>@media print{.sidebar,.topbar,.no-print{display:none!important}.main{margin:0!important}.application-qr{width:45mm!important;height:45mm!important}}</style>
 <section class="card"><div class="card-body"><h1><?= h(t('Application details')) ?> #<?= (int)$application['id'] ?></h1>
-<p><?= h($application['parish_name'].' — '.$application['service_name']) ?></p><p><?= h(t('Status')) ?>: <?= h($application['status']) ?></p><p><?= h(t('Schedule')) ?>: <?= h($application['schedule']) ?></p>
+<p><?= h($application['parish_name'].' — '.$application['service_name']) ?></p><p><?= h(t('Status')) ?>: <?= h($application['status']) ?></p><p><?= h(t('Schedule')) ?>: <?= h(display_datetime($application['schedule'])) ?></p>
 <h2><?= h(t('Verification QR code')) ?></h2><img class="application-qr" width="220" height="220" src="<?= h(getQRImageURL($verification)) ?>" alt="<?= h(t('Verification QR code')) ?>" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><p hidden><?= h(t('QR image unavailable. Use the verification link below.')) ?></p><p><a href="<?= h($verification) ?>"><?= h(t('Verify')) ?> #<?= (int)$application['id'] ?></a></p>
 <?php require_once APP_ROOT.'/includes/application_details.php';render_application_details($application); ?>
 <button class="no-print" onclick="window.print()"><?= h(t('Print')) ?></button></div></section>

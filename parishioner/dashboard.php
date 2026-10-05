@@ -235,7 +235,7 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
                 <td>#<?php echo $app['id']; ?></td>
                 <td><?php echo htmlspecialchars($app['service_name'] ?? 'N/A'); ?></td>
                 <td><?php echo htmlspecialchars($app['parish_name'] ?? 'N/A'); ?></td>
-                <td><?php echo htmlspecialchars($app['schedule'] ?? '—'); ?></td>
+                <td><?php echo htmlspecialchars(display_datetime($app['schedule']??'') ?: '—'); ?></td>
                 <td><?php echo statusPill($app['status']); ?></td>
                 <td><?php echo statusPill($app['payment_status'] ?? 'pending'); ?></td>
                 <td>
@@ -423,7 +423,7 @@ function showAppDetail(id) {
     var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.83rem">';
     html += detailRow('Service', app.service_name || 'N/A');
     html += detailRow('Parish', app.parish_name || 'N/A');
-    html += detailRow('Schedule', app.schedule || '—');
+    html += detailRow('Schedule', ViscarTime.datetime(app.schedule) || '—');
     html += detailRow('Status', pillHtml(app.status));
     html += detailRow('Payment', pillHtml(app.payment_status || 'pending'));
     html += detailRow('Date Filed', formatDate(app.created_at));

@@ -486,7 +486,7 @@ function confirm_payment(array $actor, int $id): array
 
     auditLog($actor['id'], 'verify_payment', 'payment', $id);
     $paymentService=sqlrow('SELECT name FROM services WHERE id=?',[$application['service_id']]);
-    $paymentMessage='Application #'.$application['id'].' | Service: '.($paymentService['name']??'Parish service').' | Payment #'.$id.' | Status: Verified | Amount: PHP '.number_format((float)$payment['amount'],2).' | Schedule: '.$application['schedule'];
+    $paymentMessage='Application #'.$application['id'].' | Service: '.($paymentService['name']??'Parish service').' | Payment #'.$id.' | Status: Verified | Amount: PHP '.number_format((float)$payment['amount'],2).' | Schedule: '.display_datetime($application['schedule']);
 
     notify(
         $application['user_id'],
@@ -568,8 +568,8 @@ function decide_application(
         create_approved_sacramental_record($actor, $application, $service);
     }
 
-    $updateMessage='Application #'.$id.' | Service: '.$service['name'].' | Status: '.($action==='assign_schedule'?'Rescheduled':($action==='approve'?'Approved':'Rejected')).' | Schedule: '.($schedule??$application['schedule']);
-    if($action==='assign_schedule')$updateMessage.=' | Previous schedule: '.$application['schedule'];
+    $updateMessage='Application #'.$id.' | Service: '.$service['name'].' | Status: '.($action==='assign_schedule'?'Rescheduled':($action==='approve'?'Approved':'Rejected')).' | Schedule: '.display_datetime($schedule??$application['schedule']);
+    if($action==='assign_schedule')$updateMessage.=' | Previous schedule: '.display_datetime($application['schedule']);
     if(!empty($reason))$updateMessage.=' | Reason: '.$reason;
     auditLog($actor['id'], $action, 'application', $id, $updateMessage);
 

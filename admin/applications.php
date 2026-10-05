@@ -550,7 +550,7 @@ function viewApp(id) {
               </div>
               <div style="background:#F8F6F2;border-radius:8px;padding:12px;margin-bottom:14px">
                 <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-60);margin-bottom:4px">Schedule</div>
-                <div style="font-size:.88rem;font-weight:500">${a.schedule}</div>
+                <div style="font-size:.88rem;font-weight:500">${ViscarTime.datetime(a.schedule)}</div>
               </div>
               ${a.notes ? `<div style="background:#F8F6F2;border-radius:8px;padding:12px;margin-bottom:14px">
                 <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-60);margin-bottom:4px">Notes</div>

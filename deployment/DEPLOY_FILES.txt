@@ -33,6 +33,7 @@ assets/css/login.css
 assets/css/navigation.css
 assets/css/password-visibility.css
 assets/css/recommendations.css
+assets/css/time-controls.css
 assets/img/church-logo.png
 assets/img/hero-image.png
 assets/img/left-image.png
@@ -50,6 +51,7 @@ assets/js/multiple-attachments.js
 assets/js/navigation.js
 assets/js/password-visibility.js
 assets/js/recommendations.js
+assets/js/time-controls.js
 database/.htaccess
 database/deployment_schema.json
 database/migration.sql
@@ -112,6 +114,7 @@ includes/settings_service.php
 includes/site_settings.php
 includes/sms_config.php
 includes/smtp_mailer.php
+includes/time_format.php
 includes/translations.php
 includes/translations/fil.php
 includes/vendor/LICENSE-qrcode

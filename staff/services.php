@@ -219,7 +219,7 @@ foreach ($services as $s) {
       <div class="form-group form-full">
         <fieldset><legend>Available weekdays</legend><?php foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $dayIndex=>$dayName): ?><label><input type="checkbox" class="service-weekday" value="<?= $dayIndex+1 ?>" checked> <?= h($dayName) ?></label><?php endforeach; ?></fieldset>
         <label for="svcScheduleMode">Available time</label><select id="svcScheduleMode"><option value="user_defined">User-defined time</option><option value="fixed">Fixed time slots</option></select>
-        <label for="svcTimeSlots">Slot times (24-hour, separated by commas)</label><input id="svcTimeSlots" placeholder="09:00, 10:30, 13:30">
+        <label for="svcTimeSlots">Slot times (12-hour AM/PM, separated by commas)</label><input id="svcTimeSlots" placeholder="9:00 AM, 10:30 AM, 1:30 PM" aria-describedby="slotTimeHelp"><small id="slotTimeHelp">Use AM or PM for every time. 12:00 AM is midnight; 12:00 PM is noon.</small>
         <label for="svcSlotCapacity">Applications per time (0 = no limit)</label><input id="svcSlotCapacity" type="number" min="0" value="1">
         <label>Requirements Note</label>
         <textarea id="svcReqNote" rows="2" placeholder="General notes about requirements..."></textarea>
@@ -494,7 +494,7 @@ function openEdit(id) {
             document.getElementById('svcDescription').value = s.description || '';
             document.getElementById('svcFee').value = parseFloat(s.fee || 0).toFixed(2);
             document.getElementById('svcMaxDaily').value = s.max_daily_limit || 0;
-            document.getElementById('svcScheduleMode').value=s.schedule_mode||'user_defined';document.getElementById('svcTimeSlots').value=JSON.parse(s.time_slots||'[]').join(', ');document.getElementById('svcSlotCapacity').value=s.slot_capacity??1;
+            document.getElementById('svcScheduleMode').value=s.schedule_mode||'user_defined';document.getElementById('svcTimeSlots').value=JSON.parse(s.time_slots||'[]').map(ViscarTime.format).join(', ');document.getElementById('svcSlotCapacity').value=s.slot_capacity??1;
             const days=JSON.parse(s.available_weekdays||'[1,2,3,4,5,6,7]');document.querySelectorAll('.service-weekday').forEach(el=>el.checked=days.includes(Number(el.value)));
             document.getElementById('svcReqNote').value = s.requirements_note || '';
             document.getElementById('svcStatus').value = s.status;
@@ -506,15 +506,24 @@ function serviceTypeChanged() {
     const type = document.getElementById('svcGeneral').value;
     document.getElementById('svcName').value = type === 'Other / Custom' ? '' : type;
 }
+function clearEditorErrors(modal){document.querySelectorAll('#'+modal+' .field-error').forEach(el=>el.remove());document.querySelectorAll('#'+modal+' [aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));}
+function showEditorErrors(modal,errors,message){
+    const fields={name:'svcName',fee:'svcFee',max_daily_limit:'svcMaxDaily',slot_capacity:'svcSlotCapacity',time_slots:'svcTimeSlots',available_weekdays:'svcScheduleMode',field_label:'fieldLabel',field_name:'fieldName',field_options:'fieldOptions'};
+    let first=null;
+    for(const [key,text] of Object.entries(errors)){const input=document.getElementById(fields[key]);if(!input)continue;const error=document.createElement('span');error.className='field-error';error.id=input.id+'Error';error.textContent=text;input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby',error.id);input.after(error);first??=input;}
+    if(!first&&message){const error=document.createElement('p');error.className='field-error';error.setAttribute('role','alert');error.textContent=message;(document.querySelector('#'+modal+' .modal-actions')||document.getElementById('fieldSaveBtn')).before(error);}
+    first?.focus();
+}
 function saveService() {
+    clearEditorErrors('serviceModal');
     const id = document.getElementById('svcId').value;
     const name = document.getElementById('svcName').value.trim();
-    if (!name) { showToast('Service name is required.', 'error'); return; }
+    if (!name) { showEditorErrors('serviceModal',{name:'Enter a service name.'});return; }
 
     setLoading(true);
     const fd = new FormData();
     fd.append('name', name);
-    fd.append('schedule_mode',document.getElementById('svcScheduleMode').value);fd.append('time_slots',document.getElementById('svcTimeSlots').value);fd.append('slot_capacity',document.getElementById('svcSlotCapacity').value);
+    fd.append('time_slots_format','12h');fd.append('schedule_mode',document.getElementById('svcScheduleMode').value);fd.append('time_slots',document.getElementById('svcTimeSlots').value);fd.append('slot_capacity',document.getElementById('svcSlotCapacity').value);
     fd.append('general_type', document.getElementById('svcGeneral').value);
     fd.append('classification', document.getElementById('svcClassification').value);
     fd.append('amount_mode', document.getElementById('svcMode').value);
@@ -532,6 +541,7 @@ function saveService() {
         .then(r => r.json()).then(data => {
             setLoading(false);
             showToast(data.success ? '[icon:check] ' + data.message : data.message, data.success ? 'success' : 'error');
+            if(!data.success)showEditorErrors('serviceModal',data.errors||{},data.message);
             if (data.success) {closeModal('serviceModal');setTimeout(() => location.reload(), 800);}
         }).catch(() => { setLoading(false); showToast('Network error.', 'error'); });
 }
@@ -617,7 +627,8 @@ function loadFields(serviceId) {
 function autoFieldName() {
     if (document.getElementById('fieldId').value) return;
     const label = document.getElementById('fieldLabel').value;
-    const name = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    let name = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    if(/^[0-9]/.test(name))name='field_'+name;
     document.getElementById('fieldName').value = name;
 }
 
@@ -627,6 +638,7 @@ function toggleFieldOptions() {
 }
 
 function resetFieldForm() {
+    clearEditorErrors('fieldsModal');
     document.getElementById('fieldId').value = '';
     document.getElementById('fieldLabel').value = '';
     document.getElementById('fieldName').value = '';
@@ -657,10 +669,11 @@ function editField(id) {
 }
 
 function saveField() {
+    clearEditorErrors('fieldsModal');
     const serviceId = document.getElementById('fieldsServiceId').value;
     const fieldId = document.getElementById('fieldId').value;
     const label = document.getElementById('fieldLabel').value.trim();
-    if (!label) { showToast('Field label is required.', 'error'); return; }
+    if (!label) { showEditorErrors('fieldsModal',{field_label:'Enter a field label.'});return; }
 
     const fd = new FormData();
     fd.append('field_label', label);
@@ -683,6 +696,7 @@ function saveField() {
         .then(r => r.json()).then(data => {
             setLoading(false);
             showToast(data.success ? '[icon:check] ' + data.message : data.message, data.success ? 'success' : 'error');
+            if(!data.success)showEditorErrors('fieldsModal',data.errors||{},data.message);
             if (data.success) {
                 resetFieldForm();
                 loadFields(serviceId);

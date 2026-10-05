@@ -330,7 +330,7 @@
     var sched = document.getElementById('selSchedule').value;
     if (sched) {
       var dt = new Date(sched);
-      html += '<div class="review-row"><span class="review-label">Schedule</span><span class="review-value">' + dt.toLocaleString('en-PH', {dateStyle:'long', timeStyle:'short'}) + '</span></div>';
+      html += '<div class="review-row"><span class="review-label">Schedule</span><span class="review-value">' + dt.toLocaleString('en-PH', {dateStyle:'long', timeStyle:'short',hour12:true}) + '</span></div>';
     }
 
     /* Form fields */

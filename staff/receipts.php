@@ -498,7 +498,7 @@ function viewReceipt(id) {
                   ['Payment Method', d.payment_method || '\u2014'],
                   ['Reference #', d.reference_number || '\u2014'],
                   ['Issued By', d.issued_by_name || '\u2014'],
-                  ['Issued At', d.issued_at ? new Date(d.issued_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '\u2014'],
+                  ['Issued At', d.issued_at ? new Date(d.issued_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}) : '\u2014'],
                   ['Notes', d.notes || '\u2014']
                 ].map(([l,v])=>`
                   <div style="background:#F8F6F2;border-radius:8px;padding:10px 12px${l==='Notes'?';grid-column:1/-1':''}">
