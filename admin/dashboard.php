@@ -43,42 +43,42 @@ include 'includes/layout.php';
 <?php render_dashboard_filter(); ?>
 <!-- STAT CARDS -->
 <div class="stats-grid">
-  <div class="stat-card stat-navy">
+  <a href="parishes.php" class="stat-card stat-navy">
     <div class="stat-icon">[icon:church]</div>
     <div class="stat-label">Total Parishes</div>
     <div class="stat-value" id="stat-parishes"><?php echo $total_parishes; ?></div>
     <div class="stat-delta">Active vicariate territories</div>
-  </div>
-  <div class="stat-card stat-blue">
+  </a>
+  <a href="users.php" class="stat-card stat-blue">
     <div class="stat-icon">[icon:user]</div>
     <div class="stat-label">Total Users</div>
     <div class="stat-value" id="stat-users"><?php echo number_format($total_users); ?></div>
     <div class="stat-delta">Registered parishioners &amp; staff</div>
-  </div>
-  <div class="stat-card stat-amber">
+  </a>
+  <a href="applications.php" class="stat-card stat-amber">
     <div class="stat-icon">[icon:clipboard]</div>
     <div class="stat-label">Applications</div>
     <div class="stat-value" id="stat-apps"><?php echo number_format($total_applications); ?></div>
     <div class="stat-delta"><span id="stat-pending-sub"><?php echo $pending_apps; ?></span> pending review</div>
-  </div>
-  <div class="stat-card stat-gold">
+  </a>
+  <a href="finance.php" class="stat-card stat-gold">
     <div class="stat-icon">₱</div>
     <div class="stat-label">Verified Revenue</div>
     <div class="stat-value" id="stat-revenue">₱<?php echo number_format($total_revenue); ?></div>
     <div class="stat-delta">Completed payments</div>
-  </div>
-  <div class="stat-card stat-green">
+  </a>
+  <a href="finance.php" class="stat-card stat-green">
     <div class="stat-icon">[icon:sun]</div>
     <div class="stat-label">Today's Revenue</div>
     <div class="stat-value" id="stat-today">₱<?php echo number_format($today_revenue); ?></div>
     <div class="stat-delta"><?php echo date('F j, Y'); ?></div>
-  </div>
-  <div class="stat-card stat-wine">
+  </a>
+  <a href="applications.php?status=pending" class="stat-card stat-wine">
     <div class="stat-icon">[icon:clock]</div>
     <div class="stat-label">Pending Apps</div>
     <div class="stat-value" id="stat-pending"><?php echo $pending_apps; ?></div>
     <div class="stat-delta down">Awaiting action</div>
-  </div>
+  </a>
 </div>
 
 <?php if($pending_apps > 0): ?>
@@ -260,4 +260,5 @@ refreshInterval = setInterval(refreshStats, 60000);
 window.addEventListener('beforeunload', () => clearInterval(refreshInterval));
 </script>
 
+<?php require APP_ROOT.'/includes/service_trend.php'; ?>
 <?php include 'includes/layout_footer.php'; ?>

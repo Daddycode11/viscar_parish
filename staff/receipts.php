@@ -3,12 +3,12 @@ require_once __DIR__ . '/../includes/access.php';
 require_once __DIR__ . '/../includes/workflow_routes.php';
 
 /**
- * Official Receipts — Bookkeeper Role
+ * Acknowledgement Receipts — Bookkeeper Role
  * Features: generate receipts for completed payments, search/filter, print, pagination
  */
 
 $page_id    = 'receipts';
-$page_title = 'Official Receipts';
+$page_title = 'Acknowledgement Receipts';
 $page_sub   = 'Receipts';
 require_once __DIR__ . '/includes/layout.php';
 require_once __DIR__ . '/../includes/pdf.php';
@@ -27,7 +27,7 @@ if (isset($_GET['ajax'])) {
 
     // Get pending payments (completed, no receipt)
     if ($_GET['ajax'] === 'pending_payments') {
-        $stmt = $conn->prepare("SELECT p.id, p.amount, p.payment_method, p.reference_number, p.paid_at,
+        $stmt = $conn->prepare("SELECT p.id, p.amount, COALESCE(p.manual_method_name,p.payment_method) payment_method, p.reference_number, p.paid_at,
                                        u.name AS parishioner_name, s.name AS service_name, pa.name AS parish_name
                                 FROM (SELECT * FROM payments WHERE application_id IN (SELECT id FROM applications WHERE parish_id = {$scopeParish})) p
                                 JOIN (SELECT * FROM applications WHERE parish_id = {$scopeParish}) a ON p.application_id = a.id
@@ -53,7 +53,7 @@ if (isset($_GET['ajax'])) {
         }
 
         // Verify payment exists and has no receipt
-        $stmt = $conn->prepare("SELECT p.id, p.amount, p.payment_method, p.reference_number,
+        $stmt = $conn->prepare("SELECT p.id, p.amount, COALESCE(p.manual_method_name,p.payment_method) payment_method, p.reference_number,
                                        u.id AS user_id, u.name AS parishioner_name,
                                        s.name AS service_name, pa.name AS parish_name
                                 FROM (SELECT * FROM payments WHERE application_id IN (SELECT id FROM applications WHERE parish_id = {$scopeParish})) p
@@ -119,7 +119,7 @@ if (isset($_GET['ajax'])) {
     // Get receipt detail
     if ($_GET['ajax'] === 'get' && isset($_GET['id'])) {
         $id = (int)$_GET['id'];
-        $stmt = $conn->prepare("SELECT r.*, u.name AS issued_by_name, p.payment_method, p.reference_number
+        $stmt = $conn->prepare("SELECT r.*, u.name AS issued_by_name, COALESCE(p.manual_method_name,p.payment_method) payment_method, p.reference_number
                                 FROM (SELECT * FROM receipts WHERE payment_id IN (SELECT p.id FROM payments p JOIN applications a ON a.id=p.application_id WHERE a.parish_id = {$scopeParish})) r
                                 LEFT JOIN (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish})) u ON r.issued_by = u.id
                                 LEFT JOIN (SELECT * FROM payments WHERE application_id IN (SELECT id FROM applications WHERE parish_id = {$scopeParish})) p ON r.payment_id = p.id
@@ -135,7 +135,7 @@ if (isset($_GET['ajax'])) {
     // Print receipt
     if ($_GET['ajax'] === 'print' && isset($_GET['id'])) {
         $id = (int)$_GET['id'];
-        $stmt = $conn->prepare("SELECT r.*, u.name AS issued_by_name, p.payment_method, p.reference_number
+        $stmt = $conn->prepare("SELECT r.*, u.name AS issued_by_name, COALESCE(p.manual_method_name,p.payment_method) payment_method, p.reference_number
                                 FROM (SELECT * FROM receipts WHERE payment_id IN (SELECT p.id FROM payments p JOIN applications a ON a.id=p.application_id WHERE a.parish_id = {$scopeParish})) r
                                 LEFT JOIN (SELECT * FROM users WHERE parish_id = {$scopeParish} OR id IN (SELECT user_id FROM applications WHERE parish_id = {$scopeParish})) u ON r.issued_by = u.id
                                 LEFT JOIN (SELECT * FROM payments WHERE application_id IN (SELECT id FROM applications WHERE parish_id = {$scopeParish})) p ON r.payment_id = p.id
@@ -227,7 +227,7 @@ $cnt_pending = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM payme
 <!-- Generate Receipt Modal -->
 <div class="modal-wrap" id="generateModal">
   <div class="modal" style="max-width:600px">
-    <h2>Generate Official Receipt</h2>
+    <h2>Generate Acknowledgement Receipt</h2>
     <p>Select a completed payment to issue an official receipt.</p>
     <div id="pendingPaymentsList" style="margin-bottom:16px">
       <div style="text-align:center;padding:30px;color:var(--ink-30)">Loading payments...</div>
@@ -268,7 +268,7 @@ $cnt_pending = (int)$conn->query("SELECT COUNT(*) as t FROM (SELECT * FROM payme
 <div class="sec-head">
   <div class="sec-head-left">
     <div class="sec-tag">Financial Management</div>
-    <h1 class="sec-title">Official Receipts</h1>
+    <h1 class="sec-title">Acknowledgement Receipts</h1>
     <p class="sec-sub">Generate and manage official receipts for completed payments.</p>
   </div>
   <div style="display:flex;gap:8px;align-items:center">

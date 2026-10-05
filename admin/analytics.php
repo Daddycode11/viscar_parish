@@ -123,4 +123,5 @@ include 'includes/layout.php';
 </div>
 
 <div class="card"><div class="card-body"><h3>Revenue estimate</h3><?php $rev=$conn->query("SELECT COALESCE(SUM(amount),0)/6 amount FROM payments WHERE status IN ('completed','refunded') AND COALESCE(verified_at,paid_at)>=DATE_SUB(DATE_FORMAT(CURDATE(),'%Y-%m-01'),INTERVAL 6 MONTH) AND COALESCE(verified_at,paid_at)<DATE_FORMAT(CURDATE(),'%Y-%m-01')")->fetch_assoc();?><p>Next-month estimate: PHP <?=number_format($rev['amount'],2)?></p><p>Simple average of verified revenue over the previous six complete calendar months, including months with zero revenue. This estimate is not a guaranteed collection.</p></div></div>
+<?php require APP_ROOT.'/includes/service_trend.php'; ?>
 <?php include 'includes/layout_footer.php'; ?>

@@ -25,6 +25,8 @@ if (isset($_POST['register'])) {
         $message = 'All fields are required.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = 'Please enter a valid email address.';
+    } elseif (!valid_mobile_number($phone)) {
+        $message = 'Enter an 11-digit mobile number starting with 09, or its +63 equivalent.';
     } elseif (strlen($password) < 8) {
         $message = 'Password must be at least 8 characters.';
     } elseif ($password !== $confirm) {
@@ -253,7 +255,7 @@ require APP_ROOT.'/includes/public_header.php';
           <div class="field">
             <label for="phone">Mobile Number</label>
             <input type="tel" id="phone" name="phone" placeholder="09XX XXX XXXX"
-                   autocomplete="tel" required
+                   autocomplete="tel" maxlength="13" pattern="(?:09[0-9]{9}|[+]639[0-9]{9}|639[0-9]{9})" required
                    value="<?php echo htmlspecialchars($_POST['phone'] ?? ''); ?>">
           </div>
           <div class="field">

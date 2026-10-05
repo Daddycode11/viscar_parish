@@ -8,7 +8,7 @@
  month.value=localDate.slice(0,7);month.min=month.value;
  const grid=document.createElement('div');grid.className='availability-grid';grid.setAttribute('aria-label','Available dates');
  const status=document.createElement('p');status.setAttribute('role','status');
- box.append(month,status,grid);schedule.before(box);
+ const legend=document.createElement('div');legend.className='availability-legend';legend.innerHTML='<span><i class=available></i>Available</span><span><i class=full></i>Full</span><span><i class=past></i>Past / unavailable</span>';const times=document.createElement('select');times.setAttribute('aria-label','Available time');times.hidden=true;box.append(month,legend,status,grid,times);schedule.before(box);
  let serial=0;
  window.refreshAvailability=async()=>{
   const S=window.getBookingSelection();if(!S.service_id)return;
@@ -17,8 +17,8 @@
    const query=new URLSearchParams({ajax:'availability',service_id:S.service_id,parish_id:S.parish_id,month:month.value});
    const result=await fetch('apply_service.php?'+query);const data=await result.json();if(request!==serial)return;
    if(!data.ok)throw Error(data.message||'Unable to load availability.');
-   status.textContent='Green: available. Red: full. Grey: past or unavailable weekday. Select a date, then choose a time.';
-   for(const day of data.days){const button=document.createElement('button');button.type='button';button.textContent=String(Number(day.date.slice(-2)));button.disabled=day.full||day.past||day.unavailable;button.className=(day.past||day.unavailable)?'past':day.full?'full':'available';button.dataset.date=day.date;button.setAttribute('aria-label',day.date+(day.unavailable?' unavailable':day.full?' full':day.past?' past':' available'));button.onclick=()=>{schedule.value=day.date+'T09:00';schedule.dispatchEvent(new Event('change'));};grid.append(button);}
+   const fixed=data.schedule_mode==='fixed';schedule.hidden=fixed;times.hidden=true;status.textContent='Select a green date, then choose a time.';
+   for(const day of data.days){const button=document.createElement('button');button.type='button';button.textContent=String(Number(day.date.slice(-2)));button.disabled=day.full||day.past||day.unavailable;button.className=(day.past||day.unavailable)?'past':day.full?'full':'available';button.dataset.date=day.date;button.setAttribute('aria-label',day.date+(day.unavailable?' unavailable':day.full?' full':day.past?' past':' available'));button.onclick=()=>{if(fixed){times.replaceChildren(new Option('Choose an available time',''));for(const slot of day.slots){const option=new Option(slot.time+(slot.available?'':' ? unavailable'),slot.time);option.disabled=!slot.available;times.add(option);}times.hidden=false;schedule.value='';times.onchange=()=>{schedule.value=times.value?day.date+'T'+times.value:'';schedule.dispatchEvent(new Event('change'));};}else{schedule.value=day.date+'T09:00';}schedule.dispatchEvent(new Event('change'));};grid.append(button);}
    markSelected();
   }catch(error){if(request===serial)status.textContent=error.message;}
  };

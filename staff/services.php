@@ -218,6 +218,9 @@ foreach ($services as $s) {
       </div>
       <div class="form-group form-full">
         <fieldset><legend>Available weekdays</legend><?php foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $dayIndex=>$dayName): ?><label><input type="checkbox" class="service-weekday" value="<?= $dayIndex+1 ?>" checked> <?= h($dayName) ?></label><?php endforeach; ?></fieldset>
+        <label for="svcScheduleMode">Available time</label><select id="svcScheduleMode"><option value="user_defined">User-defined time</option><option value="fixed">Fixed time slots</option></select>
+        <label for="svcTimeSlots">Slot times (24-hour, separated by commas)</label><input id="svcTimeSlots" placeholder="09:00, 10:30, 13:30">
+        <label for="svcSlotCapacity">Applications per time (0 = no limit)</label><input id="svcSlotCapacity" type="number" min="0" value="1">
         <label>Requirements Note</label>
         <textarea id="svcReqNote" rows="2" placeholder="General notes about requirements..."></textarea>
       </div>
@@ -466,6 +469,7 @@ function openCreate() {
     document.getElementById('svcDescription').value = '';
     document.getElementById('svcFee').value = '0.00';
     document.getElementById('svcMaxDaily').value = '0';
+    document.getElementById('svcScheduleMode').value='user_defined';document.getElementById('svcTimeSlots').value='';document.getElementById('svcSlotCapacity').value='1';
     document.querySelectorAll('.service-weekday').forEach(el=>el.checked=true);
     document.getElementById('svcReqNote').value = '';
     document.getElementById('svcStatus').value = 'active';
@@ -490,6 +494,7 @@ function openEdit(id) {
             document.getElementById('svcDescription').value = s.description || '';
             document.getElementById('svcFee').value = parseFloat(s.fee || 0).toFixed(2);
             document.getElementById('svcMaxDaily').value = s.max_daily_limit || 0;
+            document.getElementById('svcScheduleMode').value=s.schedule_mode||'user_defined';document.getElementById('svcTimeSlots').value=JSON.parse(s.time_slots||'[]').join(', ');document.getElementById('svcSlotCapacity').value=s.slot_capacity??1;
             const days=JSON.parse(s.available_weekdays||'[1,2,3,4,5,6,7]');document.querySelectorAll('.service-weekday').forEach(el=>el.checked=days.includes(Number(el.value)));
             document.getElementById('svcReqNote').value = s.requirements_note || '';
             document.getElementById('svcStatus').value = s.status;
@@ -506,10 +511,10 @@ function saveService() {
     const name = document.getElementById('svcName').value.trim();
     if (!name) { showToast('Service name is required.', 'error'); return; }
 
-    closeModal('serviceModal');
     setLoading(true);
     const fd = new FormData();
     fd.append('name', name);
+    fd.append('schedule_mode',document.getElementById('svcScheduleMode').value);fd.append('time_slots',document.getElementById('svcTimeSlots').value);fd.append('slot_capacity',document.getElementById('svcSlotCapacity').value);
     fd.append('general_type', document.getElementById('svcGeneral').value);
     fd.append('classification', document.getElementById('svcClassification').value);
     fd.append('amount_mode', document.getElementById('svcMode').value);
@@ -527,7 +532,7 @@ function saveService() {
         .then(r => r.json()).then(data => {
             setLoading(false);
             showToast(data.success ? '[icon:check] ' + data.message : data.message, data.success ? 'success' : 'error');
-            if (data.success) setTimeout(() => location.reload(), 800);
+            if (data.success) {closeModal('serviceModal');setTimeout(() => location.reload(), 800);}
         }).catch(() => { setLoading(false); showToast('Network error.', 'error'); });
 }
 

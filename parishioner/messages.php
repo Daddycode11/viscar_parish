@@ -14,7 +14,7 @@ if (isset($_GET['ajax'])) {
     // List conversations (staff members this parishioner has chatted with)
     if ($_GET['ajax'] === 'conversations') {
         $stmt = $conn->prepare("
-            SELECT u.id, u.name, u.email, u.role,
+            SELECT u.id, COALESCE(pa.name,'Parish office') name, '' email, 'parish office' role,
                 (SELECT body FROM messages m2
                  WHERE ((m2.sender_id=u.id AND m2.receiver_id=?) OR (m2.sender_id=? AND m2.receiver_id=u.id))
                  ORDER BY m2.created_at DESC LIMIT 1) as last_message,
@@ -23,7 +23,7 @@ if (isset($_GET['ajax'])) {
                  ORDER BY m3.created_at DESC LIMIT 1) as last_time,
                 (SELECT COUNT(*) FROM messages m4
                  WHERE m4.sender_id=u.id AND m4.receiver_id=? AND m4.is_read=0) as unread_count
-            FROM users u
+            FROM users u LEFT JOIN parishes pa ON pa.id=u.parish_id
             WHERE u.role IN ('secretary','bookkeeper') AND u.id IN (
                 SELECT DISTINCT sender_id FROM messages WHERE receiver_id=?
                 UNION
@@ -98,10 +98,10 @@ if (isset($_GET['ajax'])) {
         $q = '%' . trim($_GET['q']) . '%';
         $parish = $user['parish_id'];
         $stmt = $conn->prepare("
-            SELECT id, name, email, role
-            FROM users
-            WHERE role IN ('secretary','bookkeeper') AND status='active' AND (name LIKE ? OR email LIKE ?)
-            ORDER BY (parish_id = ?) DESC, name ASC
+            SELECT u.id, p.name, '' email, 'parish office' role
+            FROM parishes p JOIN users u ON u.id=(SELECT MIN(s.id) FROM users s WHERE s.parish_id=p.id AND s.role='secretary' AND s.status='active')
+            WHERE p.status='active' AND (p.name LIKE ? OR p.location LIKE ?)
+            ORDER BY (p.id = ?) DESC, p.name ASC
             LIMIT 20
         ");
         $stmt->bind_param('ssi', $q, $q, $parish);
@@ -234,10 +234,10 @@ if (isset($_GET['ajax'])) {
 <div class="modal-wrap" id="composeModal">
   <div class="modal" style="max-width:500px">
     <h2>New Message</h2>
-    <p>Search for a staff member and compose your message.</p>
+    <p>Search for a parish and compose your message.</p>
     <div class="form-group">
       <label>Recipient</label>
-      <input type="text" id="composeSearch" class="msg-search" placeholder="Search staff by name or email..." autocomplete="off">
+      <input type="text" id="composeSearch" class="msg-search" placeholder="Search by parish name..." autocomplete="off">
       <div class="compose-results" id="composeResults"></div>
       <div id="selectedRecipient"></div>
     </div>

@@ -44,6 +44,14 @@ if (($_SERVER['REQUEST_METHOD']??'GET')==='POST' && in_array($action,['create','
             $limit=filter_var($_POST['max_daily_limit']??0,FILTER_VALIDATE_INT);
             must($limit!==false && $limit>=0,'Daily limit must be a nonnegative integer.');
             $status=input_text($_POST,'status')?:'active';must(in_array($status,['active','inactive'],true),'Invalid status.');
+            $scheduleMode=input_text($_POST,'schedule_mode')?:($existing['schedule_mode']??'user_defined');
+            must(in_array($scheduleMode,['fixed','user_defined'],true),'Choose fixed slots or user-defined time.');
+            $slotCapacity=filter_var($_POST['slot_capacity']??$existing['slot_capacity']??1,FILTER_VALIDATE_INT);
+            must($slotCapacity!==false&&$slotCapacity>=0,'Slot capacity must be a nonnegative integer (0 means no limit).');
+            $slots=isset($_POST['time_slots'])?preg_split('/[\s,]+/',trim(input_text($_POST,'time_slots',2000)),-1,PREG_SPLIT_NO_EMPTY):service_time_slots($existing??[]);
+            foreach($slots as $slot)must(preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/',$slot)===1,'Enter slot times in HH:MM format.');
+            $slots=array_values(array_unique($slots));sort($slots);
+            must($scheduleMode!=='fixed'||count($slots)>0,'Enter at least one available time.');
             $sacrament=$classification==='Sacramental'?($general==='Matrimony'?'Marriage':$general):null;
             if ($general==='Other / Custom') $sacrament=$classification==='Sacramental'?($existing['sacrament_type']??null):null;
             $args=[$name,input_text($_POST,'description',10000),$fee,$limit,input_text($_POST,'requirements_note',10000),$status,$general,$classification,$mode,$sacrament];
@@ -56,6 +64,7 @@ if (($_SERVER['REQUEST_METHOD']??'GET')==='POST' && in_array($action,['create','
                 $days=array_values(array_unique(array_map('intval',$days)));sort($days);
                 $conn->execute_query('UPDATE services SET available_weekdays=? WHERE id=?',[json_encode($days),$id]);
             }
+            $conn->execute_query('UPDATE services SET schedule_mode=?,time_slots=?,slot_capacity=? WHERE id=?',[$scheduleMode,json_encode($slots),$slotCapacity,$id]);
             auditLog($user['id'],$action.'_service','service',$id);
             return ['id'=>$id,'message'=>'Service saved.'];
         });

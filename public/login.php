@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $message = 'Invalid email or password. Please try again.';
+    $message = ($_SESSION['login_blocked_until']??0)>time() ? 'Too many incorrect attempts. Please try again in five minutes.' : 'Invalid email or password. Please try again.';
 }
 ?>
 <!DOCTYPE html>
@@ -111,7 +111,7 @@ require APP_ROOT.'/includes/public_header.php';
       </p>
 
       <div class="card-footer">
-        By signing in you agree to our terms of service.<br>
+        By signing in you agree to our <a href="terms.php">Terms of Use</a> and acknowledge our <a href="privacy.php">Data Privacy Notice</a>.<br>
         &copy; <?php echo date('Y'); ?> Apostolic Vicariate of San Jose.
       </div>
 

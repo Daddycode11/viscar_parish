@@ -56,7 +56,7 @@
     }
 
     if (n === 4) loadFields();
-    if (n === 6) {buildReview();document.getElementById('bookingPayment').style.display=(S.service_fee>0||S.amount_mode==='user_defined')?'':'none';}
+    if (n === 6) {buildReview();loadManualMethods();document.getElementById('bookingPayment').style.display=(S.service_fee>0||S.amount_mode==='user_defined')?'':'none';}
 
     S.step = n;
     for (var i = 1; i <= 7; i++) {
@@ -311,6 +311,13 @@
   }
 
   /* ─── Build review (Step 6) ─── */
+  async function loadManualMethods(){
+    const container=document.getElementById('manualPaymentMethods');container.replaceChildren();
+    const parish=S.parish_id;
+    try{const response=await fetch('apply_service.php?ajax=payment_methods&parish_id='+parish);const data=await response.json();if(parish!==S.parish_id)return;
+      for(const method of data.methods||[]){const label=document.createElement('label'),radio=document.createElement('input');radio.type='radio';radio.name='booking_payment_method';radio.value='gcash';radio.dataset.methodId=method.id;label.append(radio,document.createTextNode(method.name));const details=document.createElement('div');details.hidden=true;const instructions=document.createElement('p');instructions.textContent=method.instructions;const img=document.createElement('img');img.src='../public/payment_file.php?method='+method.id;img.alt=method.name+' payment QR';img.style.maxWidth='220px';details.append(instructions,img);container.append(label,details);radio.addEventListener('change',()=>{container.querySelectorAll('div').forEach(el=>el.hidden=true);details.hidden=!radio.checked;});}
+    }catch(_){container.textContent='Unable to load digital-bank methods. Please retry.';}
+  }
   function buildReview() {
     var html = '';
     html += '<div class="review-row"><span class="review-label">Parish</span><span class="review-value">' + esc(S.parish_name) + '</span></div>';
@@ -352,7 +359,7 @@
     const method=document.querySelector('[name=booking_payment_method]:checked')?.value||'';
     const reference=document.getElementById('bookingPaymentReference').value.trim();
     if(S.service_fee>0&&!method){showToast('Choose a payment method before submitting.','error');return;}
-    if(S.service_fee>0&&method==='gcash'&&!/^[A-Za-z0-9-]{6,100}$/.test(reference)){showToast('Enter a valid GCash reference.','error');return;}
+    if(S.service_fee>0&&method==='gcash'&&!/^[A-Za-z0-9-]{6,100}$/.test(reference)){showToast('Enter a valid digital payment reference.','error');return;}
 
     var amountInput = document.getElementById('userAmount');
     if (amountInput && (!/^\d{1,8}(\.\d{1,2})?$/.test(amountInput.value) || !amountInput.reportValidity())) {
@@ -381,7 +388,7 @@
     fd.append('amount', S.service_fee.toFixed(2));
     fd.append('schedule', S.schedule);
     fd.append('form_data', JSON.stringify(formDataObj));
-    fd.append('payment_method',method);fd.append('reference_number',reference);
+    fd.append('payment_method',method);fd.append('reference_number',reference);fd.append('manual_method_id',document.querySelector('[name=booking_payment_method]:checked')?.dataset.methodId||'');const proof=document.getElementById('bookingPaymentProof')?.files[0];if(proof)fd.append('payment_proof',proof);
 
     fd.append('attachment_count', S.requirements.reduce((n,r)=>n+(document.getElementById('req_'+r.id)?.files.length||0),0));
     /* Attach files */

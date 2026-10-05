@@ -67,8 +67,9 @@ function owned_application(int $id, array $actor, bool $lock = false): array
 function capacity(array $service, string $schedule, int $exclude = 0): void
 {
     must(service_day_allowed($service,$schedule),'This service is unavailable on the selected weekday.');
+    if(($service['schedule_mode']??'user_defined')==='fixed')must(in_array(substr($schedule,11,5),service_time_slots($service),true)&&substr($schedule,17,2)==='00','Choose one of the available service times.');
     $sameSchedule = sqlrow(
-        "SELECT id
+        "SELECT COUNT(*) total
          FROM applications
          WHERE service_id=?
            AND schedule=?
@@ -78,7 +79,7 @@ function capacity(array $service, string $schedule, int $exclude = 0): void
     );
 
     must(
-        $sameSchedule === null,
+        (int)($service['slot_capacity']??1)===0 || (int)$sameSchedule['total']<(int)($service['slot_capacity']??1),
         'This service time is already booked. Choose another time.'
     );
 
@@ -184,6 +185,7 @@ function submit_booking(array $actor, array $input, array $files): array
         ];
     }
 
+    unset($files['payment_proof']); // Payment proof is validated separately and is not a service requirement.
     $savedAttachments = save_attachment_groups(validate_attachment_groups($expectedFiles, $files));
     $uploadedFiles = $savedAttachments['primary'];
 
@@ -219,7 +221,7 @@ function submit_booking(array $actor, array $input, array $files): array
     notify(
         $actor['id'],
         'Application Submitted',
-        'Your booking #' . $applicationId . ' is pending review.',
+        'Application #'.$applicationId.' | Service: '.$service['name'].' | Status: Pending review | Schedule: '.$schedule,
         'application',
         'dashboard.php'
     );
@@ -232,9 +234,9 @@ function submit_booking(array $actor, array $input, array $files): array
         'applications.php'
     );
 
-    if((float)$serviceFee>0)record_payment($actor,['application_id'=>$applicationId,'amount'=>$serviceFee,'payment_method'=>$input['payment_method'],'reference_number'=>$input['reference_number']??'']);
+    if((float)$serviceFee>0)record_payment($actor,['application_id'=>$applicationId,'amount'=>$serviceFee,'payment_method'=>$input['payment_method'],'reference_number'=>$input['reference_number']??'','manual_method_id'=>$input['manual_method_id']??0]);
     auditLog($actor['id'], 'submit', 'application', $applicationId);
-    $GLOBALS['after_commit'][]=fn()=>dispatch_to_user($actor['id'],'Application Submitted','Your booking #'.$applicationId.' is pending review.',['sms','email'],'application');
+    $GLOBALS['after_commit'][]=fn()=>dispatch_to_user($actor['id'],'Application Submitted','Application #'.$applicationId.' | Service: '.$service['name'].' | Status: Pending review | Schedule: '.$schedule,['sms','email'],'application');
 
     return [
         'app_id' => $applicationId,
@@ -377,11 +379,21 @@ function record_payment(array $actor, array $input): array
     );
 
     $referenceNumber = trim($input['reference_number'] ?? '');
+    $manualId=(int)($input['manual_method_id']??0);$manual=null;$proof=null;
+    must($paymentMethod==='cash'||$manualId>0,'Select a digital payment method configured by the parish.');
+    if($manualId){
+        $manual=sqlrow('SELECT * FROM parish_payment_methods WHERE id=? AND parish_id=? AND active=1',[$manualId,$application['parish_id']]);
+        must($manual!==null&&$paymentMethod==='gcash','Choose an available parish payment method.');
+    }
+    if($manualId||isset($_FILES['payment_proof'])){
+        $validated=validate_uploaded_files(['payment_proof'=>['required'=>$manualId>0,'label'=>'Payment receipt screenshot']],isset($_FILES['payment_proof'])?['payment_proof'=>$_FILES['payment_proof']]:[]);
+        $proof=save_uploaded_files($validated)['payment_proof']??null;
+    }
 
     must(
         $paymentMethod !== 'gcash'
             || (bool) preg_match('/^[A-Za-z0-9-]{6,100}$/', $referenceNumber),
-        'Enter a valid GCash reference.'
+        'Enter a valid digital payment reference.'
     );
 
     must(
@@ -418,6 +430,7 @@ function record_payment(array $actor, array $input): array
     );
 
     $paymentId = $conn->insert_id;
+    $conn->execute_query('UPDATE payments SET manual_method_id=?,manual_method_name=?,proof_file=? WHERE id=?',[$manualId?:null,$manual['name']??null,$proof,$paymentId]);
 
     auditLog($actor['id'], 'submit_payment', 'payment', $paymentId);
 
@@ -472,11 +485,13 @@ function confirm_payment(array $actor, int $id): array
     );
 
     auditLog($actor['id'], 'verify_payment', 'payment', $id);
+    $paymentService=sqlrow('SELECT name FROM services WHERE id=?',[$application['service_id']]);
+    $paymentMessage='Application #'.$application['id'].' | Service: '.($paymentService['name']??'Parish service').' | Payment #'.$id.' | Status: Verified | Amount: PHP '.number_format((float)$payment['amount'],2).' | Schedule: '.$application['schedule'];
 
     notify(
         $application['user_id'],
         'Payment Confirmed',
-        'Payment for booking #' . $application['id'] . ' has been verified.',
+        $paymentMessage,
         'payment',
         'dashboard.php'
     );
@@ -484,7 +499,7 @@ function confirm_payment(array $actor, int $id): array
     $GLOBALS['after_commit'][] = fn () => dispatch_to_user(
         $application['user_id'],
         'Payment Confirmed',
-        'Payment for booking #' . $application['id'] . ' has been verified.',
+        $paymentMessage,
         ['sms', 'email'],
         'payment'
     );
@@ -522,6 +537,7 @@ function decide_application(
             'UPDATE applications SET schedule=? WHERE id=?',
             [$schedule, $id]
         );
+        $conn->execute_query('UPDATE sacramental_records SET date_of_sacrament=DATE(?) WHERE application_id=?',[$schedule,$id]);
     } else {
         must(
             $application['status'] === 'pending',
@@ -552,12 +568,15 @@ function decide_application(
         create_approved_sacramental_record($actor, $application, $service);
     }
 
-    auditLog($actor['id'], $action, 'application', $id);
+    $updateMessage='Application #'.$id.' | Service: '.$service['name'].' | Status: '.($action==='assign_schedule'?'Rescheduled':($action==='approve'?'Approved':'Rejected')).' | Schedule: '.($schedule??$application['schedule']);
+    if($action==='assign_schedule')$updateMessage.=' | Previous schedule: '.$application['schedule'];
+    if(!empty($reason))$updateMessage.=' | Reason: '.$reason;
+    auditLog($actor['id'], $action, 'application', $id, $updateMessage);
 
     notify(
         $application['user_id'],
         'Application Updated',
-        'Booking #' . $id . ' was updated: ' . $action,
+        $updateMessage,
         'application',
         'dashboard.php'
     );
@@ -565,7 +584,7 @@ function decide_application(
     $GLOBALS['after_commit'][] = fn () => dispatch_to_user(
         $application['user_id'],
         'Application Updated',
-        'Booking #' . $id . ' was updated: ' . $action,
+        $updateMessage,
         ['sms', 'email'],
         'application'
     );

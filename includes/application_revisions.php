@@ -32,6 +32,7 @@ function submit_walk_in(array $actor, array $input, array $files): array
         must($owner !== null, 'Select a parishioner in your parish.');
     } else {
         $name = input_text($input,'name'); $email = input_text($input,'email'); $phone = input_text($input,'phone',50);
+        must($phone===''||valid_mobile_number($phone),'Enter a valid mobile number starting with 09 or +639.');
         must($name !== '' && (bool)filter_var($email,FILTER_VALIDATE_EMAIL), 'A name and valid email are required.');
         must(sqlrow('SELECT id FROM users WHERE email=?',[$email]) === null, 'That email already exists. Select the existing parishioner or ask the administrator to verify their parish.');
         $conn->execute_query("INSERT INTO users(name,email,phone,password,role,parish_id,status) VALUES(?,?,?,?,'parishioner',?,'active')",[$name,$email,$phone,password_hash(bin2hex(random_bytes(32)),PASSWORD_DEFAULT),$actor['parish_id']]);

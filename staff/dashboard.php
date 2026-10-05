@@ -341,55 +341,55 @@ tbody tr:hover .app-row-actions { opacity: 1; }
 <?php render_dashboard_filter(); ?>
 <div class="stats-grid">
 <?php if ($staff_role === 'secretary'): ?>
-  <div class="stat-card stat-amber">
+  <a href="applications.php?status=pending" class="stat-card stat-amber">
     <div class="stat-icon">[icon:clock]</div>
     <div class="stat-label">Pending Applications</div>
     <div class="stat-value" id="stat-pending"><?php echo $pending_apps; ?></div>
     <div class="stat-delta down">Awaiting your review</div>
-  </div>
-  <div class="stat-card stat-green">
+  </a>
+  <a href="applications.php?status=approved" class="stat-card stat-green">
     <div class="stat-icon">[icon:check]</div>
     <div class="stat-label">Approved</div>
     <div class="stat-value" id="stat-approved"><?php echo $approved_apps; ?></div>
     <div class="stat-delta">Processed applications</div>
-  </div>
-  <div class="stat-card stat-navy">
+  </a>
+  <a href="<?= $staff_role==='bookkeeper'?'payments.php':'applications.php' ?>" class="stat-card stat-navy">
     <div class="stat-icon">[icon:clipboard]</div>
     <div class="stat-label">Total Applications</div>
     <div class="stat-value" id="stat-total"><?php echo $total_apps; ?></div>
     <div class="stat-delta">All-time records</div>
-  </div>
-  <div class="stat-card stat-blue">
+  </a>
+  <a href="applications.php" class="stat-card stat-blue">
     <div class="stat-icon">[icon:sun]</div>
     <div class="stat-label">Today's Filings</div>
     <div class="stat-value" id="stat-today"><?php echo $today_apps; ?></div>
     <div class="stat-delta"><?php echo date('F j, Y'); ?></div>
-  </div>
+  </a>
 <?php else: // bookkeeper ?>
-  <div class="stat-card stat-gold">
+  <a href="finance.php" class="stat-card stat-gold">
     <div class="stat-icon">₱</div>
     <div class="stat-label">Total Revenue</div>
     <div class="stat-value" id="stat-revenue">₱<?php echo number_format($total_revenue); ?></div>
     <div class="stat-delta">Completed payments</div>
-  </div>
-  <div class="stat-card stat-amber">
+  </a>
+  <a href="payments.php?status=pending" class="stat-card stat-amber">
     <div class="stat-icon">[icon:clock]</div>
     <div class="stat-label">Pending Payments</div>
     <div class="stat-value" id="stat-pending-pay"><?php echo $pending_payments; ?></div>
     <div class="stat-delta down">Need verification</div>
-  </div>
-  <div class="stat-card stat-green">
+  </a>
+  <a href="finance.php" class="stat-card stat-green">
     <div class="stat-icon">[icon:sun]</div>
     <div class="stat-label">Today's Revenue</div>
     <div class="stat-value" id="stat-today-rev">₱<?php echo number_format($today_revenue); ?></div>
     <div class="stat-delta"><?php echo date('F j, Y'); ?></div>
-  </div>
-  <div class="stat-card stat-navy">
+  </a>
+  <a href="<?= $staff_role==='bookkeeper'?'payments.php':'applications.php' ?>" class="stat-card stat-navy">
     <div class="stat-icon">[icon:clipboard]</div>
     <div class="stat-label">Total Applications</div>
     <div class="stat-value" id="stat-total"><?php echo $total_apps; ?></div>
     <div class="stat-delta">All-time records</div>
-  </div>
+  </a>
 <?php endif; ?>
 </div>
 
@@ -910,4 +910,5 @@ function submitDocRequest() {
 }
 </script>
 
+<?php require APP_ROOT.'/includes/service_trend.php'; ?>
 <?php include 'includes/layout_footer.php'; ?>

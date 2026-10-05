@@ -110,7 +110,8 @@
     "review_note",
     "created_at",
     "reviewed_at",
-    "completed_at"
+    "completed_at",
+    "original_schedule"
   ],
   "audit_trail": [
     "id",
@@ -224,7 +225,10 @@
     "verified_by",
     "verified_at",
     "refunded_at",
-    "refund_request_id"
+    "refund_request_id",
+    "manual_method_id",
+    "manual_method_name",
+    "proof_file"
   ],
   "petty_cash_sets": [
     "id",
@@ -287,7 +291,10 @@
     "sacrament_type",
     "general_type",
     "classification",
-    "amount_mode"
+    "amount_mode",
+    "schedule_mode",
+    "time_slots",
+    "slot_capacity"
   ],
   "service_fields": [
     "id",
@@ -339,5 +346,15 @@
     "two_factor_enabled",
     "language",
     "auth_version"
+  ],
+  "parish_payment_methods": [
+    "id",
+    "parish_id",
+    "name",
+    "instructions",
+    "qr_file",
+    "active",
+    "created_by",
+    "created_at"
   ]
 }

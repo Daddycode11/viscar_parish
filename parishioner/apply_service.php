@@ -12,6 +12,10 @@ require_once __DIR__ . '/../includes/notifications.php';
 /* ─── AJAX ENDPOINTS ─── */
 if (isset($_GET['ajax'])) {
     header('Content-Type: application/json');
+    if($_GET['ajax']==='payment_methods'){
+        require_once __DIR__.'/../includes/manual_payments.php';
+        echo json_encode(['ok'=>true,'methods'=>manual_payment_methods((int)($_GET['parish_id']??0))]);exit;
+    }
 
     /* Services for a parish */
     if ($_GET['ajax'] === 'services' && isset($_GET['parish_id'])) {
@@ -217,7 +221,7 @@ $parishes = $conn->query("SELECT id, name FROM parishes WHERE status='active' OR
     <div class="card-body">
       <p style="font-size:.83rem;color:var(--ink-60);margin-bottom:16px">Please review your application details before submitting.</p>
       <div id="reviewSummary"></div>
-      <fieldset id="bookingPayment"><legend>Payment method</legend><p>Select payment before final submission. Payment remains pending until verified by the Bookkeeper.</p><label><input type="radio" name="booking_payment_method" value="cash"> Cash at the parish office</label><label><input type="radio" name="booking_payment_method" value="gcash"> GCash</label><label>GCash reference (required for GCash)<input id="bookingPaymentReference" maxlength="100"></label></fieldset>
+      <fieldset id="bookingPayment"><legend>Payment method</legend><p>Select payment before final submission. Payment remains pending until verified by the Bookkeeper.</p><label><input type="radio" name="booking_payment_method" value="cash"> Cash at the parish office</label><label>Digital payment reference<input id="bookingPaymentReference" maxlength="100"></label><div id="manualPaymentMethods"></div><label>Payment receipt screenshot (required for digital-bank methods)<input type="file" id="bookingPaymentProof" accept="image/png,image/jpeg,application/pdf"></label></fieldset>
       <div style="display:flex;justify-content:space-between;margin-top:20px">
         <button class="btn-sm btn-outline" onclick="goStep(5)">&larr; Back</button>
         <button class="btn-sm btn-green" onclick="submitApplication()" id="btnSubmit">[icon:check] Submit Application</button>

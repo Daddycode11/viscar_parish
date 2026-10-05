@@ -44,8 +44,8 @@ require APP_ROOT . '/' . $folder . '/includes/layout.php';
 <div class="form-group"><label><?= h(t('Reason')) ?><textarea name="reason" required minlength="5" maxlength="2000"></textarea></label></div>
 <button class="btn-sm btn-navy"><?= h(t('Submit request')) ?></button></form></div></section>
 <?php endif; ?>
-<section class="card"><div class="card-body"><table><tr><th>#</th><th><?= h(t('Booking')) ?></th><th><?= h(t('New schedule')) ?></th><th><?= h(t('Reason')) ?></th><th><?= h(t('Status')) ?></th><th><?= h(t('Decision note / refund reference')) ?></th></tr>
-<?php foreach($rows as $row): ?><tr><td><?= (int)$row['id'] ?></td><td>#<?= (int)$row['application_id'] ?> <?= h($row['service_name']) ?></td><td><?= h($row['proposed_schedule']) ?></td><td><?= h($row['reason']) ?></td><td><?= h(t(ucfirst($row['status']))) ?></td><td><?= h($row['review_note']) ?>
+<section class="card"><div class="card-body"><table><tr><th>#</th><th><?= h(t('Booking')) ?></th><th>Original schedule</th><th><?= h(t('New schedule')) ?></th><th><?= h(t('Reason')) ?></th><th><?= h(t('Status')) ?></th><th><?= h(t('Decision note / refund reference')) ?></th></tr>
+<?php foreach($rows as $row): ?><tr><td><?= (int)$row['id'] ?></td><td>#<?= (int)$row['application_id'] ?> <?= h($row['service_name']) ?></td><td><?= h($row['original_schedule']??'Not recorded (legacy request)') ?></td><td><?= h($row['proposed_schedule']) ?></td><td><?= h($row['reason']) ?></td><td><?= h(t(ucfirst($row['status']))) ?></td><td><?= h($row['review_note']) ?>
 <?php if(!$isParishioner && in_array($row['status'],['pending','approved'],true)): ?>
 <form method="post"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$row['id'] ?>"><input name="review_note" maxlength="2000" aria-label="<?= h(t('Decision note / refund reference')) ?>"><select name="decision">
 <?php if($row['status']==='pending'): ?><option value="approve"><?= h(t('Approve')) ?></option><option value="reject"><?= h(t('Reject')) ?></option><?php else: ?><option value="complete"><?= h(t('Record completed refund')) ?></option><?php endif; ?></select><button><?= h(t('Save')) ?></button></form>

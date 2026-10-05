@@ -43,6 +43,11 @@ function revision_transaction(callable $operation)
     }
 }
 
+function valid_mobile_number(string $phone): bool
+{
+    return preg_match('/^(?:09[0-9]{9}|\+639[0-9]{9}|639[0-9]{9})$/',trim($phone))===1;
+}
+
 function rate_limit(string $scope, int $limit, int $seconds): bool
 {
     global $conn;

@@ -4,7 +4,7 @@ require_once __DIR__ . '/report_data.php';
 require_once __DIR__ . '/accounting_rules.php';
 
 const ACCOUNTING_TYPES = [
-    'journal_voucher'=>'Journal Voucher', 'receipt' => 'Official Receipt', 'check_voucher' => 'Check Voucher',
+    'journal_voucher'=>'Journal Voucher', 'receipt' => 'Acknowledgement Receipt', 'check_voucher' => 'Check Voucher',
     'petty_cash_voucher' => 'Petty Cash Voucher', 'disbursement' => 'Disbursement', 'deposit' => 'Deposits',
 ];
 
@@ -114,11 +114,11 @@ function accounting_rows(array $actor, array $filters): array
     if(in_array($type,['revenue','refund'],true)) {
         $date=$type==='refund'?'p.refunded_at':'COALESCE(p.verified_at,p.paid_at)';
         $state=$type==='refund'?"p.status='refunded'":"p.status IN ('completed','refunded')";
-        return $conn->execute_query("SELECT p.id,? document_type,COALESCE(p.receipt_number,p.reference_number,CONCAT('PAY-',p.id)) document_number,DATE($date) document_date,u.name party_name,p.amount,s.name description,COALESCE(p.reference_number,'') reference,p.status,a.parish_id FROM payments p JOIN applications a ON a.id=p.application_id JOIN users u ON u.id=a.user_id JOIN services s ON s.id=a.service_id WHERE a.parish_id=? AND $state AND $date BETWEEN ? AND ? ORDER BY $date DESC,p.id DESC",[$type,$actor['parish_id'],$start,$end])->fetch_all(MYSQLI_ASSOC);
+        return $conn->execute_query("SELECT p.id,? document_type,COALESCE(p.receipt_number,p.reference_number,CONCAT('PAY-',p.id)) document_number,DATE($date) document_date,u.name party_name,p.amount,s.name service_name,s.name description,COALESCE(p.reference_number,'') reference,p.status,a.parish_id FROM payments p JOIN applications a ON a.id=p.application_id JOIN users u ON u.id=a.user_id JOIN services s ON s.id=a.service_id WHERE a.parish_id=? AND $state AND $date BETWEEN ? AND ? AND (?='' OR p.status=?) ORDER BY $date DESC,p.id DESC",[$type,$actor['parish_id'],$start,$end,$status,$status])->fetch_all(MYSQLI_ASSOC);
     }
     $rows = [];
     if ($type === '' || $type === 'receipt') {
-        $rows = $conn->execute_query("SELECT r.id,'receipt' document_type,r.receipt_number document_number,DATE(r.issued_at) document_date,r.parishioner_name party_name,r.amount,r.service_name description,COALESCE(p.reference_number,'') reference,p.status,a.parish_id FROM receipts r JOIN payments p ON p.id=r.payment_id JOIN applications a ON a.id=p.application_id WHERE a.parish_id=? AND r.issued_at BETWEEN ? AND ? AND (?='' OR p.status=?)", [$actor['parish_id'],$start,$end,$status,$status])->fetch_all(MYSQLI_ASSOC);
+        $rows = $conn->execute_query("SELECT r.id,'receipt' document_type,r.receipt_number document_number,DATE(r.issued_at) document_date,r.parishioner_name party_name,r.amount,r.service_name,r.service_name description,COALESCE(p.reference_number,'') reference,p.status,a.parish_id FROM receipts r JOIN payments p ON p.id=r.payment_id JOIN applications a ON a.id=p.application_id WHERE a.parish_id=? AND r.issued_at BETWEEN ? AND ? AND (?='' OR p.status=?)", [$actor['parish_id'],$start,$end,$status,$status])->fetch_all(MYSQLI_ASSOC);
     }
     if ($type !== 'receipt') {
         $rows = array_merge($rows, $conn->execute_query("SELECT id,document_type,document_number,document_date,party_name,amount,description,reference,status,parish_id,bank_name,bank_account_number,secretary_signatory,finance_signatory,priest_signatory FROM accounting_documents WHERE parish_id=? AND document_date BETWEEN ? AND ? AND (?='' OR document_type=?) AND (?='' OR status=?)", [$actor['parish_id'],$from,$to,$type,$type,$status,$status])->fetch_all(MYSQLI_ASSOC));

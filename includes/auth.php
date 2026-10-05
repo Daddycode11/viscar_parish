@@ -52,7 +52,7 @@ function registerUser($name, $email, $phone, $password)
 {
     global $conn;
 
-    if (!trim($name) || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($password) < 8) {
+    if (!trim($name) || !filter_var($email, FILTER_VALIDATE_EMAIL) || !valid_mobile_number($phone) || strlen($password) < 8) {
         return false;
     }
 
@@ -70,23 +70,32 @@ function loginUser($email, $password)
 {
     global $conn;
 
-    if (($_SESSION['login_blocked_until'] ?? 0) > time()) {
-        return false;
+    $bucket=hash('sha256','login:'.strtolower(trim($email)).':'.($_SERVER['REMOTE_ADDR']??'local'));
+    $conn->begin_transaction();
+    try {
+    $conn->execute_query('INSERT IGNORE INTO security_rate_limits(bucket,window_started) VALUES(?,?)',[$bucket,time()]);
+    $attempts=$conn->execute_query('SELECT * FROM security_rate_limits WHERE bucket=? FOR UPDATE',[$bucket])->fetch_assoc();
+    if((int)$attempts['attempts']>=3 && (int)$attempts['window_started']+300>time()) {
+        $_SESSION['login_blocked_until']=(int)$attempts['window_started']+300;
+        $conn->commit();return false;
     }
-
     $row = $conn->execute_query(
         "SELECT * FROM users WHERE email=? AND status='active'",
         [$email]
     )->fetch_assoc();
 
     if (!$row || !password_verify($password, $row['password'])) {
-        $_SESSION['login_attempts'] = ($_SESSION['login_attempts'] ?? 0) + 1;
-        if ($_SESSION['login_attempts'] >= 5) {
+        $count=(int)$attempts['window_started']+300<=time()?1:(int)$attempts['attempts']+1;
+        $conn->execute_query('UPDATE security_rate_limits SET attempts=?,window_started=? WHERE bucket=?',[$count,time(),$bucket]);
+        if ($count >= 3) {
             $_SESSION['login_blocked_until'] = time() + 300;
         }
+        $conn->commit();
         return false;
     }
-
+    $conn->execute_query('DELETE FROM security_rate_limits WHERE bucket=?',[$bucket]);
+    $conn->commit();
+    }catch(Throwable $error){$conn->rollback();throw $error;}
     unset($_SESSION['login_attempts'], $_SESSION['login_blocked_until']);
 
     if (!empty($row['two_factor_enabled'])) {

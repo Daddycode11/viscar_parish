@@ -8,8 +8,8 @@ subprocess.run([PHP,str(ROOT/'tools/revision_fixture.php')],check=True,cwd=ROOT)
 fixture=json.loads((OUT/'revision-fixture.json').read_text())
 env=os.environ.copy();env.update(DB_NAME=fixture['database'],APP_ENV='local',APP_URL=BASE)
 subprocess.run([PHP,str(ROOT/'tools/setup_local.php')],check=True,env=env,cwd=ROOT)
-subprocess.run([PHP,str(ROOT/'tools/migrate_separation.php')],check=True,env=env,cwd=ROOT)
-subprocess.run([PHP,str(ROOT/'tools/migrate_separation.php')],check=True,env=env,cwd=ROOT)
+subprocess.run([PHP,str(ROOT/'tools/migrate_recommendations.php')],check=True,env=env,cwd=ROOT)
+subprocess.run([PHP,str(ROOT/'tools/migrate_recommendations.php')],check=True,env=env,cwd=ROOT)
 def sql(q):return subprocess.check_output([MYSQL,'--host=127.0.0.1','--user=root','--batch','--skip-column-names',fixture['database'],'-e',q],text=True).strip()
 class Client:
  def __init__(self):self.jar=http.cookiejar.CookieJar();self.op=urllib.request.build_opener(urllib.request.ProxyHandler({}),urllib.request.HTTPCookieProcessor(self.jar));self.token='';self.auto_verify=True
@@ -72,7 +72,7 @@ try:
  r=b.get('/staff/dashboard.php?ajax=verify_payment',{'id':1});check('Duplicate confirmation blocked',r['code']==422,r['json'])
  r=b.get('/staff/receipts.php?ajax=generate',{'payment_id':1});receipt=r['json'].get('id');check('Receipt persists',bool(receipt),r['json'])
  if receipt:
-  r=p.get('/public/receipt.php?id='+str(receipt));check('Own receipt prints',r['code']==200 and 'Official Receipt' in r['text'])
+  r=p.get('/public/receipt.php?id='+str(receipt));check('Own receipt prints',r['code']==200 and 'Acknowledgement Receipt' in r['text'])
   r=o.get('/public/receipt.php?id='+str(receipt));check('Other owner receipt denied',r['code']==404)
  r=p.get('/parishioner/apply_service.php?ajax=submit',{'parish_id':1,'service_id':1,'schedule':'2030-01-15T09:00','form_data':'{}'});check('Full schedule rejected',r['code']==422,r['json'])
  r=p.get('/parishioner/apply_service.php?ajax=submit',{'parish_id':1,'service_id':2,'schedule':'2030-01-20T09:00','form_data':'{}'});check('Mismatched service rejected',r['code']==422)
@@ -111,7 +111,7 @@ try:
   r=b.get('/staff/requests.php',{'id':rid,'decision':'approve','review_note':'Approved'});check('Refund approval does not claim money returned',sql('SELECT status FROM payments WHERE id=1')=='completed')
   r=b.get('/staff/requests.php',{'id':rid,'decision':'complete','review_note':'Cash return reference TEST-001'});check('Actual refund recorded separately',sql('SELECT status FROM payments WHERE id=1')=='refunded')
   r=b.get('/staff/dashboard.php?ajax=verify_payment',{'id':1});check('Refund cannot be reconfirmed',r['code']==422)
- sql("UPDATE services SET sacrament_type='Baptism' WHERE id=1")
+ sql("UPDATE services SET sacrament_type='Baptism',classification='Sacramental',general_type='Baptism' WHERE id=1")
  r=s.get('/staff/records.php?ajax=create',{'record_type':'Baptism','parishioner_name':'Revision Child','date_of_sacrament':'2026-01-15','application_id':1});record_id=r['json'].get('id');check('Duplicate manual record rejected',r['code']==422,r['json']);record_id=1
  if record_id:
   r=s.get('/staff/records.php?ajax=generate_cert&id='+str(record_id),{});cert=r['json'].get('certificate_number');check('Certificate ID persisted',bool(cert),r['json'].get('message'))
@@ -148,6 +148,7 @@ try:
  exec(compile((ROOT/'tools/attachment_checks.py').read_text(encoding='utf-8'), 'attachment_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/pdf_revision_checks.py').read_text(encoding='utf-8'), 'pdf_revision_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/latest_pdf_checks.py').read_text(encoding='utf-8'), 'latest_pdf_checks.py', 'exec'), globals())
+ exec(compile((ROOT/'tools/recommendation_checks.py').read_text(encoding='utf-8'), 'recommendation_checks.py', 'exec'), globals())
 finally:
  server.terminate();server.wait(timeout=10);log.close()
  report={'database':fixture['database'],'tests':results,'passed':sum(r['passed']for r in results),'failed':sum(not r['passed']for r in results)}

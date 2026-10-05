@@ -94,7 +94,7 @@ function generateReceiptHTML($receipt, $parish_name = '', $qr_url = '') {
 
     return '<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
-<title>Official Receipt #' . htmlspecialchars($receipt['receipt_number']) . '</title>
+<title>Acknowledgement Receipt #' . htmlspecialchars($receipt['receipt_number']) . '</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap");
 @page { size: A5; margin: 10mm; }
@@ -121,7 +121,7 @@ body { font-family: "DM Sans", sans-serif; font-size: 10pt; color: #333; }
   <div class="receipt-header">
     <h4>Apostolic Vicariate of San Jose</h4>
     <h3>' . htmlspecialchars($parish_name ?: 'Parish') . '</h3>
-    <div class="rnum">Official Receipt #' . htmlspecialchars($receipt['receipt_number']) . '</div>
+    <div class="rnum">Acknowledgement Receipt #' . htmlspecialchars($receipt['receipt_number']) . '</div>
   </div>
   <div class="receipt-body">
     <div class="receipt-row"><span class="label">Date</span><span class="value">' . date('F j, Y', strtotime($receipt['issued_at'])) . '</span></div>

@@ -8,6 +8,7 @@ function update_profile(array $actor, array $input): void
     $name = input_text($input, 'name');
     $email = input_text($input, 'email');
     $phone = input_text($input, 'phone', 50);
+    if($phone!==''&&!valid_mobile_number($phone))throw new DomainException('Enter an 11-digit mobile number starting with 09, or its +63 equivalent.');
     $language = input_text($input, 'language');
     if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || !in_array($language, ['en', 'fil'], true)) {
         throw new DomainException('Enter a name, valid email and language.');

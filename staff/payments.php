@@ -112,7 +112,7 @@ $page_num = min($page_num, $total_pages);
 $offset = ($page_num - 1) * $per_page;
 
 // Fetch
-$sql = "SELECT p.id, p.application_id, p.amount, p.payment_method, p.reference_number, p.status, p.paid_at, p.created_at,
+$sql = "SELECT p.id, p.application_id, p.amount, p.manual_method_name,p.proof_file,p.payment_method, p.reference_number, p.status, p.paid_at, p.created_at,
                u.name AS parishioner_name, u.email AS parishioner_email,
                s.name AS service_name, a.service_id
         FROM (SELECT * FROM payments WHERE application_id IN (SELECT id FROM applications WHERE parish_id = {$scopeParish})) p
@@ -291,13 +291,14 @@ $pillMap = ['completed'=>'pill-green','pending'=>'pill-amber','refunded'=>'pill-
               <div style="font-size:.72rem;color:var(--ink-30)"><?php echo htmlspecialchars($p['parishioner_email']); ?></div>
             </td>
             <td><?php echo htmlspecialchars($p['service_name'] ?? 'Service #'.$p['service_id']); ?></td>
-            <td><span class="pill pill-navy"><?php echo htmlspecialchars($p['payment_method'] ?: '—'); ?></span></td>
+            <td><span class="pill pill-navy"><?php echo htmlspecialchars($p['manual_method_name'] ?: $p['payment_method'] ?: '—'); ?></span></td>
             <td style="font-size:.75rem;color:var(--ink-60);font-family:monospace"><?php echo htmlspecialchars($p['reference_number'] ?: '—'); ?></td>
             <td style="font-weight:600;color:var(--green)">₱<?php echo number_format($p['amount'], 2); ?></td>
             <td><span class="pill <?php echo $pill; ?>" id="pstatus-<?php echo $p['id']; ?>"><?php echo ucfirst($p['status']); ?></span></td>
             <td style="font-size:.73rem;color:var(--ink-30)"><?php echo date('M j, Y', strtotime($p['paid_at'] ?? $p['created_at'])); ?></td>
             <td>
               <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <?php if($p['proof_file']): ?><a class="act-btn act-navy" target="_blank" rel="noopener" href="../public/payment_file.php?payment=<?= (int)$p['id'] ?>">View proof</a><a class="act-btn" href="../public/payment_file.php?payment=<?= (int)$p['id'] ?>&amp;download=1">Download</a><?php endif; ?>
                 <button onclick="viewPayment(<?php echo $p['id']; ?>)" class="act-btn act-navy" title="View">[icon:eye]</button>
                 <?php if ($p['status'] === 'pending'): ?>
                 <button onclick="verifyPayment(<?php echo $p['id']; ?>)" class="act-btn act-green" title="Verify">[icon:check] Verify</button>
@@ -387,7 +388,7 @@ function viewPayment(id) {
         .then(r => r.json()).then(data => {
             if (!data.success) { document.getElementById('viewContent').innerHTML = '<p style="color:var(--wine);padding:20px">' + data.message + '</p>'; return; }
             const p = data.data;
-            const safe=value=>{const el=document.createElement('span');el.textContent=value??'';return el.innerHTML;};for(const key of ['parishioner_name','parishioner_email','parishioner_phone','parish_name','reference_number','failure_reason','service_name'])p[key]=safe(p[key]);
+            const safe=value=>{const el=document.createElement('span');el.textContent=value??'';return el.innerHTML;};for(const key of ['parishioner_name','parishioner_email','parishioner_phone','parish_name','reference_number','failure_reason','service_name','manual_method_name'])p[key]=safe(p[key]);
             const sc = {completed:'green',pending:'amber',refunded:'wine'}[p.status] || 'amber';
             document.getElementById('viewContent').innerHTML = `
               <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
@@ -402,7 +403,7 @@ function viewPayment(id) {
                 <div style="font-family:var(--fh);font-size:2.2rem;font-weight:600;color:var(--green)">\u20B1${Number(p.amount).toLocaleString(undefined,{minimumFractionDigits:2})}</div>
               </div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-                ${[['Parishioner',p.parishioner_name],['Email',p.parishioner_email],['Phone',p.parishioner_phone||'\u2014'],['Parish',p.parish_name||'\u2014'],['Payment Method',p.payment_method||'\u2014'],['Reference #',p.reference_number||'\u2014'],['Failure reason',p.failure_reason||'\u2014'],['Failed at',p.failed_at||'\u2014'],['Service Fee',p.service_fee?'\u20B1'+Number(p.service_fee).toLocaleString():'\u2014'],['Schedule',p.schedule?new Date(p.schedule).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Paid At',p.paid_at?new Date(p.paid_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Created',new Date(p.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})]].map(([l,v])=>`
+                ${[['Parishioner',p.parishioner_name],['Email',p.parishioner_email],['Phone',p.parishioner_phone||'\u2014'],['Parish',p.parish_name||'\u2014'],['Payment Method',p.manual_method_name||p.payment_method||'\u2014'],['Reference #',p.reference_number||'\u2014'],['Failure reason',p.failure_reason||'\u2014'],['Failed at',p.failed_at||'\u2014'],['Service Fee',p.service_fee?'\u20B1'+Number(p.service_fee).toLocaleString():'\u2014'],['Schedule',p.schedule?new Date(p.schedule).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Paid At',p.paid_at?new Date(p.paid_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'\u2014'],['Created',new Date(p.created_at).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})]].map(([l,v])=>`
                   <div style="background:#F8F6F2;border-radius:8px;padding:10px 12px">
                     <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-60);margin-bottom:3px">${l}</div>
                     <div style="font-size:.83rem;font-weight:500;color:var(--ink)">${v}</div>

@@ -32,6 +32,7 @@ assets/css/enhancements.css
 assets/css/login.css
 assets/css/navigation.css
 assets/css/password-visibility.css
+assets/css/recommendations.css
 assets/img/church-logo.png
 assets/img/hero-image.png
 assets/img/left-image.png
@@ -48,6 +49,7 @@ assets/js/login.js
 assets/js/multiple-attachments.js
 assets/js/navigation.js
 assets/js/password-visibility.js
+assets/js/recommendations.js
 database/.htaccess
 database/deployment_schema.json
 database/migration.sql
@@ -73,6 +75,7 @@ includes/attachments.php
 includes/auth.php
 includes/backup_service.php
 includes/branding_head.php
+includes/calendar_availability.php
 includes/config.php
 includes/dashboard_filter.php
 includes/db.php
@@ -84,6 +87,7 @@ includes/financial_totals.php
 includes/help.php
 includes/icon_paths.json
 includes/icons.php
+includes/manual_payments.php
 includes/navigation.php
 includes/notifications.php
 includes/password_recovery.php
@@ -101,6 +105,7 @@ includes/service_availability.php
 includes/service_classification.php
 includes/service_classification_form.php
 includes/service_editor.php
+includes/service_trend.php
 includes/service_types.php
 includes/settings_page.php
 includes/settings_service.php
@@ -138,12 +143,15 @@ public/document_view.php
 public/forgot_password.php
 public/login.php
 public/logout.php
+public/payment_file.php
+public/privacy.php
 public/qr.php
 public/receipt.php
 public/register.php
 public/reset_password.php
 public/setup_admin.php
 public/signup.php
+public/terms.php
 public/verify.php
 staff/accounting.php
 staff/accounting_report.php
@@ -163,6 +171,7 @@ staff/masses.php
 staff/messages.php
 staff/notifications.php
 staff/parishioners.php
+staff/payment_methods.php
 staff/payments.php
 staff/receipts.php
 staff/record_application.php
@@ -183,6 +192,7 @@ tools/migrate_attachments.php
 tools/migrate_compatibility.php
 tools/migrate_master.php
 tools/migrate_production.php
+tools/migrate_recommendations.php
 tools/migrate_separation.php
 tools/reminders.php
 uploads/.htaccess

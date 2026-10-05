@@ -59,7 +59,7 @@ try:
         page.goto(base+'/parishioner/settings.php');page.locator('[name=language]').select_option('en');page.locator('form').filter(has=page.locator('[name=language]')).locator('button').click()
         context.clear_cookies();login(3)
         page.goto(base+'/staff/accounting.php?type=check_voucher')
-        check('All five accounting choices visible',all(page.get_by_role('link',name=label,exact=True).count() for label in ['Official Receipt','Check Voucher','Petty Cash Voucher','Disbursement','Deposits']))
+        check('All five accounting choices visible',all(page.get_by_role('link',name=label,exact=True).count() for label in ['Acknowledgement Receipt','Check Voucher','Petty Cash Voucher','Disbursement','Deposits']))
         page.screenshot(path=str(out/'accounting.png'),full_page=True)
         document=sql("SELECT MIN(id) FROM accounting_documents WHERE parish_id=1 AND document_type='check_voucher'")
         page.goto(base+'/staff/accounting.php?print='+document)

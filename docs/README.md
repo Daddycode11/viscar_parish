@@ -1,5 +1,7 @@
 # Revision documentation
 
+[5 October recommendation implementation](RECOMMENDATION_IMPLEMENTATION.md) — scheduling, manual payments, calendars, login controls, reports and verification.
+
 [GitHub / Hostinger deployment report](DEPLOYMENT_REPORT.md) ? readiness, reviewed commands, migration, live checks and rollback (28 September 2026).
 
 [Shared password visibility audit and tests](PASSWORD_VISIBILITY.md) ? 27 September 2026.

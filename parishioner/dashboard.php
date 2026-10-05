@@ -3,6 +3,8 @@ require_once __DIR__ . '/../includes/access.php';
 require_once __DIR__ . '/../includes/workflow_routes.php';
 
 require_once __DIR__.'/../includes/dashboard_filter.php';
+$listStatus=in_array($_GET['status']??'', ['pending','approved','rejected','cancelled'],true)?$_GET['status']:'';
+$listStatusSql=$listStatus!==''?" AND a.status='".$listStatus."'":'';
 $appDateFilter=dashboard_date_sql('a.created_at');$paymentDateFilter=dashboard_date_sql('effective_payment_date');$eventDateFilter=dashboard_date_sql('event_date');
 $page_id = 'dashboard'; $page_title = 'Dashboard'; $page_sub = 'Overview';
 require_once __DIR__ . '/includes/layout.php';
@@ -73,7 +75,7 @@ $q = $conn->prepare("
     FROM applications a
     LEFT JOIN services s ON a.service_id = s.id
     LEFT JOIN parishes p ON a.parish_id = p.id
-    WHERE a.user_id = ? AND a.created_at BETWEEN ? AND ?
+    WHERE a.user_id = ? AND a.created_at BETWEEN ? AND ? {$listStatusSql}
     ORDER BY a.created_at DESC,a.id DESC LIMIT 50 OFFSET {$applicationOffset}
 ");
 $q->bind_param('iss', $uid,$dashboardStart,$dashboardEnd); $q->execute();
@@ -160,26 +162,26 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
 <!-- Stat Cards -->
 <!-- ============================================================ -->
 <div class="stats-grid">
-  <div class="stat-card stat-navy">
+  <a href="dashboard.php#my-applications" class="stat-card stat-navy">
     <div class="stat-icon"><?= ui_icon('applications') ?></div>
     <div class="stat-label">Total Applications</div>
     <div class="stat-value"><?php echo $total_apps; ?></div>
-  </div>
-  <div class="stat-card stat-amber">
+  </a>
+  <a href="dashboard.php?status=pending#my-applications" class="stat-card stat-amber">
     <div class="stat-icon"><?= ui_icon('clock') ?></div>
     <div class="stat-label">Pending</div>
     <div class="stat-value"><?php echo $pending_apps_count; ?></div>
-  </div>
-  <div class="stat-card stat-green">
+  </a>
+  <a href="dashboard.php?status=approved#my-applications" class="stat-card stat-green">
     <div class="stat-icon"><?= ui_icon('check') ?></div>
     <div class="stat-label">Approved</div>
     <div class="stat-value"><?php echo $approved_apps; ?></div>
-  </div>
-  <div class="stat-card stat-gold">
+  </a>
+  <a href="payments.php" class="stat-card stat-gold">
     <div class="stat-icon"><?= ui_icon('wallet') ?></div>
     <div class="stat-label">Total Paid</div>
     <div class="stat-value"><?php echo number_format($total_payments, 2); ?></div>
-  </div>
+  </a>
 </div>
 
 <!-- ============================================================ -->
@@ -201,7 +203,7 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
 <!-- ============================================================ -->
 <div class="card">
   <div class="card-head">
-    <h3>My Applications</h3>
+    <h3 id="my-applications">My Applications</h3>
     <span class="card-tag"><?= count($applications) ?> of <?= $total_apps ?> matching applications</span>
   </div>
   <div class="card-body" style="padding:0">
@@ -596,4 +598,5 @@ function fmtTime(t) {
 let dashboardDigest=<?=json_encode(hash('sha256',json_encode([$applications,$payments])))?>;
 setInterval(async()=>{if(document.hidden)return;try{const data=await fetch('dashboard.php?'+new URLSearchParams({...Object.fromEntries(new URLSearchParams(location.search)),ajax:'live'})).then(r=>r.json());if(data.digest&&data.digest!==dashboardDigest){const html=await fetch('dashboard.php'+location.search).then(r=>r.text());const doc=new DOMParser().parseFromString(html,'text/html');const oldTables=document.querySelectorAll('.page-content table'),newTables=doc.querySelectorAll('.page-content table');if(oldTables.length===newTables.length)oldTables.forEach((t,i)=>t.replaceWith(newTables[i]));const stats=document.querySelector('.stats-grid');if(stats)stats.replaceWith(doc.querySelector('.stats-grid'));appData=data.applications;dashboardDigest=data.digest;}}catch(e){}},5000);
 </script>
+<?php require APP_ROOT.'/includes/service_trend.php'; ?>
 <?php require_once __DIR__ . '/includes/layout_footer.php'; ?>

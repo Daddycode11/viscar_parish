@@ -25,6 +25,7 @@ function backup_media_paths(array $data): array
         must(in_array($attachment['storage_location'],['private','legacy'],true),'Invalid attachment storage location.');
         $paths[($attachment['storage_location']==='private'?'storage/private/':'uploads/requirements/').$name]=true;
     }
+    foreach(['payments'=>'proof_file','parish_payment_methods'=>'qr_file'] as $table=>$column)foreach($data[$table]??[] as $row)if(!empty($row[$column]))$paths['storage/private/'.basename($row[$column])]=true;
     foreach($data['accounting_documents']??[] as $d) if(!empty($d['attachment'])) $paths['storage/private/'.basename($d['attachment'])]=true;
     if(is_dir(APP_ROOT.'/uploads')) foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(APP_ROOT.'/uploads',FilesystemIterator::SKIP_DOTS)) as $f) {
         if($f->isFile()&&!$f->isLink()&&preg_match('/\.(png|jpe?g|gif|webp|pdf)$/i',$f->getFilename())) $paths[str_replace('\\','/',substr($f->getPathname(),strlen(APP_ROOT)+1))]=true;
@@ -85,6 +86,7 @@ function restore_system_backup(array $actor,string $path): void
             $media=($attachment['storage_location']==='private'?'storage/private/':'uploads/requirements/').$name;
             must(isset($manifest['files'][$media]),'Backup omits an application attachment.');
         }
+        foreach(['payments'=>'proof_file','parish_payment_methods'=>'qr_file'] as $table=>$column)foreach($database['tables'][$table]??[] as $row)if(!empty($row[$column]))must(basename($row[$column])===$row[$column]&&isset($manifest['files']['storage/private/'.$row[$column]]),'Backup omits a payment document.');
         create_system_backup($actor);
         foreach($manifest['files']??[] as $media=>$hash){$target=APP_ROOT.'/'.$media;if(!is_file($target)){if(!is_dir(dirname($target)))mkdir(dirname($target),0700,true);must(file_put_contents($target,$zip->getFromName('media/'.$media),LOCK_EX)!==false,'Unable to restore a document.');$created[]=$target;}}
         $conn->query('SET FOREIGN_KEY_CHECKS=0');$conn->begin_transaction();

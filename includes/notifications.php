@@ -45,7 +45,8 @@ function notify($user_id, $title, $message, $type = 'system', $link = null) {
  * Returns [ok => bool, response => mixed]. Number is normalized to 09XXXXXXXXX.
  */
 function send_sms($number, $message) {
-    $number = preg_replace('/[^0-9+]/', '', (string)$number);
+    $number = trim((string)$number);
+    if(!preg_match('/^(?:09[0-9]{9}|\+639[0-9]{9}|639[0-9]{9})$/',$number))return ['ok'=>false,'response'=>'invalid_number','status'=>'failed'];
     if (strpos($number, '+63') === 0) $number = '0' . substr($number, 3);
     elseif (strpos($number, '63') === 0 && strlen($number) === 12) $number = '0' . substr($number, 2);
     if (!preg_match('/^09\d{9}$/', $number)) {

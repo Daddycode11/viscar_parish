@@ -17,7 +17,7 @@ $ss = site_settings();
 $announcements = $conn->query("
     SELECT a.*,u.role publisher_role,p.name publisher_parish
     FROM announcements a LEFT JOIN users u ON u.id=a.sent_by LEFT JOIN parishes p ON p.id=u.parish_id
-    WHERE a.status = 'active' AND target='All Parishes' AND NOT EXISTS(SELECT 1 FROM announcement_parishes ap WHERE ap.announcement_id=a.id) 
+    WHERE a.status = 'active' AND a.target IN ('All Parishes','All Parishioners','Parish','Selected Parishes')
     ORDER BY a.created_at DESC 
     LIMIT 5
 ");
@@ -962,7 +962,7 @@ footer {
 }
 </style>
 <?php require __DIR__ . '/includes/branding_head.php'; ?>
-</head>
+<link rel="stylesheet" href="assets/css/recommendations.css"></head>
 <body>
 
 <!-- ─── HEADER ──────────────────────────────────────────── -->

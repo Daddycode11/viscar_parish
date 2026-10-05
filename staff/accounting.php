@@ -40,7 +40,7 @@ require __DIR__ . '/includes/layout.php';
 <?php foreach (ACCOUNTING_TYPES as $key=>$label): ?><a class="btn-sm" href="accounting.php?type=<?= $key ?>" <?= $key===$type?'aria-current="page"':'' ?>><?= h(t($label)) ?></a> <?php endforeach; ?>
 </nav><p role="status"><?= h(t($notice ?: (isset($_GET['saved'])?'Document saved.':''))) ?></p>
 <?php if ($type==='receipt'): ?>
-<section class="card"><div class="card-body"><h2><?= h(t('Official Receipt')) ?></h2><a class="btn-sm btn-navy" href="receipts.php"><?= h(t('Official Receipt')) ?> — <?= h(t('Create document')) ?> / <?= h(t('Print')) ?></a></div></section>
+<section class="card"><div class="card-body"><h2><?= h(t('Acknowledgement Receipt')) ?></h2><a class="btn-sm btn-navy" href="receipts.php"><?= h(t('Acknowledgement Receipt')) ?> — <?= h(t('Create document')) ?> / <?= h(t('Print')) ?></a></div></section>
 <?php else: ?>
 <section class="card"><div class="card-body"><h2><?= h(t(ACCOUNTING_TYPES[$type])) ?></h2>
 <form method="post" enctype="multipart/form-data"><?= csrf_field() ?><input type="hidden" name="document_type" value="<?= h($type) ?>"><input type="hidden" name="request_key" value="<?= bin2hex(random_bytes(32)) ?>">

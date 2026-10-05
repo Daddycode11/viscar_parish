@@ -28,8 +28,8 @@ function create_change_request(array $actor, array $input): void
         capacity($service, $date, $application['id']);
     }
 
-    $conn->execute_query('INSERT INTO application_requests(application_id,requested_by,request_type,reason,proposed_schedule) VALUES(?,?,?,?,?)',
-        [$application['id'], $actor['id'], $type, $reason, $date]);
+    $conn->execute_query('INSERT INTO application_requests(application_id,requested_by,request_type,reason,proposed_schedule,original_schedule) VALUES(?,?,?,?,?,?)',
+        [$application['id'], $actor['id'], $type, $reason, $date, $application['schedule']]);
     $id = $conn->insert_id;
     auditLog($actor['id'], 'request_' . $type, 'application_request', $id);
 
@@ -96,6 +96,9 @@ function review_change_request(array $actor, array $input): void
 
     $conn->execute_query("UPDATE application_requests SET status=?,reviewed_by=?,review_note=?,reviewed_at=NOW(),completed_at=IF(?='completed',NOW(),NULL) WHERE id=?", [$state, $actor['id'], $note, $state, $id]);
     auditLog($actor['id'], 'request_' . $decision, 'application_request', $id, $note);
-    notify($application['user_id'], 'Request Updated', 'Request #' . $id . ' is ' . $state . '.', 'application', 'requests.php?type='.$request['request_type']);
-    $GLOBALS['after_commit'][]=fn()=>dispatch_to_user($application['user_id'],'Request Updated','Request #'.$id.' is '.$state.'.',['sms','email'],'application');
+    $message='Application #'.$application['id'].' | Service: '.$service['name'].' | '.ucfirst($request['request_type']).' request #'.$id.' | Status: '.$state.' | Schedule: '.$application['schedule'];
+    if($request['proposed_schedule'])$message.=' | Requested schedule: '.$request['proposed_schedule'];
+    if($note!=='')$message.=' | Review note: '.$note;
+    notify($application['user_id'], 'Request Updated', $message, 'application', 'requests.php?type='.$request['request_type']);
+    $GLOBALS['after_commit'][]=fn()=>dispatch_to_user($application['user_id'],'Request Updated',$message,['sms','email'],'application');
 }

@@ -80,7 +80,7 @@ foreach ($conn->execute_query('SELECT * FROM parish_subscriptions WHERE user_id=
 <button class="btn-sm btn-navy"><?= h(t('Save')) ?></button></form></div></section>
 <?php endif; ?>
 <?php if ($user['role']==='secretary'): $parish=$conn->execute_query('SELECT * FROM parishes WHERE id=?',[$user['parish_id']])->fetch_assoc(); ?>
-<section class="card"><div class="card-body"><h2><?= h(t('Parish details')) ?></h2><form method="post" enctype="multipart/form-data"><?= csrf_field() ?><input type="hidden" name="_action" value="save_parish">
+<section class="card"><div class="card-body"><h2><?= h(t('Parish details')) ?></h2><p><a class="btn-sm btn-navy" href="payment_methods.php">Manage manual payment methods</a></p><form method="post" enctype="multipart/form-data"><?= csrf_field() ?><input type="hidden" name="_action" value="save_parish">
 <?php foreach (['parish_name'=>'name','location'=>'location','address'=>'address','contact_number'=>'contact_number','parish_email'=>'email','priest_name'=>'priest_name'] as $field=>$column): ?>
 <div class="form-group"><label><?= h(t(ucwords(str_replace('_',' ',$column)))) ?><input name="<?= $field ?>" value="<?= h($parish[$column]) ?>"></label></div>
 <?php endforeach; ?><input type="file" name="parish_logo" accept="image/png,image/jpeg,image/webp,image/gif"><button class="btn-sm btn-navy"><?= h(t('Save')) ?></button></form></div></section>

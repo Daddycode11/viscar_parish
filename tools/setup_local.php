@@ -17,6 +17,6 @@ foreach(['migration_local_compatibility.sql','migration_announcements.sql','migr
 }
 echo "Local schema ready: $db. No existing records removed.\n";
 
-require __DIR__ . '/migrate_master.php';
+require __DIR__ . '/migrate_recommendations.php';
 
 require __DIR__.'/migrate_attachments.php';

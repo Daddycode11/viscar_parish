@@ -15,6 +15,8 @@ function navigation_controls(?string $fallback = null): string
     $escape = fn ($value) => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     return '<link rel="stylesheet" href="' . $escape(app_url('assets/css/navigation.css')) . '">'
         . '<script defer src="' . $escape(app_url('assets/js/navigation.js')) . '"></script>'
+        . '<link rel="stylesheet" href="' . $escape(app_url('assets/css/recommendations.css')) . '">'
+        . '<script defer src="' . $escape(app_url('assets/js/recommendations.js')) . '"></script>'
         . ($isDashboard ? '' : '<nav class="return-navigation no-print" aria-label="Return navigation">'
         . '<a class="return-link" data-app-back aria-label="Go back" title="Go back" href="' . $escape(app_url($fallback)) . '">&larr;</a></nav>');
 }

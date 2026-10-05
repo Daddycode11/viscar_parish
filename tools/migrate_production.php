@@ -17,7 +17,7 @@ try {
  $counts=[];foreach($conn->query("SHOW FULL TABLES WHERE Table_type='BASE TABLE'") as $row){$table=array_values($row)[0];if(!preg_match('/^[a-zA-Z0-9_]+$/',$table))throw new RuntimeException('Unsupported table name.');$counts[$table]=(int)$conn->query("SELECT COUNT(*) FROM `$table`")->fetch_row()[0];}
  try {
   require __DIR__.'/migrate_compatibility.php';
-  require __DIR__.'/migrate_master.php';
+  require __DIR__.'/migrate_recommendations.php';
   require __DIR__.'/migrate_attachments.php';
   foreach($counts as $table=>$count)if((int)$conn->query("SELECT COUNT(*) FROM `$table`")->fetch_row()[0]<$count)throw new RuntimeException('Record count decreased: '.$table);
   $remaining=[];foreach($deploymentSchemaRequirements as $table=>$columns){$current=array_column($conn->execute_query('SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=?',[$table])->fetch_all(MYSQLI_ASSOC),'COLUMN_NAME');foreach(array_diff($columns,$current) as $column)$remaining[]=$table.'.'.$column;}
