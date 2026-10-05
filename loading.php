@@ -117,7 +117,7 @@ body {
 
 .title {
   margin-bottom: 8px;
-  color: #0D1828;
+  color: #365675;
   font-family: 'Cormorant Garamond', serif;
   font-size: clamp(2rem, 6vw, 3rem);
   font-weight: 400;
@@ -282,7 +282,7 @@ body {
   }
 }
 </style>
-</head>
+<link rel="stylesheet" href="assets/css/palette.css"></head>
 
 <body>
 

@@ -1,3 +1,4 @@
+@import url("../../../../assets/css/palette.css");
 /* ═══════════════════════════════════════════
    APOSTOLIC VICARIATE — ADMIN PANEL CSS
    Shared across all admin pages
@@ -8,8 +9,8 @@
   --gold:       #C9A84C;
   --gold-lt:    #E8C97A;
   --gold-dim:   rgba(201,168,76,.12);
-  --navy:       #1B2A4A;
-  --navy-deep:  #0D1828;
+  --navy:       #43658b;
+  --navy-deep:  #365675;
   --navy-mid:   #243558;
   --bg:         #EDEAE4;
   --surface:    #F7F4EF;
@@ -18,8 +19,8 @@
   --ink-30:     rgba(26,21,16,.3);
   --ink-10:     rgba(26,21,16,.07);
   --white:      #FFFFFF;
-  --green:      #2A7A52;
-  --green-dim:  rgba(42,122,82,.12);
+  --green:      var(--success);
+  --green-dim:  var(--success-dim);
   --wine:       #7A2A3A;
   --wine-dim:   rgba(122,42,58,.12);
   --amber:      #C97A20;
@@ -404,7 +405,7 @@ tbody tr:hover { background: rgba(201,168,76,.04); }
 .ab-gold:hover  { background: var(--gold);  color: var(--ink); }
 .ab-wine  { background: var(--wine-dim);     color: var(--wine);  border-color: rgba(122,42,58,.18); }
 .ab-wine:hover  { background: var(--wine);  color: var(--white); }
-.ab-green { background: var(--green-dim);    color: var(--green); border-color: rgba(42,122,82,.18); }
+.ab-green { background: var(--green-dim);    color: var(--green); border-color: rgba(67,101,139,.18); }
 .ab-green:hover { background: var(--green); color: var(--white); }
 
 /* ══════════════════════════════════════════
@@ -417,7 +418,7 @@ tbody tr:hover { background: rgba(201,168,76,.04); }
 }
 .n-amber { background: var(--amber-dim); border-left: 3px solid var(--amber); color: #7A4A10; }
 .n-navy  { background: rgba(27,42,74,.08); border-left: 3px solid var(--navy); color: var(--navy); }
-.n-green { background: var(--green-dim);  border-left: 3px solid var(--green); color: #1A4A30; }
+.n-green { background: var(--green-dim);  border-left: 3px solid var(--green); color: #365675; }
 .n-wine  { background: var(--wine-dim);   border-left: 3px solid var(--wine);  color: var(--wine); }
 
 /* ══════════════════════════════════════════

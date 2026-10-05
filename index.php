@@ -51,7 +51,7 @@ $events = $conn->query("
   --ink:      #1A1510;
   --ink-60:   rgba(26,21,16,.6);
   --ink-20:   rgba(26,21,16,.1);
-  --navy:     #1B2A4A;
+  --navy:     #43658b;
   --wine:     #6B2737;
   --white:    #FFFFFF;
   --radius:   14px;
@@ -682,7 +682,7 @@ nav a:hover { color: var(--ink); background: var(--ink-20); }
   align-items: center;
 }
 .features-visual {
-  background: linear-gradient(135deg, var(--navy) 0%, #0D1828 100%);
+  background: linear-gradient(135deg, var(--navy) 0%, #365675 100%);
   border-radius: 20px;
   padding: 48px 40px;
   box-shadow: var(--shadow-lg);
@@ -807,7 +807,7 @@ nav a:hover { color: var(--ink); background: var(--ink-20); }
 
 /* ─── CTA ────────────────────────────────────────────────── */
 #cta {
-  background: linear-gradient(135deg, var(--navy) 0%, #0D1828 100%);
+  background: linear-gradient(135deg, var(--navy) 0%, #365675 100%);
   padding: 120px 5vw;
   text-align: center;
   position: relative;
@@ -950,7 +950,7 @@ footer {
   .section-header { margin-bottom: 36px; }
 }
 .about-grid{grid-template-columns:1fr}.stats-inner{grid-template-columns:repeat(3,1fr)}
-#services{background:#2d4263}.service-card:nth-child(3n+1) .service-icon{color:#f0cf74}.service-card:nth-child(3n+2) .service-icon{color:#a9dec5}.service-card:nth-child(3n) .service-icon{color:#d7c4ed}
+#services{background:#43658b}.service-card:nth-child(3n+1) .service-icon{color:#f0cf74}.service-card:nth-child(3n+2) .service-icon{color:#c4d8ef}.service-card:nth-child(3n) .service-icon{color:#d7c4ed}
 .ann-card,.event-info{min-width:0;overflow-wrap:anywhere}.event-date-box{flex-shrink:0}
 @media(max-width:600px){.event-row{align-items:flex-start;flex-wrap:wrap}.event-info{flex-basis:100%}.section{padding-top:40px;padding-bottom:40px}}
 </style>

@@ -16,20 +16,20 @@ require_once __DIR__ . '/../includes/workflow_routes.php';
   .print-page { padding: 25mm 20mm; max-width: 210mm; margin: 0 auto; }
 
   /* Header */
-  .report-header { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 16px; border-bottom: 2px solid #1B2A4A; margin-bottom: 20px; }
+  .report-header { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 16px; border-bottom: 2px solid #43658b; margin-bottom: 20px; }
   .report-logo-area { display: flex; align-items: center; gap: 12px; }
-  .report-logo-box { width: 48px; height: 48px; border-radius: 8px; background: #1B2A4A; display: flex; align-items: center; justify-content: center; color: #C9A84C; font-family: 'Cormorant Garamond', serif; font-size: 18pt; font-weight: 600; }
-  .report-org-name { font-family: 'Cormorant Garamond', serif; font-size: 14pt; font-weight: 600; color: #1B2A4A; }
+  .report-logo-box { width: 48px; height: 48px; border-radius: 8px; background: #43658b; display: flex; align-items: center; justify-content: center; color: #C9A84C; font-family: 'Cormorant Garamond', serif; font-size: 18pt; font-weight: 600; }
+  .report-org-name { font-family: 'Cormorant Garamond', serif; font-size: 14pt; font-weight: 600; color: #43658b; }
   .report-org-sub { font-size: 8pt; color: #999; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
   .report-meta { text-align: right; font-size: 9pt; color: #666; }
-  .report-meta strong { display: block; font-size: 14pt; font-family: 'Cormorant Garamond', serif; color: #1B2A4A; font-weight: 600; margin-bottom: 4px; }
+  .report-meta strong { display: block; font-size: 14pt; font-family: 'Cormorant Garamond', serif; color: #43658b; font-weight: 600; margin-bottom: 4px; }
 
   /* Summary boxes */
   .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
   .summary-box { border: 1px solid #E8E4DE; border-radius: 6px; padding: 12px; }
   .summary-box .sb-label { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 4px; }
-  .summary-box .sb-val { font-family: 'Cormorant Garamond', serif; font-size: 16pt; font-weight: 600; color: #1B2A4A; }
-  .summary-box.highlight { background: #1B2A4A; border-color: #1B2A4A; }
+  .summary-box .sb-val { font-family: 'Cormorant Garamond', serif; font-size: 16pt; font-weight: 600; color: #43658b; }
+  .summary-box.highlight { background: #43658b; border-color: #43658b; }
   .summary-box.highlight .sb-label { color: rgba(255,255,255,.6); }
   .summary-box.highlight .sb-val { color: #C9A84C; }
 
@@ -39,18 +39,18 @@ require_once __DIR__ . '/../includes/workflow_routes.php';
 
   /* Table */
   table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin-bottom: 16px; }
-  thead th { background: #1B2A4A; color: white; padding: 8px 10px; text-align: left; font-size: 8pt; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+  thead th { background: #43658b; color: white; padding: 8px 10px; text-align: left; font-size: 8pt; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
   tbody td { padding: 7px 10px; border-bottom: 1px solid #F0EDE8; vertical-align: middle; }
   tbody tr:nth-child(even) td { background: #FAFAF9; }
   tbody tr:hover td { background: #FFF8E8; }
-  tfoot td { padding: 8px 10px; font-weight: 600; background: #F8F6F2; border-top: 2px solid #1B2A4A; }
+  tfoot td { padding: 8px 10px; font-weight: 600; background: #F8F6F2; border-top: 2px solid #43658b; }
 
   /* Status pills */
   .status-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 8pt; font-weight: 500; }
-  .pill-green  { background: rgba(42,122,82,.12);  color: #2A7A52; }
+  .pill-green  { background: rgba(67,101,139,.12);  color: #43658b; }
   .pill-wine   { background: rgba(122,42,58,.12);  color: #7A2A3A; }
   .pill-amber  { background: rgba(201,122,32,.12); color: #C97A20; }
-  .pill-navy   { background: rgba(27,42,74,.1);    color: #1B2A4A; }
+  .pill-navy   { background: rgba(27,42,74,.1);    color: #43658b; }
 
   /* Bar viz */
   .mini-bar { display: flex; align-items: center; gap: 6px; }
@@ -62,14 +62,14 @@ require_once __DIR__ . '/../includes/workflow_routes.php';
 
   /* Signature area */
   .signature-area { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; margin-top: 30px; padding-top: 20px; }
-  .sig-box { border-top: 1px solid #1B2A4A; padding-top: 6px; text-align: center; font-size: 8.5pt; color: #666; }
+  .sig-box { border-top: 1px solid #43658b; padding-top: 6px; text-align: center; font-size: 8.5pt; color: #666; }
   .sig-box strong { display: block; font-weight: 500; color: #1A1510; }
 
   /* Print controls (screen only) */
   .print-controls { position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; }
   .print-btn { padding: 8px 18px; border-radius: 20px; font-size: 12px; font-weight: 500; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
-  .print-btn.primary { background: #1B2A4A; color: white; }
-  .print-btn.secondary { background: white; color: #1B2A4A; border: 1px solid #ddd; }
+  .print-btn.primary { background: #43658b; color: white; }
+  .print-btn.secondary { background: white; color: #43658b; border: 1px solid #ddd; }
 
   @media print {
     .print-controls { display: none; }
@@ -199,7 +199,7 @@ require_once __DIR__ . '/../includes/workflow_routes.php';
           <td>
             <div class="mini-bar">
               <?php echo $row['completion_rate']; ?>%
-              <div class="mini-bar-track"><div class="mini-bar-fill" style="width:<?php echo $row['completion_rate']; ?>%;background:#2A7A52"></div></div>
+              <div class="mini-bar-track"><div class="mini-bar-fill" style="width:<?php echo $row['completion_rate']; ?>%;background:#43658b"></div></div>
             </div>
           </td>
 

@@ -165,7 +165,7 @@ $rs = $conn->query("
 ");
 while ($r = $rs->fetch_assoc()) $rev_by_service[] = $r;
 $max_svc = $rev_by_service ? max(array_column($rev_by_service, 'total')) : 1;
-$colors = ['#C9A84C','#1B2A4A','#2A7A52','#C97A20','#7A2A3A','#2A52A4'];
+$colors = ['#C9A84C','#43658b','#43658b','#C97A20','#7A2A3A','#2A52A4'];
 
 $page_id    = 'finance';
 $page_title = 'Financial Oversight';

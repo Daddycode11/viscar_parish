@@ -1,10 +1,11 @@
+@import url("palette.css");
 /* TOKENS */
 :root {
   --gold:      #C9A84C;
   --gold-lt:   #E8C97A;
   --gold-dim:  rgba(201,168,76,.12);
-  --navy:      #1B2A4A;
-  --navy-deep: #0D1828;
+  --navy:      #43658b;
+  --navy-deep: #365675;
   --wine:      #6B2737;
   --cream:     #FAF7F2;
   --ink:       #1A1510;
@@ -416,4 +417,4 @@ header {
 }
 
 /* Lighter navy requested in the final client reference. */
-:root{--navy:#2d4263;--navy-deep:#23344d}
+:root{--navy:#43658b;--navy-deep:#365675}

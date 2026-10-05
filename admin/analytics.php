@@ -21,7 +21,7 @@ for($month=$chartStart;$month<=$lastMonth;$month=$month->modify('+1 month'))$mon
 $chartRows=$conn->execute_query("SELECT DATE_FORMAT(created_at,'%Y-%m') month,COUNT(*) n FROM applications WHERE created_at BETWEEN ? AND ? AND created_at>=? GROUP BY month",[$analyticsStart,$analyticsEnd,$chartStart->format('Y-m-d')])->fetch_all(MYSQLI_ASSOC);
 foreach($chartRows as $row)$monthly_data[$row['month']]=(int)$row['n'];
 $parish_compare=parish_comparison($analyticsFrom,$analyticsTo);$max_apps=max(1,...array_column($parish_compare,'apps'));
-$colors = ['#C9A84C','#1B2A4A','#2A7A52','#C97A20','#7A2A3A'];
+$colors = ['#C9A84C','#43658b','#43658b','#C97A20','#7A2A3A'];
 
 $page_id    = 'analytics';
 $page_title = 'Analytics';

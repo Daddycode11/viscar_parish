@@ -87,9 +87,9 @@ $nav['revisions']['items'][]=['id'=>'events','icon'=>ui_icon('calendar'),'label'
 <style>
 :root {
   --gold:#C9A84C;--gold-lt:#E8C97A;--gold-dim:rgba(201,168,76,.12);
-  --navy:#1B2A4A;--navy-deep:#0D1828;--navy-mid:#243558;
+  --navy:#43658b;--navy-deep:#365675;--navy-mid:#243558;
   --cream:#FAF7F2;--ink:#1A1510;--ink-60:rgba(26,21,16,.6);--ink-30:rgba(26,21,16,.3);--ink-10:rgba(26,21,16,.07);
-  --white:#FFFFFF;--green:#2A7A52;--green-dim:rgba(42,122,82,.12);
+  --white:#FFFFFF;--green:var(--success);--green-dim:var(--success-dim);
   --wine:#7A2A3A;--wine-dim:rgba(122,42,58,.12);
   --amber:#C97A20;--amber-dim:rgba(201,122,32,.12);
   --blue:#2A52A4;--blue-dim:rgba(42,82,164,.12);
@@ -145,7 +145,7 @@ button{cursor:pointer;font-family:var(--fb)}
 .btn-outline{background:none;color:var(--navy);border:1px solid var(--ink-10)}.btn-outline:hover{border-color:var(--navy);background:var(--navy);color:var(--white)}
 .btn-gold{background:var(--gold);color:var(--ink);border:none}.btn-gold:hover{background:var(--gold-lt);transform:translateY(-1px)}
 .btn-wine{background:var(--wine);color:var(--white);border:none}.btn-wine:hover{background:#9a3a4a;transform:translateY(-1px)}
-.btn-green{background:var(--green);color:var(--white);border:none}.btn-green:hover{background:#1f5c3d;transform:translateY(-1px)}
+.btn-green{background:var(--green);color:var(--white);border:none}.btn-green:hover{background:#365675;transform:translateY(-1px)}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px}
 .stat-card{background:var(--white);border-radius:var(--r);padding:22px 24px;border:1px solid rgba(255,255,255,.8);box-shadow:var(--sh);position:relative;overflow:hidden;transition:transform var(--ease),box-shadow var(--ease);animation:slideUp .4s ease both}
 .stat-card:nth-child(1){animation-delay:.05s}.stat-card:nth-child(2){animation-delay:.1s}.stat-card:nth-child(3){animation-delay:.15s}.stat-card:nth-child(4){animation-delay:.2s}
@@ -184,10 +184,10 @@ tbody tr{transition:background var(--ease)}tbody tr:hover{background:rgba(201,16
 .act-navy{background:rgba(27,42,74,.08);color:var(--navy);border-color:rgba(27,42,74,.15)}.act-navy:hover{background:var(--navy);color:var(--white)}
 .act-gold{background:var(--gold-dim);color:#8B6914;border-color:rgba(201,168,76,.3)}.act-gold:hover{background:var(--gold);color:var(--ink)}
 .act-wine{background:var(--wine-dim);color:var(--wine);border-color:rgba(122,42,58,.2)}.act-wine:hover{background:var(--wine);color:var(--white)}
-.act-green{background:var(--green-dim);color:var(--green);border-color:rgba(42,122,82,.2)}.act-green:hover{background:var(--green);color:var(--white)}
+.act-green{background:var(--green-dim);color:var(--green);border-color:rgba(67,101,139,.2)}.act-green:hover{background:var(--green);color:var(--white)}
 .notice{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;border-radius:10px;margin-bottom:16px;font-size:.82rem;line-height:1.6}
 .notice-amber{background:var(--amber-dim);border-left:3px solid var(--amber);color:#7A4A10}
-.notice-green{background:var(--green-dim);border-left:3px solid var(--green);color:#1A4A30}
+.notice-green{background:var(--green-dim);border-left:3px solid var(--green);color:#365675}
 .notice-wine{background:var(--wine-dim);border-left:3px solid var(--wine);color:#4A1020}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-group{margin-bottom:14px}

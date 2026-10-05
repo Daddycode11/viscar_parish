@@ -31,6 +31,7 @@ admin/verify_password.php
 assets/css/enhancements.css
 assets/css/login.css
 assets/css/navigation.css
+assets/css/palette.css
 assets/css/password-visibility.css
 assets/css/recommendations.css
 assets/css/time-controls.css

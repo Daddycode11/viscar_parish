@@ -13,4 +13,4 @@ if(isset($_GET['app'],$_GET['parish'],$_GET['token'])){
  $valid=(bool)$r;if($valid)$message="Certificate {$r['certificate_number']} is valid. Sacrament: {$r['record_type']}. Date: {$r['date_of_sacrament']}. Compare these details with the presented certificate.";
 }
 http_response_code($valid?200:404);
-?><!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verify parish document</title></head><body style="font:18px Arial;background:#FAF7F2;padding:10%;color:#1B2A4A"><?= navigation_controls() ?><h1><?= $valid?'Verified':'Not verified' ?></h1><p><?=htmlspecialchars($message)?></p></body></html>
+?><!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verify parish document</title></head><body style="font:18px Arial;background:#FAF7F2;padding:10%;color:#43658b"><?= navigation_controls() ?><h1><?= $valid?'Verified':'Not verified' ?></h1><p><?=htmlspecialchars($message)?></p></body></html>

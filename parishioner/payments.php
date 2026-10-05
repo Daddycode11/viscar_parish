@@ -72,9 +72,9 @@ require __DIR__ . '/includes/layout.php';
 ?>
 <style>
 /* ── Parish concept theme, scoped to this page ────────────────── */
-.pay-wrap { --gold: #C9A84C; --gold-lt: #E8C97A; --navy: #1B2A4A; --navy-deep: #0D1828;
+.pay-wrap { --gold: #C9A84C; --gold-lt: #E8C97A; --navy: #43658b; --navy-deep: #365675;
   --cream: #FAF7F2; --ink: #1A1510; --ink-70: rgba(26,21,16,.7); --ink-45: rgba(26,21,16,.45);
-  --ink-10: rgba(26,21,16,.08); --white: #FFFFFF; --green: #2E8B57; --green-bg: #E7F5EC;
+  --ink-10: rgba(26,21,16,.08); --white: #FFFFFF; --green: #43658b; --green-bg: #edf2f8;
   --wine: #6B2737; --wine-bg: #FBEAEA; --amber: #9A6B12; --amber-bg: #FBF2DE;
   font-family: "DM Sans", sans-serif; color: var(--ink); }
 .pay-card { background: var(--white); border: 1px solid var(--ink-10); border-radius: 16px;

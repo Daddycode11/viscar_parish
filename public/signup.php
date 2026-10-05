@@ -168,17 +168,17 @@ $dev_otp      = (defined('EMAIL_ENABLED') && !EMAIL_ENABLED) ? ($_SESSION['signu
 <script src="../assets/js/login.js" defer></script>
 <style>
 /* Small additions for the signup flow; everything else comes from login.css */
-.alert.info    { background: #EEF3FB; border-color: #B9C8E4; color: #1B2A4A; }
-.alert.success { background: #EAF5EE; border-color: #A9D1B7; color: #2A5C3F; }
+.alert.info    { background: #EEF3FB; border-color: #B9C8E4; color: #43658b; }
+.alert.success { background: #edf2f8; border-color: #c4d8ef; color: #365675; }
 .otp-input { font-family: monospace; font-size: 1.6rem; letter-spacing: .6em; text-align: center; padding: 14px 16px !important; }
 .dev-hint { background: #FFF6D8; border: 1px solid #C9A84C; border-radius: 8px; padding: 10px 14px; font-size: .82rem; color: #6E5208; margin-bottom: 16px; text-align: left; }
 .dev-hint code { font-family: monospace; font-size: 1.1rem; font-weight: 600; letter-spacing: .25em; }
 .dev-hint small code { font-size: .85rem; letter-spacing: .05em; font-weight: 400; }
 .aux-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: .85rem; }
-.btn-link { background: none; border: none; color: #1B2A4A; font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+.btn-link { background: none; border: none; color: #43658b; font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
 .btn-link:hover { color: #C9A84C; }
 .btn-as-link { display: block; text-align: center; text-decoration: none; line-height: 1.5; }
-.verify-email { display: block; margin-top: 2px; color: #1B2A4A; font-weight: 500; }
+.verify-email { display: block; margin-top: 2px; color: #43658b; font-weight: 500; }
 </style>
 <?php require_once APP_ROOT.'/includes/password_visibility.php'; ?>
 </head>

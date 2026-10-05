@@ -46,7 +46,7 @@ header.site-header nav a{
   transition:.35s cubic-bezier(.4,0,.2,1);white-space:nowrap;background:transparent
 }
 header.site-header nav a:hover{color:#1A1510;background:rgba(26,21,16,.1)}
-header.site-header nav a.nav-btn{background:#1B2A4A;color:#fff;padding:8px 20px}
+header.site-header nav a.nav-btn{background:#43658b;color:#fff;padding:8px 20px}
 header.site-header nav a.nav-btn:hover{background:#C9A84C;color:#1A1510}
 
 /* ── Remove leftover space from old fixed-header layout ── */

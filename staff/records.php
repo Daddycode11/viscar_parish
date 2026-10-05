@@ -165,12 +165,12 @@ if (isset($_GET['ajax'])) {
 <style>
 @page { size: A4 portrait; margin: 18mm; }
 body { font-family: "DM Sans", Arial, sans-serif; color:#222; font-size: 11pt; line-height: 1.6; }
-.hdr { border-bottom: 2px solid #1B2A4A; padding-bottom: 10px; margin-bottom: 18px; display:flex; justify-content:space-between; align-items:flex-start; }
-.hdr-l h2 { font-family: "Cormorant Garamond", Georgia, serif; color:#1B2A4A; font-size: 16pt; margin:0; }
+.hdr { border-bottom: 2px solid #43658b; padding-bottom: 10px; margin-bottom: 18px; display:flex; justify-content:space-between; align-items:flex-start; }
+.hdr-l h2 { font-family: "Cormorant Garamond", Georgia, serif; color:#43658b; font-size: 16pt; margin:0; }
 .hdr-l small { color:#666; font-size: 9pt; letter-spacing:.08em; text-transform: uppercase; }
 .hdr-r { text-align:right; font-size: 9pt; color:#666; }
-.hdr-r strong { display:block; font-size: 12pt; color:#1B2A4A; }
-.title { font-family: "Cormorant Garamond", serif; font-size: 22pt; color:#1B2A4A; margin: 14px 0 6px; }
+.hdr-r strong { display:block; font-size: 12pt; color:#43658b; }
+.title { font-family: "Cormorant Garamond", serif; font-size: 22pt; color:#43658b; margin: 14px 0 6px; }
 .tag { display:inline-block; padding: 2px 12px; border-radius: 14px; background: rgba(201,168,76,.18); color:#8B6914; font-weight:500; font-size: 10pt; }
 table.kv { width:100%; border-collapse: collapse; margin-top: 18px; }
 table.kv td { padding: 9px 12px; border-bottom: 1px solid #E8E4DE; vertical-align: top; font-size: 11pt; }

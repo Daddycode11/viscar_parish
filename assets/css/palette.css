@@ -1,0 +1,39 @@
+/* Shared across public, staff, parishioner, admin and print views.
+   Legacy green class/token names remain aliases so status logic is unchanged. */
+html:root {
+  --navy: #43658b;
+  --navy-deep: #365675;
+  --navy-mid: #3c5d80;
+  --navy-lt: #52749a;
+  --navy-dim: #edf2f8;
+  --success: var(--navy);
+  --success-dim: var(--navy-dim);
+  --green: var(--success);
+  --green-dim: var(--success-dim);
+  --gold: #b68b24;
+  --gold-lt: #f1d578;
+  --gold-dim: rgba(182,139,36,.13);
+  --wine: #87354c;
+  --wine-dim: rgba(135,53,76,.1);
+  --white: #fff;
+}
+.btn-green,.btn-navy { background:var(--navy); color:var(--white); }
+.btn-green:hover,.btn-navy:hover { background:var(--navy-deep)!important; color:var(--white); filter:none!important; }
+.btn-green:active,.btn-navy:active { background:var(--navy-mid)!important; }
+.btn-green:focus-visible,.act-green:focus-visible,.btn-navy:focus-visible,.act-navy:focus-visible {
+  outline:3px solid var(--navy); outline-offset:3px; box-shadow:0 0 0 2px white;
+}
+.btn-green:disabled,.act-green:disabled,.btn-navy:disabled,.act-navy:disabled {
+  background:#e2e8f0!important; color:#526174!important; border-color:#94a3b8!important;
+  opacity:1!important; filter:none!important; cursor:not-allowed;
+}
+.availability-grid .available:hover:not(:disabled) { background:var(--navy-deep)!important; }
+.availability-grid button:focus-visible { outline:3px solid var(--navy); outline-offset:3px; }
+input[type=checkbox],input[type=radio] { accent-color:var(--navy); }
+/* Opaque foregrounds stay readable when the sidebar background is lightened. */
+.sidebar .sb-link,.sidebar .sb-logout { color:#f0f4fa; }
+.sidebar .sb-brand-text small,.sidebar .sb-section-label,.sidebar .sb-user-info small { color:#d6e2f0; }
+.sidebar .sb-link.active { color:#fff; background:rgba(255,255,255,.12); }
+.sidebar .sb-link:hover,.sidebar .sb-logout:hover { color:#fff; background:rgba(255,255,255,.16); }
+.sidebar .sb-link:focus-visible,.sidebar .sb-logout:focus-visible { outline:2px solid #fff; outline-offset:-3px; }
+.sb-brand-fb,.profile-avatar { color:var(--gold-lt); }

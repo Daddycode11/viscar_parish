@@ -169,15 +169,15 @@ if (isset($_GET['ajax'])) {
 
         $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Financial Report</title>';
         $html .= '<style>body{font-family:"DM Sans",Arial,sans-serif;padding:40px;color:#1A1510;max-width:1000px;margin:0 auto}';
-        $html .= 'h1{font-family:"Cormorant Garamond",Georgia,serif;color:#1B2A4A;font-size:1.8rem;margin-bottom:4px}';
+        $html .= 'h1{font-family:"Cormorant Garamond",Georgia,serif;color:#43658b;font-size:1.8rem;margin-bottom:4px}';
         $html .= '.sub{color:#888;font-size:.85rem;margin-bottom:24px}';
         $html .= '.summary{display:flex;gap:20px;margin-bottom:28px;flex-wrap:wrap}';
         $html .= '.s-box{flex:1;min-width:150px;background:#f8f7f4;border:1px solid #e0ddd6;border-radius:8px;padding:16px;text-align:center}';
-        $html .= '.s-box .val{font-size:1.4rem;font-weight:600;color:#1B2A4A}.s-box .lbl{font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}';
+        $html .= '.s-box .val{font-size:1.4rem;font-weight:600;color:#43658b}.s-box .lbl{font-size:.72rem;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-top:4px}';
         $html .= 'table{width:100%;border-collapse:collapse;margin-top:16px}';
-        $html .= 'th{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#888;padding:8px 10px;text-align:left;border-bottom:2px solid #1B2A4A}';
+        $html .= 'th{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#888;padding:8px 10px;text-align:left;border-bottom:2px solid #43658b}';
         $html .= 'td{padding:8px 10px;font-size:.82rem;border-bottom:1px solid #eee}';
-        $html .= '.completed{color:#2A7A52}.pending{color:#C97A20}.refunded{color:#7A2A3A}';
+        $html .= '.completed{color:#43658b}.pending{color:#C97A20}.refunded{color:#7A2A3A}';
         $html .= '@media print{body{padding:20px}}</style></head><body>';
         $html .= '<h1>Apostolic Vicariate of San Jose</h1>';
         $html .= '<div class="sub">Financial Report: ' . htmlspecialchars($start) . ' to ' . htmlspecialchars($end) . ' | Generated: ' . date('M d, Y g:i A') . '</div>';

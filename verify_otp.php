@@ -48,7 +48,7 @@ if (isset($_POST['resend_otp'])) {
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --gold: #C9A84C; --gold-lt: #E8C97A; --navy: #1B2A4A; --navy-deep: #0D1828;
+  --gold: #C9A84C; --gold-lt: #E8C97A; --navy: #43658b; --navy-deep: #365675;
   --cream: #FAF7F2; --ink: #1A1510; --ink-70: rgba(26,21,16,.7); --ink-40: rgba(26,21,16,.4);
   --ink-10: rgba(26,21,16,.08); --white: #FFFFFF; --fh: "Cormorant Garamond", Georgia, serif;
   --fb: "DM Sans", sans-serif; --ease: .3s cubic-bezier(.4,0,.2,1); --r: 16px;
@@ -79,9 +79,9 @@ input[type="text"]:focus { outline: none; border-color: var(--gold); }
 .btn-link { background: none; border: none; color: var(--navy); font-size: .8rem; text-decoration: underline;
   cursor: pointer; margin-top: 14px; }
 .alert { background: #FBEAEA; color: #8C2A2A; padding: 10px 14px; border-radius: 8px; font-size: .82rem; margin-bottom: 16px; }
-.notice { background: #EAF6EE; color: #226B3A; padding: 10px 14px; border-radius: 8px; font-size: .82rem; margin-bottom: 16px; }
+.notice { background: #edf2f8; color: #365675; padding: 10px 14px; border-radius: 8px; font-size: .82rem; margin-bottom: 16px; }
 </style>
-</head>
+<link rel="stylesheet" href="assets/css/palette.css"></head>
 <body>
   <div class="card">
     <div class="icon">[icon:lock]</div>

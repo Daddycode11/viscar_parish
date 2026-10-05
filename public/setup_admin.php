@@ -60,12 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .setup-container { background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: min(400px, 100%); box-sizing: border-box; }
         h2 { text-align: center; margin-bottom: 20px; color: #333; }
         input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; }
-        button { width: 100%; padding: 12px; background: #4CAF50; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
-        button:hover { background: #45a049; }
+        button { width: 100%; padding: 12px; background: #43658b; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; }
+        button:hover { background: #365675; }
         .error { color: red; margin-bottom: 10px; }
     </style>
 <?php require_once APP_ROOT.'/includes/password_visibility.php'; ?>
-</head>
+<link rel="stylesheet" href="../assets/css/palette.css"></head>
 <body>
 <div class="setup-container">
     <h2>First-Time Admin Setup</h2>

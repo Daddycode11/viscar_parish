@@ -92,11 +92,11 @@
 a[href*="requests.php?type="] { display:inline-block;padding:8px 14px;border:1px solid var(--navy);border-radius:8px;margin:4px;color:var(--navy);background:white; }
 .availability-calendar { margin:12px 0;padding:12px;background:#fff;border:1px solid var(--ink-10);border-radius:10px; }
 .availability-grid { display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;max-width:480px; }
-.availability-grid button { min-height:42px;border:1px solid #27764d;border-radius:6px;cursor:pointer;font:inherit; }
-.availability-grid .available { background:#eaf6ed;color:#14532d; }
+.availability-grid button { min-height:42px;border:1px solid #43658b;border-radius:6px;cursor:pointer;font:inherit; }
+.availability-grid .available { background:#edf2f8;color:#365675; }
 .availability-grid .full { background:#fce8e8;color:#9b1c1c;border-color:#b42323; }
 .availability-grid .past { background:#eee;color:#666;border-color:#ccc; }
-.availability-grid .selected { outline:3px solid #1b2a4a;outline-offset:1px; }
+.availability-grid .selected { outline:3px solid #43658b;outline-offset:1px; }
 @media(max-width:640px){.card-body dl{grid-template-columns:1fr}.card-body dd{margin-bottom:10px}.accounting-tabs>*{max-width:100%}.availability-grid{gap:4px}}
 
 /* Latest client PDF: readable cards, compact actions and responsive record details. */
