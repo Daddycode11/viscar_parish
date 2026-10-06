@@ -85,8 +85,10 @@ function loginUser($email, $password)
     )->fetch_assoc();
 
     if (!$row || !password_verify($password, $row['password'])) {
+        unset($_SESSION['login_blocked_until']);
         $count=(int)$attempts['window_started']+300<=time()?1:(int)$attempts['attempts']+1;
         $conn->execute_query('UPDATE security_rate_limits SET attempts=?,window_started=? WHERE bucket=?',[$count,time(),$bucket]);
+        $_SESSION['login_attempts']=$count;
         if ($count >= 3) {
             $_SESSION['login_blocked_until'] = time() + 300;
         }

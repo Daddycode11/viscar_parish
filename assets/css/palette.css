@@ -1,11 +1,11 @@
 /* Shared across public, staff, parishioner, admin and print views.
    Legacy green class/token names remain aliases so status logic is unchanged. */
 html:root {
-  --navy: #43658b;
-  --navy-deep: #365675;
-  --navy-mid: #3c5d80;
-  --navy-lt: #52749a;
-  --navy-dim: #edf2f8;
+  --navy: #21633f;
+  --navy-deep: #17492e;
+  --navy-mid: #1b5636;
+  --navy-lt: #30794f;
+  --navy-dim: #edf6ef;
   --success: var(--navy);
   --success-dim: var(--navy-dim);
   --green: var(--success);

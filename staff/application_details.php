@@ -1,7 +1,13 @@
 <?php
 require_once __DIR__.'/../includes/access.php';
 require_once __DIR__.'/../includes/application_details.php';
-if($user['role']!=='secretary')fail_request('Secretary access required.');
+
+// Secretaries can view and correct; bookkeepers can only view.
+$isSecretary = $user['role'] === 'secretary';
+$canView     = in_array($user['role'], ['secretary', 'bookkeeper'], true);
+if (!$canView) fail_request('Secretary or bookkeeper access required.', 403);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$isSecretary) fail_request('Secretary access required.', 403);
+
 require_sensitive_verification($user);
 $id=(int)($_GET['id']??0);$notice='';
 try {$application=owned_application($id,$user);}catch(DomainException $e){fail_request('Application not found.',404);}
@@ -22,7 +28,7 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
 }
 $page_id='applications';$page_title='Application Details';require __DIR__.'/includes/layout.php';
 ?><h1>Application Details</h1><p role="status"><?= h($notice?: (isset($_GET['saved'])?'Corrections saved.':'')) ?></p><?php render_application_details($application); ?>
-<?php if(in_array($application['status'],['pending','approved'],true)&&!$application['checked_in_at']): ?>
+<?php if($isSecretary && in_array($application['status'],['pending','approved'],true)&&!$application['checked_in_at']): ?>
 <details class="card" id="corrections" <?= isset($_GET['edit'])?'open':'' ?>><summary>Correct application answers</summary><div class="card-body"><form method="post"><?= csrf_field() ?>
 <p>Corrections are recorded in the audit history. Existing sacramental records and issued certificates retain their original information.</p>
 <?php $data=json_decode($application['form_data']??'{}',true)?:[];$editSchema=json_decode($application['form_schema']??'null',true);if(!is_array($editSchema))$editSchema=$conn->execute_query('SELECT * FROM service_fields WHERE service_id=? ORDER BY sort_order,id',[$application['service_id']])->fetch_all(MYSQLI_ASSOC);foreach($editSchema as $field): if($field['field_type']==='file')continue; ?>

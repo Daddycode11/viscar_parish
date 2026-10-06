@@ -212,10 +212,6 @@ foreach ($services as $s) {
         <label>Fee (PHP)</label>
         <input type="number" id="svcFee" min="0" step="0.01" value="0.00" placeholder="0.00">
       </div>
-      <div class="form-group">
-        <label>Max Daily Limit</label>
-        <input type="number" id="svcMaxDaily" min="0" value="0" placeholder="0 = unlimited">
-      </div>
       <div class="form-group form-full">
         <fieldset><legend>Available weekdays</legend><?php foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $dayIndex=>$dayName): ?><label><input type="checkbox" class="service-weekday" value="<?= $dayIndex+1 ?>" checked> <?= h($dayName) ?></label><?php endforeach; ?></fieldset>
         <label for="svcScheduleMode">Available time</label><select id="svcScheduleMode"><option value="user_defined">User-defined time</option><option value="fixed">Fixed time slots</option></select>
@@ -468,7 +464,6 @@ function openCreate() {
     serviceTypeChanged();
     document.getElementById('svcDescription').value = '';
     document.getElementById('svcFee').value = '0.00';
-    document.getElementById('svcMaxDaily').value = '0';
     document.getElementById('svcScheduleMode').value='user_defined';document.getElementById('svcTimeSlots').value='';document.getElementById('svcSlotCapacity').value='1';
     document.querySelectorAll('.service-weekday').forEach(el=>el.checked=true);
     document.getElementById('svcReqNote').value = '';
@@ -493,7 +488,6 @@ function openEdit(id) {
             document.getElementById('svcName').value = s.name;
             document.getElementById('svcDescription').value = s.description || '';
             document.getElementById('svcFee').value = parseFloat(s.fee || 0).toFixed(2);
-            document.getElementById('svcMaxDaily').value = s.max_daily_limit || 0;
             document.getElementById('svcScheduleMode').value=s.schedule_mode||'user_defined';document.getElementById('svcTimeSlots').value=JSON.parse(s.time_slots||'[]').map(ViscarTime.format).join(', ');document.getElementById('svcSlotCapacity').value=s.slot_capacity??1;
             const days=JSON.parse(s.available_weekdays||'[1,2,3,4,5,6,7]');document.querySelectorAll('.service-weekday').forEach(el=>el.checked=days.includes(Number(el.value)));
             document.getElementById('svcReqNote').value = s.requirements_note || '';
@@ -508,7 +502,7 @@ function serviceTypeChanged() {
 }
 function clearEditorErrors(modal){document.querySelectorAll('#'+modal+' .field-error').forEach(el=>el.remove());document.querySelectorAll('#'+modal+' [aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));}
 function showEditorErrors(modal,errors,message){
-    const fields={name:'svcName',fee:'svcFee',max_daily_limit:'svcMaxDaily',slot_capacity:'svcSlotCapacity',time_slots:'svcTimeSlots',available_weekdays:'svcScheduleMode',field_label:'fieldLabel',field_name:'fieldName',field_options:'fieldOptions'};
+    const fields={name:'svcName',fee:'svcFee',slot_capacity:'svcSlotCapacity',time_slots:'svcTimeSlots',available_weekdays:'svcScheduleMode',field_label:'fieldLabel',field_name:'fieldName',field_options:'fieldOptions'};
     let first=null;
     for(const [key,text] of Object.entries(errors)){const input=document.getElementById(fields[key]);if(!input)continue;const error=document.createElement('span');error.className='field-error';error.id=input.id+'Error';error.textContent=text;input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby',error.id);input.after(error);first??=input;}
     if(!first&&message){const error=document.createElement('p');error.className='field-error';error.setAttribute('role','alert');error.textContent=message;(document.querySelector('#'+modal+' .modal-actions')||document.getElementById('fieldSaveBtn')).before(error);}
@@ -529,7 +523,6 @@ function saveService() {
     fd.append('amount_mode', document.getElementById('svcMode').value);
     fd.append('description', document.getElementById('svcDescription').value.trim());
     fd.append('fee', document.getElementById('svcFee').value);
-    fd.append('max_daily_limit', document.getElementById('svcMaxDaily').value);
     fd.append('requirements_note', document.getElementById('svcReqNote').value.trim());
     fd.append('status', document.getElementById('svcStatus').value);
     fd.append('weekdays_present','1');document.querySelectorAll('.service-weekday:checked').forEach(el=>fd.append('available_weekdays[]',el.value));

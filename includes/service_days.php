@@ -27,10 +27,17 @@ function service_month_availability(array $service, string $month): array {
         $full=(int)$service['max_daily_limit']>0 && $count>=(int)$service['max_daily_limit']; $slots=[];
         foreach($fixed?service_time_slots($service):[] as $time) {
             $used=$times[$day][$time]??0;
-            $slots[]=['time'=>$time,'available'=>!$past&&!$unavailable&&!$full&&strtotime($day.' '.$time)>time()&&($limit===0||$used<$limit)];
+            $available=!$past&&!$unavailable&&!$full&&strtotime($day.' '.$time)>time()&&($limit===0||$used<$limit);
+            $remaining=$limit===0?null:max(0,$limit-$used);
+            if((int)$service['max_daily_limit']>0)$remaining=min($remaining??PHP_INT_MAX,max(0,(int)$service['max_daily_limit']-$count));
+            $slots[]=['time'=>$time,'available'=>$available,'remaining'=>$available?$remaining:0];
         }
         if($fixed&&!$past&&!$unavailable&&!array_filter($slots,fn($slot)=>$slot['available'])) $full=true;
-        $days[]=['date'=>$day,'count'=>$count,'full'=>$full,'past'=>$past,'unavailable'=>$unavailable,'slots'=>$slots];
+        $remaining=null;
+        if($past||$unavailable||$full)$remaining=0;
+        elseif($fixed && !array_filter($slots,fn($slot)=>$slot['available']&&$slot['remaining']===null))$remaining=array_sum(array_column($slots,'remaining'));
+        if((int)$service['max_daily_limit']>0)$remaining=min($remaining??PHP_INT_MAX,max(0,(int)$service['max_daily_limit']-$count));
+        $days[]=['date'=>$day,'count'=>$count,'full'=>$full,'past'=>$past,'unavailable'=>$unavailable,'slots'=>$slots,'remaining'=>$remaining,'per_time_limit'=>$limit];
     }
     return $days;
 }

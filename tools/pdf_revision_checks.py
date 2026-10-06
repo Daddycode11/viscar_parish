@@ -83,7 +83,7 @@ dashboard_payment=sql('SELECT MAX(id) FROM payments')
 period='/parishioner/dashboard.php?date_from=2036-01-01&date_to=2036-01-31'
 first=p.get(period+'&ajax=live')['json'];second=p.get(period+'&applications_page=2&ajax=live')['json']
 check('Final PDF: dashboard pagination reaches all matching applications',len(first.get('applications',[]))==50 and len(second.get('applications',[]))==5 and not ({x['id'] for x in first['applications']} & {x['id'] for x in second['applications']}))
-check('Final PDF: dashboard payment history uses verification date','DASHBOARD-PERIOD-PROBE' in p.get(period)['text'])
+check('Final PDF: dashboard retains verified payment total after history removal','342.21' in p.get(period)['text'] and '<h3>Payment History</h3>' not in p.get(period)['text'])
 earlier=p.get('/parishioner/dashboard.php?date_from=2035-12-01&date_to=2035-12-31')['text']
 check('Final PDF: original payment creation date does not bypass period','DASHBOARD-PERIOD-PROBE' not in earlier)
 html=p.get(period)['text']

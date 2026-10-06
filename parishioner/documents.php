@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__.'/../includes/access.php';
 require_once __DIR__.'/../includes/workflow_routes.php';
-$rows=$conn->execute_query('SELECT r.*,s.name service_name FROM application_document_requests r JOIN applications a ON a.id=r.application_id JOIN services s ON s.id=a.service_id WHERE a.user_id=? ORDER BY r.id DESC',[$user['id']])->fetch_all(MYSQLI_ASSOC);
+$rows=$conn->execute_query("SELECT r.*,s.name service_name FROM application_document_requests r JOIN applications a ON a.id=r.application_id JOIN services s ON s.id=a.service_id WHERE a.user_id=? AND r.submitted_at IS NULL AND a.status IN ('pending','approved') ORDER BY r.id DESC",[$user['id']])->fetch_all(MYSQLI_ASSOC);
 $page_id='documents';$page_title='Review & Resubmit';require __DIR__.'/includes/layout.php';
-?><div class="card"><div class="card-body"><h2>Requested documents</h2><p>You may submit multiple PDF, JPG or PNG files per request (5 MB per file, 20 files per submission). Staff can review it with your application.</p><p id="documentNotice" role="status"></p>
+?><div class="card"><div class="card-body"><h2>Review &amp; Resubmit</h2><p>You may submit multiple PDF, JPG or PNG files per request (5 MB per file, 20 files per submission). Staff can review it with your application.</p><p id="documentNotice" role="status"></p>
 <?php if(!$rows):?><p>No additional documents requested.</p><?php endif;?>
 <?php foreach($rows as $r):?><div class="card" style="padding:16px;margin:16px 0"><h3>Booking #<?=(int)$r['application_id']?> — <?=htmlspecialchars($r['service_name'])?></h3><p><?=nl2br(htmlspecialchars($r['documents']??''))?></p><p><?=nl2br(htmlspecialchars($r['message']??''))?></p>
 <?php if($r['submitted_at']):?><p>Submitted for review: <?=htmlspecialchars(display_datetime($r['submitted_at']))?></p><?php render_requirement_attachments(owned_application((int)$r['application_id'],$user),['additional_'.$r['id']=>$r['documents']],'additional_'.$r['id']); ?>

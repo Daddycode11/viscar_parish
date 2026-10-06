@@ -826,7 +826,7 @@ function toggleArchive(id) {
     const action = document.getElementById('arch-btn-' + id).title;
     if (!confirm(action + ' this record? History and issued certificates are retained.')) return;
     setLoading(true);
-    fetch('records.php?ajax=toggle_archive&id=' + id)
+    fetch('records.php?ajax=toggle_archive&id=' + id, {method:'POST'})
         .then(r => r.json()).then(data => {
             setLoading(false);
             if (data.success) {

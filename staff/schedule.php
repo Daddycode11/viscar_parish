@@ -294,21 +294,21 @@ $month_label = date('F Y', strtotime($start_date));
             $a = $item['data'];
         ?>
         <button type="button" class="cal-item app" onclick="document.getElementById('schedule-day-<?= $day ?>').showModal()">
-          <?php echo htmlspecialchars(date('g:i A',strtotime($a['schedule'])).' ? '.($a['service_name'] ?? 'Service')); ?>
+          <?php echo htmlspecialchars(date('g:i A',strtotime($a['schedule'])).' — '.($a['service_name'] ?? 'Service')); ?>
         </button>
         <?php else:
             $ev = $item['data'];
             $cls = $ev['status'] === 'cancelled' ? 'cancelled' : 'event';
         ?>
         <div class="cal-item <?php echo $cls; ?>" title="<?php echo htmlspecialchars($ev['title']); ?>" onclick="editEvent(<?php echo $ev['id']; ?>)">
-          <?php echo htmlspecialchars(date('g:i A',strtotime($ev['event_date'])).' ? '.$ev['title']); ?>
+          <?php echo htmlspecialchars(date('g:i A',strtotime($ev['event_date'])).' — '.$ev['title']); ?>
         </div>
         <?php endif; endforeach; ?>
         <?php if (count($items) > 3): ?>
         <button onclick="document.getElementById('schedule-day-<?= $day ?>').showModal()">+<?= count($items)-3 ?> more</button>
         <?php endif; ?>
       </div>
-      <dialog id="schedule-day-<?= $day ?>" style="margin:auto;padding:24px;max-width:92vw"><h2><?= h(sprintf('%04d-%02d-%02d',$cur_year,$cur_month,$day)) ?></h2><?php foreach($items as $item): $record=$item['data']; ?><article><?php if($item['type']==='app'): ?><p><?= h(date('g:i A',strtotime($record['schedule'])).' ? '.$record['service_name'].' ? '.$record['parishioner_name']) ?></p><a href="application_details.php?id=<?= (int)$record['id'] ?>">Application details</a><?php else: ?><h3><?= h($record['title']) ?></h3><p><?= h($record['description']) ?></p><?php endif; ?></article><?php endforeach; ?><form method="dialog"><button>Close</button></form></dialog>
+      <dialog id="schedule-day-<?= $day ?>" style="margin:auto;padding:24px;max-width:92vw"><h2><?= h(sprintf('%04d-%02d-%02d',$cur_year,$cur_month,$day)) ?></h2><?php foreach($items as $item): $record=$item['data']; ?><article><?php if($item['type']==='app'): ?><p><?= h(date('g:i A',strtotime($record['schedule'])).' — '.$record['service_name'].' — '.$record['parishioner_name']) ?></p><a href="application_details.php?id=<?= (int)$record['id'] ?>">Application details</a><?php else: ?><h3><?= h($record['title']) ?></h3><p><?= h($record['description']) ?></p><?php endif; ?></article><?php endforeach; ?><form method="dialog"><button>Close</button></form></dialog>
       <?php endfor; ?>
 
       <?php $remaining = (7 - (($first_dow + $days_in_month) % 7)) % 7;

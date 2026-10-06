@@ -312,7 +312,7 @@ $pillMap = ['completed'=>'pill-green','pending'=>'pill-amber','refunded'=>'pill-
                 <button onclick="verifyPayment(<?php echo $p['id']; ?>)" class="act-btn act-green" title="Verify">[icon:check] Verify</button>
                 <button type="button" class="act-btn act-wine" onclick="markFailed(<?= (int)$p['id'] ?>)">Failed / Did not pay</button>
                 <?php elseif ($p['status'] === 'completed'): ?>
-                <a href="requests.php" class="act-btn act-wine"><?= h(t('Refunds')) ?></a>
+                <a href="requests.php?type=refund&amp;application_id=<?= (int)$p['application_id'] ?>" class="act-btn act-wine"><?= h(t('Refunds')) ?></a>
                 <?php endif; ?>
               </div>
             </td>
@@ -419,7 +419,7 @@ function viewPayment(id) {
               </div>
               <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:14px;border-top:1px solid var(--ink-10)">
                 ${p.status === 'pending' ? `<button onclick="closeModal('viewModal');verifyPayment(${p.id})" class="btn-sm btn-green">[icon:check] Verify</button>` : ''}
-                ${p.status === 'completed' ? `<button onclick="closeModal('viewModal');openRefund(${p.id})" class="btn-sm btn-wine">[icon:refresh] Refund</button>` : ''}
+                ${p.status === 'completed' ? `<button onclick="location.href='requests.php?type=refund&amp;application_id=${Number(p.application_id)}'" class="btn-sm btn-wine">[icon:refresh] Refund</button>` : ''}
                 <button onclick="closeModal('viewModal')" class="btn-sm btn-outline">Close</button>
               </div>`;
         });

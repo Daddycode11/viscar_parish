@@ -635,7 +635,7 @@ function create_receipt(array $actor, int $paymentId): array
         [$application['parish_id']]
     );
 
-    $receiptNumber = 'OR-' . date('Y') . '-' . str_pad(
+    $receiptNumber = 'AR-' . date('Y') . '-' . str_pad(
         (string) $paymentId,
         8,
         '0',

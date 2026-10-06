@@ -73,7 +73,7 @@ $nav = [
     ],
 ];
 
-$nav['revisions']=['section'=>'Services','items'=>[ ['id'=>'documents','icon'=>ui_icon('file'),'label'=>'Review & Resubmit','href'=>'documents.php'], ['id'=>'requests','icon'=>ui_icon('swap'),'label'=>'Refund / Reschedule','href'=>'requests.php'], ['id'=>'security','icon'=>ui_icon('lock'),'label'=>'Login Security','href'=>'security.php'] ]];
+$nav['revisions']=['section'=>'Services','items'=>[ ['id'=>'documents','icon'=>ui_icon('file'),'label'=>'Review & Resubmit','href'=>'documents.php'], ['id'=>'requests','icon'=>ui_icon('swap'),'label'=>'Reschedule & Cancellation','href'=>'requests.php?type=reschedule'], ['id'=>'security','icon'=>ui_icon('lock'),'label'=>'Login Security','href'=>'security.php'] ]];
 $nav['revisions']['items'][]=['id'=>'events','icon'=>ui_icon('calendar'),'label'=>'Event Calendar','href'=>'events.php']; $nav['revisions']['items'][]=['id'=>'announcements','icon'=>ui_icon('announcement'),'label'=>'Announcements','href'=>'announcements.php'];
 ?>
 <!DOCTYPE html>

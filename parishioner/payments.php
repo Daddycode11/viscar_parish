@@ -135,85 +135,6 @@ require __DIR__ . '/includes/layout.php';
 <div class="pay-wrap">
 
   <div class="pay-card">
-    <div class="pay-card-head"><div class="bar"></div><h2>Submit Payment Details</h2></div>
-    <p class="hint">Digital payments require a receipt screenshot and bookkeeper verification. For cash payments, please settle at the parish office. Submitting a reference number does not automatically confirm payment.</p>
-
-    <?php if ($notice !== ''): ?>
-      <div class="pay-notice <?= escape_html($notice_type) ?>"><?= escape_html($notice) ?></div>
-    <?php endif; ?>
-
-    <?php if ($unpaidApplications): ?>
-      <form method="post" enctype="multipart/form-data">
-        <div class="pay-field">
-          <label for="paymentApp">Application</label>
-          <select name="application_id" id="paymentApp" required>
-            <?php foreach ($unpaidApplications as $application): ?>
-              <option
-                value="<?= (int) $application['id'] ?>"
-                data-fee="<?= escape_html($application['fee_snapshot']) ?>"
-                data-parish="<?= (int)$application['parish_id'] ?>"
-              >
-                #<?= (int) $application['id'] ?> — <?= escape_html($application['name']) ?>
-                (₱<?= number_format((float) $application['fee_snapshot'], 2) ?>)
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
-
-        <input type="hidden" name="amount" id="paymentAmount" value="<?= escape_html($unpaidApplications[0]['fee_snapshot']) ?>">
-
-        <div class="pay-amount-display">
-          <span class="lbl">Amount Due</span>
-          <span class="val">₱<span id="paymentAmountDisplay"><?= number_format((float) $unpaidApplications[0]['fee_snapshot'], 2) ?></span></span>
-        </div>
-
-        <div class="pay-method-row">
-          <div class="pay-field">
-            <label for="paymentMethod">Payment Method</label>
-            <select name="payment_method" id="paymentMethod" required>
-              <option value="cash">Parish Office (Cash)</option>
-
-            </select>
-          </div>
-          <div class="pay-field">
-            <label for="referenceNumber">Digital payment reference</label>
-            <input type="text" name="reference_number" id="referenceNumber" maxlength="100" placeholder="e.g. 0912345678901">
-          </div>
-        </div>
-
-        <input type="hidden" name="manual_method_id" id="manualMethodId"><div id="manualPaymentInfo"></div>
-        <label>Payment receipt screenshot<input type="file" name="payment_proof" accept="image/png,image/jpeg,application/pdf"></label>
-        <button type="submit" class="pay-btn">Submit for Verification</button>
-      </form>
-
-      <script>
-        const paymentApplication = document.getElementById('paymentApp');
-        const paymentAmount = document.getElementById('paymentAmount');
-        const paymentAmountDisplay = document.getElementById('paymentAmountDisplay');
-
-        function updatePaymentAmount() {
-          const selectedOption = paymentApplication.options[paymentApplication.selectedIndex];
-          paymentAmount.value = selectedOption.dataset.fee;
-          paymentAmountDisplay.textContent = Number(selectedOption.dataset.fee).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        paymentApplication.addEventListener('change', updatePaymentAmount);
-        let paymentMethods=[];let methodRequest=0;
-        async function loadPaymentMethods(){
-          const request=++methodRequest;const method=document.getElementById('paymentMethod');method.replaceChildren(new Option('Parish Office (Cash)','cash'));document.getElementById('manualMethodId').value='';document.getElementById('manualPaymentInfo').replaceChildren();
-          try{const response=await fetch('apply_service.php?ajax=payment_methods&parish_id='+paymentApplication.selectedOptions[0].dataset.parish);const data=await response.json();if(request!==methodRequest)return;paymentMethods=data.methods||[];for(const item of paymentMethods){const option=new Option(item.name,'gcash');option.dataset.methodId=item.id;method.add(option);}}catch(_){}
-        }
-        document.getElementById('paymentMethod').addEventListener('change',function(){
-          const id=this.selectedOptions[0].dataset.methodId||'';document.getElementById('manualMethodId').value=id;const info=document.getElementById('manualPaymentInfo');info.replaceChildren();const selected=paymentMethods.find(item=>String(item.id)===id);if(selected){const p=document.createElement('p');p.textContent=selected.instructions;const img=document.createElement('img');img.src='../public/payment_file.php?method='+id;img.alt=selected.name+' QR';img.style.maxWidth='220px';info.append(p,img);}
-        });
-        paymentApplication.addEventListener('change',loadPaymentMethods);loadPaymentMethods();
-      </script>
-    <?php else: ?>
-      <div class="pay-empty">No unpaid applications need payment right now.</div>
-    <?php endif; ?>
-  </div>
-
-  <div class="pay-card">
     <div class="pay-card-head"><div class="bar"></div><h2>Payment History</h2></div>
 
     <?php if ($paymentHistory): ?>
@@ -226,7 +147,7 @@ require __DIR__ . '/includes/layout.php';
               <th>Amount</th>
               <th>Method</th>
               <th>Status</th>
-              <th>Receipt</th>
+              <th>Receipt / Refund</th>
             </tr>
           </thead>
           <tbody>
@@ -238,6 +159,7 @@ require __DIR__ . '/includes/layout.php';
                 <td><?= escape_html($payment['manual_method_name']?:ucfirst($payment['payment_method'])) ?><?php if($payment['proof_file']): ?><br><a href="../public/payment_file.php?payment=<?= (int)$payment['id'] ?>">View proof</a><?php endif; ?></td>
                 <td><span class="pay-pill <?= escape_html($payment['status']) ?>"><?= escape_html(ucfirst($payment['status'])) ?></span></td>
                 <td>
+                  <?php if ($payment['status']==='completed'): ?><a class="pay-receipt-link" href="requests.php?type=refund&amp;application_id=<?= (int)$payment['application_id'] ?>">Request refund</a><br><?php endif; ?>
                   <?php if (!empty($payment['receipt_id'])): ?>
                     <a class="pay-receipt-link" href="../public/receipt.php?id=<?= (int) $payment['receipt_id'] ?>" target="_blank" rel="noopener noreferrer">Print Receipt</a>
                   <?php else: ?>

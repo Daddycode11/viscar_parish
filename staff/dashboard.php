@@ -341,12 +341,6 @@ tbody tr:hover .app-row-actions { opacity: 1; }
 <?php render_dashboard_filter(); ?>
 <div class="stats-grid">
 <?php if ($staff_role === 'secretary'): ?>
-  <a href="applications.php?status=pending" class="stat-card stat-amber">
-    <div class="stat-icon">[icon:clock]</div>
-    <div class="stat-label">Pending Applications</div>
-    <div class="stat-value" id="stat-pending"><?php echo $pending_apps; ?></div>
-    <div class="stat-delta down">Awaiting your review</div>
-  </a>
   <a href="applications.php?status=approved" class="stat-card stat-green">
     <div class="stat-icon">[icon:check]</div>
     <div class="stat-label">Approved</div>
@@ -371,12 +365,6 @@ tbody tr:hover .app-row-actions { opacity: 1; }
     <div class="stat-label">Total Revenue</div>
     <div class="stat-value" id="stat-revenue">₱<?php echo number_format($total_revenue); ?></div>
     <div class="stat-delta">Completed payments</div>
-  </a>
-  <a href="payments.php?status=pending" class="stat-card stat-amber">
-    <div class="stat-icon">[icon:clock]</div>
-    <div class="stat-label">Pending Payments</div>
-    <div class="stat-value" id="stat-pending-pay"><?php echo $pending_payments; ?></div>
-    <div class="stat-delta down">Need verification</div>
   </a>
   <a href="finance.php" class="stat-card stat-green">
     <div class="stat-icon">[icon:sun]</div>
@@ -410,127 +398,6 @@ tbody tr:hover .app-row-actions { opacity: 1; }
 
   <!-- LEFT COLUMN: Main content -->
   <div>
-
-    <?php if ($staff_role === 'secretary'): ?>
-    <!-- PENDING APPLICATIONS TABLE -->
-    <div class="card">
-      <div class="card-head">
-        <h3>Pending Applications</h3>
-        <a href="applications.php" class="btn-sm btn-outline">View All</a>
-      </div>
-      <div class="card-body" style="padding:0">
-        <div class="tbl-wrap dashboard-table-preview">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Parishioner</th><th>Service</th><th>Schedule</th><th>Payment</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              <?php if (empty($recent_apps)): ?>
-              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-30);font-style:italic">No pending applications. All caught up!</td></tr>
-              <?php endif; ?>
-              <?php foreach ($recent_apps as $app):
-                $ppill = $app['payment_status'] === 'paid' ? 'pill-green' : 'pill-wine';
-                $sched = $app['schedule'] ? date('M j, Y g:i A', strtotime($app['schedule'])) : '—';
-              ?>
-              <tr id="app-row-<?php echo $app['id']; ?>">
-                <td style="color:var(--ink-30);font-size:.72rem">#<?php echo $app['id']; ?></td>
-                <td>
-                  <div style="font-weight:500"><?php echo htmlspecialchars($app['parishioner_name']); ?></div>
-                  <div style="font-size:.72rem;color:var(--ink-30)"><?php echo htmlspecialchars($app['parishioner_email']); ?></div>
-                </td>
-                <td><?php echo h($serviceNames[$app['service_id']]??'Unavailable service'); ?></td>
-                <td style="font-size:.78rem;color:var(--ink-60)"><?php echo $sched; ?>
-                  <button onclick="openScheduleModal(<?php echo $app['id']; ?>, '<?php echo htmlspecialchars(addslashes($app['schedule'])); ?>')" class="btn-sm btn-outline" style="margin-left:6px;font-size:.7rem;padding:2px 8px">Set</button>
-                </td>
-                <td><span class="pill <?php echo $ppill; ?>"><?php echo ucfirst($app['payment_status']); ?></span></td>
-                <td>
-                  <div class="app-row-actions" style="display:flex;gap:4px">
-                    <button onclick="approveApp(<?php echo $app['id']; ?>, '<?php echo htmlspecialchars(addslashes($app['parishioner_name'])); ?>')" class="act-btn act-green" title="Approve">[icon:check] Approve</button>
-                    <button onclick="openRejectModal(<?php echo $app['id']; ?>)" class="act-btn act-wine" title="Reject">[icon:close] Reject</button>
-                    <button onclick="openDocRequestModal(<?php echo $app['id']; ?>)" class="act-btn act-navy" title="Request Documents">[icon:attachment] Request Docs</button>
-                  </div>
-                </td>
-              </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-                <!-- Request Documents Modal -->
-                <div class="modal-wrap" id="docRequestModal">
-                  <div class="modal">
-                    <h2>Request Additional Documents</h2>
-                    <p>Specify the documents you need from the parishioner. They will be notified.</p>
-                    <div class="form-group">
-                      <label>Documents Requested *</label>
-                      <input type="text" id="docRequestInput" placeholder="e.g. PSA Birth Certificate, ID" style="width:100%;padding:9px 14px;border:1.5px solid var(--ink-10);border-radius:8px;font-family:var(--fb);font-size:.83rem;outline:none">
-                    </div>
-                    <div class="form-group">
-                      <label>Message (optional)</label>
-                      <textarea id="docRequestMsg" rows="3" placeholder="Additional instructions..." style="width:100%;padding:9px 14px;border:1.5px solid var(--ink-10);border-radius:8px;font-family:var(--fb);font-size:.83rem;outline:none"></textarea>
-                    </div>
-                    <div class="modal-actions">
-                      <button onclick="closeModal('docRequestModal')" class="btn-sm btn-outline">Cancel</button>
-                      <button onclick="submitDocRequest()" class="btn-sm btn-navy">Send Request</button>
-                    </div>
-                  </div>
-                </div>
-
-              <!-- Schedule Modal -->
-              <div class="modal-wrap" id="scheduleModal">
-                <div class="modal">
-                  <h2>Assign/Change Schedule</h2>
-                  <p>Set the schedule for this application. Conflicts will be checked automatically.</p>
-                  <div class="form-group">
-                    <label>Schedule *</label>
-                    <input type="datetime-local" id="scheduleInput" style="width:100%;padding:9px 14px;border:1.5px solid var(--ink-10);border-radius:8px;font-family:var(--fb);font-size:.83rem;outline:none">
-                  </div>
-                  <div class="modal-actions">
-                    <button onclick="closeModal('scheduleModal')" class="btn-sm btn-outline">Cancel</button>
-                    <button onclick="submitSchedule()" class="btn-sm btn-green">Save Schedule</button>
-                  </div>
-                </div>
-              </div>
-
-    <?php else: // bookkeeper ?>
-    <!-- PENDING PAYMENTS TABLE -->
-    <div class="card">
-      <div class="card-head">
-        <h3>Pending Payments</h3>
-        <a href="payments.php" class="btn-sm btn-outline">View All</a>
-      </div>
-      <div class="card-body" style="padding:0">
-        <div class="tbl-wrap dashboard-table-preview">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Parishioner</th><th>Service</th><th>Method</th><th>Amount</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              <?php if (empty($pending_pay_list)): ?>
-              <tr><td colspan="6" style="text-align:center;padding:40px;color:var(--ink-30);font-style:italic">No pending payments. All verified!</td></tr>
-              <?php endif; ?>
-              <?php foreach ($pending_pay_list as $pay): ?>
-              <tr id="pay-row-<?php echo $pay['id']; ?>">
-                <td style="color:var(--ink-30);font-size:.72rem">#<?php echo $pay['id']; ?></td>
-                <td style="font-weight:500"><?php echo htmlspecialchars($pay['parishioner_name']); ?></td>
-                <td><?php echo h($serviceNames[$pay['service_id']]??'Unavailable service'); ?></td>
-                <td><span class="pill pill-navy"><?php echo htmlspecialchars($pay['payment_method']); ?></span></td>
-                <td style="font-weight:600;color:var(--green)">₱<?php echo number_format($pay['amount']); ?></td>
-                <td>
-                  <div class="app-row-actions" style="display:flex;gap:4px">
-                    <button onclick="verifyPayment(<?php echo $pay['id']; ?>)" class="act-btn act-green" title="Verify">[icon:check] Verify</button>
-                  </div>
-                </td>
-              </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <?php endif; ?>
 
     <!-- UPCOMING SCHEDULE -->
     <div class="card">
@@ -598,6 +465,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
       </div>
     </div>
 
+    <?php if ($staff_role === 'secretary'): ?>
     <!-- Service Breakdown -->
     <div class="card">
       <div class="card-head"><h3>Service Breakdown</h3></div>
@@ -624,43 +492,7 @@ tbody tr:hover .app-row-actions { opacity: 1; }
       </div>
     </div>
 
-    <!-- Recent Activity Feed -->
-    <div class="card">
-      <div class="card-head">
-        <h3>Recent Activity</h3>
-        <span style="display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--green)"><span class="live-dot"></span>Live</span>
-      </div>
-      <div class="card-body" style="padding:0">
-        <?php if (empty($recent_activity)): ?>
-        <p style="text-align:center;padding:30px 0;color:var(--ink-30);font-size:.8rem;font-style:italic">No recent activity.</p>
-        <?php endif; ?>
-        <?php
-        $dot_colors = ['pending'=>'amber','approved'=>'green','rejected'=>'wine'];
-        foreach ($recent_activity as $act):
-          $dot = $dot_colors[$act['status']] ?? 'navy';
-          $time_str = $act['created_at'];
-          $time_ago = '';
-          if ($time_str) {
-              $diff = time() - strtotime($time_str);
-              if ($diff < 60) $time_ago = 'Just now';
-              elseif ($diff < 3600) $time_ago = floor($diff/60) . 'm';
-              elseif ($diff < 86400) $time_ago = floor($diff/3600) . 'h';
-              else $time_ago = date('M j', strtotime($time_str));
-          }
-          $action_word = $act['status'] === 'pending' ? 'filed' : $act['status'];
-        ?>
-        <div style="display:flex;gap:12px;padding:11px 20px;border-bottom:1px solid var(--ink-10)">
-          <div style="width:7px;height:7px;border-radius:50%;background:var(--<?php echo $dot; ?>);flex-shrink:0;margin-top:5px"></div>
-          <div style="font-size:.79rem;color:var(--ink);flex:1;line-height:1.4">
-            <?php echo htmlspecialchars($act['parishioner_name']); ?> &mdash;
-            <?php echo h($serviceNames[$act['service_id']]??'Unavailable service'); ?>
-            <span class="pill <?php echo $pillMap[$act['status']] ?? 'pill-amber'; ?>" style="font-size:.6rem;padding:1px 6px"><?php echo ucfirst($action_word); ?></span>
-          </div>
-          <div style="font-size:.68rem;color:var(--ink-30);white-space:nowrap"><?php echo $time_ago; ?></div>
-        </div>
-        <?php endforeach; ?>
-      </div>
-    </div>
+    <?php endif; ?>
 
   </div>
 </div>

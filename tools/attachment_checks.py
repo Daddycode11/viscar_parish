@@ -41,7 +41,7 @@ if multi:
  req=sql(f'SELECT MAX(id) FROM application_document_requests WHERE application_id={multi}')
  r=upload_many(p,'/parishioner/documents.php?ajax=submit',{'request_id':req,'attachment_count':2},[('document[]','page_1.png',png),('document[]','page_2.pdf',pdf)])
  check('Attachments: request resubmission accepts multiple files',r['json'].get('ok') and sql(f'SELECT COUNT(*) FROM application_attachments WHERE application_id={multi}')=='5',r['json'])
- check('Attachments: requested-document view lists all names',all(x in p.get('/parishioner/documents.php')['text'] for x in ['page_1.png','page_2.pdf']))
+ check('Attachments: completed resubmission leaves queue and files remain in application',all(x not in p.get('/parishioner/documents.php')['text'] for x in ['page_1.png','page_2.pdf']) and all(x in p.get(f'/parishioner/application.php?id={multi}')['text'] for x in ['page_1.png','page_2.pdf']))
 for name,payload in [('invalid.php',b'<?php echo 1;'),('spoof.png',b'<?php echo 1;'),('large.png',png+b' '*(5*1024*1024))]:
  before=sql('SELECT COUNT(*) FROM applications')
  r=upload_many(p,route,base,[(f'req_{requirement}[]','valid.png',png),(f'req_{requirement}[]',name,payload)])

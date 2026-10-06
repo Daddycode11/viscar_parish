@@ -27,10 +27,10 @@ if (isset($_GET['parish_id']) && $_GET['parish_id'] !== '') {
 
 if ($selected_parish === 'general') {
     // General FAQs only (parish_id IS NULL)
-    $stmt = $conn->prepare("SELECT * FROM faqs WHERE status='active' ORDER BY sort_order ASC, created_at DESC");
+    $stmt = $conn->prepare("SELECT faqs.*,(SELECT name FROM parishes WHERE id=faqs.parish_id) AS parish_name FROM faqs WHERE status='active' ORDER BY sort_order ASC, created_at DESC");
 } else {
     // Selected parish + general FAQs
-    $stmt = $conn->prepare("SELECT * FROM faqs WHERE status='active' AND (parish_id = ? OR parish_id IS NULL) ORDER BY sort_order ASC, created_at DESC");
+    $stmt = $conn->prepare("SELECT faqs.*,(SELECT name FROM parishes WHERE id=faqs.parish_id) AS parish_name FROM faqs WHERE status='active' AND (parish_id = ? OR parish_id IS NULL) ORDER BY sort_order ASC, created_at DESC");
     $stmt->bind_param('i', $selected_parish);
 }
 $stmt->execute();
@@ -135,7 +135,7 @@ sort($categories);
           </div>
           <span class="faq-arrow" style="font-size:.7rem;color:var(--ink-30);margin-left:10px">▼</span>
         </div>
-        <div class="faq-answer">
+        <div class="faq-answer"><p><?= h($faq['parish_name']??'Vicariate — General FAQ') ?></p>
           <div style="padding-top:12px;border-top:1px solid var(--ink-10);font-size:.85rem;line-height:1.7;color:var(--ink-60);white-space:pre-wrap"><?php echo htmlspecialchars($faq['answer']); ?></div>
         </div>
       </div>

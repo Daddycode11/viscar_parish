@@ -48,7 +48,7 @@ if (($_SERVER['REQUEST_METHOD']??'GET')==='POST' && in_array($action,['create','
             $mode=input_text($_POST,'amount_mode') ?: 'fixed';
             must(in_array($mode,['fixed','user_defined'],true),'Choose an amount mode.');
             try{$fee=service_money(input_text($_POST,'fee')?:'0');}catch(DomainException $e){throw new ServiceFieldError('fee',$e->getMessage());}
-            $limit=filter_var($_POST['max_daily_limit']??0,FILTER_VALIDATE_INT);
+            $limit=filter_var($_POST['max_daily_limit']??($existing['max_daily_limit']??0),FILTER_VALIDATE_INT);
             service_field_valid($limit!==false && $limit>=0,'max_daily_limit','Daily limit must be a nonnegative integer.');
             $status=input_text($_POST,'status')?:'active';must(in_array($status,['active','inactive'],true),'Invalid status.');
             $scheduleMode=input_text($_POST,'schedule_mode')?:($existing['schedule_mode']??'user_defined');

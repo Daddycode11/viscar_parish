@@ -198,7 +198,7 @@ require APP_ROOT.'/includes/public_header.php';
     <div class="welcome-card">
       <div class="welcome-cross">[icon:church]</div>
       <h2>Join the Online Portal</h2>
-      <p class="welcome-parish">St. Joseph the Worker Cathedral Parish</p>
+      <p class="welcome-parish">Apostolic Vicariate of San Jose in Occidental Mindoro</p>
       <div class="welcome-divider"></div>
       <p class="welcome-quote">
         "Just as each of us has one body with many members,<br>so in Christ we, though many, form one body."

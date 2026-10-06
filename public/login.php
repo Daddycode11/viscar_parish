@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $message = ($_SESSION['login_blocked_until']??0)>time() ? 'Too many incorrect attempts. Please try again in five minutes.' : 'Invalid email or password. Please try again.';
+    $message = ($_SESSION['login_blocked_until']??0)>time() ? 'Too many incorrect attempts. Please try again in five minutes.' : 'Invalid email or password. Attempt '.min(3,(int)($_SESSION['login_attempts']??0)).' / 3.';
 }
 ?>
 <!DOCTYPE html>
@@ -46,7 +46,7 @@ require APP_ROOT.'/includes/public_header.php';
     <div class="welcome-card">
       <div class="welcome-cross">[icon:church]</div>
       <h2>Welcome to the Online Portal</h2>
-      <p class="welcome-parish">St. Joseph the Worker Cathedral Parish</p>
+      <p class="welcome-parish">Apostolic Vicariate of San Jose in Occidental Mindoro</p>
       <div class="welcome-divider"></div>
       <p class="welcome-quote">
         "Whatever you do, work at it with all your heart,<br>as working for the Lord."
@@ -120,5 +120,6 @@ require APP_ROOT.'/includes/public_header.php';
 
 </div>
 
+<?php if (($_SESSION['login_blocked_until']??0)>time()): ?><p id="loginCountdown" role="status" style="text-align:center"></p><script>(()=>{let left=<?= max(0,(int)$_SESSION['login_blocked_until']-time()) ?>;const el=document.getElementById('loginCountdown');const tick=()=>{el.textContent=left>0?'3 / 3 attempts. Try again in '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0')+'.':'You can try signing in again.';left=Math.max(0,left-1);};tick();setInterval(tick,1000);})();</script><?php endif; ?>
 </body>
 </html>

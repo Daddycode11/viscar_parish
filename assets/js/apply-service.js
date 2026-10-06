@@ -311,8 +311,14 @@
   }
 
   /* ─── Build review (Step 6) ─── */
+  function updatePaymentFields(){
+    const digital=document.querySelector('[name=booking_payment_method]:checked')?.value==='gcash';
+    for(const id of ['bookingPaymentReference','bookingPaymentProof']){const input=document.getElementById(id);input.closest('label').hidden=!digital;input.disabled=!digital;input.required=digital;}
+    if(!digital)document.querySelectorAll('#manualPaymentMethods > div').forEach(el=>el.hidden=true);
+  }
+  document.getElementById('bookingPayment').addEventListener('change',updatePaymentFields);
   async function loadManualMethods(){
-    const container=document.getElementById('manualPaymentMethods');container.replaceChildren();
+    const container=document.getElementById('manualPaymentMethods');container.replaceChildren();updatePaymentFields();
     const parish=S.parish_id;
     try{const response=await fetch('apply_service.php?ajax=payment_methods&parish_id='+parish);const data=await response.json();if(parish!==S.parish_id)return;
       for(const method of data.methods||[]){const label=document.createElement('label'),radio=document.createElement('input');radio.type='radio';radio.name='booking_payment_method';radio.value='gcash';radio.dataset.methodId=method.id;label.append(radio,document.createTextNode(method.name));const details=document.createElement('div');details.hidden=true;const instructions=document.createElement('p');instructions.textContent=method.instructions;const img=document.createElement('img');img.src='../public/payment_file.php?method='+method.id;img.alt=method.name+' payment QR';img.style.maxWidth='220px';details.append(instructions,img);container.append(label,details);radio.addEventListener('change',()=>{container.querySelectorAll('div').forEach(el=>el.hidden=true);details.hidden=!radio.checked;});}

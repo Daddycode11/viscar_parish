@@ -37,9 +37,21 @@ try:
   check('Fixed slots replace free datetime entry',not page.locator('#selSchedule').is_visible() and page.locator('select[aria-label="Available time"]').is_visible())
   page.locator('select[aria-label="Available time"]').select_option('10:30');check('Choosing a time sets exact schedule',page.locator('#selSchedule').input_value()=='2038-04-10T10:30')
   check('Color legend has visual swatches',page.locator('.availability-legend i').count()==3)
+  check('Available dates are green',page.locator('.availability-grid .available').first.evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(33, 99, 63)')
+  check('Selected date shows remaining slots','slots remaining' in page.locator('.availability-calendar').inner_text())
   page.locator('#btnStep3').click();page.locator('#btnStep4').click();page.locator('#btnStep5').click();page.wait_for_timeout(300)
   # Free service review hides the payment section; configured methods still load safely.
   check('Manual methods load without exposing staff identities',page.locator('#manualPaymentMethods').inner_text().find('Probe Bank')>=0)
+  # Exercise the payment controls using the already-rendered review section.
+  page.evaluate("document.getElementById('bookingPayment').style.display=''")
+  page.locator('[name=booking_payment_method][value=cash]').check()
+  check('Cash hides reference and proof',not page.locator('#bookingPaymentReference').is_visible() and not page.locator('#bookingPaymentProof').is_visible())
+  page.locator('[name=booking_payment_method][value=gcash]').first.check()
+  check('Digital bank shows reference proof and QR',page.locator('#bookingPaymentReference').is_visible() and page.locator('#bookingPaymentProof').is_visible() and page.locator('#manualPaymentMethods img').first.is_visible())
+  page.set_viewport_size({'width':390,'height':844})
+  check('Payment controls fit mobile',page.evaluate('document.documentElement.scrollWidth<=innerWidth+2'))
+  page.screenshot(path=str(out/'payment-review-mobile.png'),full_page=True)
+  page.set_viewport_size({'width':1440,'height':1000})
   visit('/parishioner/messages.php');page.evaluate("openModal('composeModal')");page.locator('#composeSearch').fill('Audit Parish A');page.wait_for_timeout(500);check('Compose finds parish name','Audit Parish A' in page.locator('body').inner_text())
   for uid,paths in [(1,['/admin/dashboard.php','/admin/analytics.php']),(2,['/staff/dashboard.php','/staff/schedule.php?view=available&month=2038-01','/staff/services.php','/staff/payment_methods.php']),(3,['/staff/dashboard.php','/staff/export.php','/staff/payments.php']),(4,['/parishioner/dashboard.php','/parishioner/events.php?view=available&month=2038-01','/parishioner/messages.php','/parishioner/payments.php'])]:
    login(uid)
@@ -48,8 +60,8 @@ try:
     for path in paths:
      visit(path);check(f'Viewport {width} {path}',page.evaluate('document.documentElement.scrollWidth<=innerWidth+2'))
     page.screenshot(path=str(out/f'role-{uid}-{width}.png'),full_page=True)
-   visit('/'+('admin' if uid==1 else 'parishioner' if uid==4 else 'staff')+'/dashboard.php');check('Dashboard shortcuts for role '+str(uid),page.locator('a.stat-card[href]').count()>=4)
-  login(3);visit('/staff/export.php');check('Export report has one date filter and service column',page.locator('[name=date_from]').count()==1 and 'Type of service' in page.locator('body').inner_text())
+   visit('/'+('admin' if uid==1 else 'parishioner' if uid==4 else 'staff')+'/dashboard.php');check('Dashboard shortcuts for role '+str(uid),page.locator('a.stat-card[href]').count()>=(3 if uid in [2,3] else 4))
+  login(3);visit('/staff/export.php');check('Export report has one date filter and service column',page.locator('[name=date_from]').count()==1 and 'type of service' in page.locator('body').inner_text().lower())
   check('No uncaught JavaScript errors',not errors)
   browser.close()
 finally:

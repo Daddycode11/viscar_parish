@@ -247,7 +247,8 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
                 </td>
                 <td><?php echo date('M d, Y', strtotime($app['created_at'])); ?></td>
                 <td>
-                  <button class="act-btn act-navy" onclick="showAppDetail(<?php echo $app['id']; ?>)">View</button>
+                  <a class="act-btn act-navy" href="application.php?id=<?= (int)$app['id'] ?>">View</a>
+                  <?php if($app['status']==='pending'): ?><a class="act-btn" href="application.php?id=<?= (int)$app['id'] ?>&amp;edit=1">Edit</a><?php endif; ?>
                 </td>
               </tr>
             <?php endforeach; ?>
@@ -266,49 +267,6 @@ if(($_GET['ajax']??'')==='live'){header('Content-Type: application/json');echo j
 <span>Page <?= $applicationPage ?> of <?= $applicationPages ?></span>
 <?php if($applicationPage<$applicationPages): ?><a class="btn-sm btn-outline" href="?<?= h(http_build_query(['date_from'=>$dashboardFrom,'date_to'=>$dashboardTo,'applications_page'=>$applicationPage+1])) ?>">Next applications</a><?php endif; ?>
 </nav><?php endif; ?>
-<div class="card">
-  <div class="card-head">
-    <h3>Payment History</h3>
-    <a class="btn-sm btn-outline" href="payments.php">View all payments</a>
-    <span class="card-tag"><?php echo count($payments); ?> Records</span>
-  </div>
-  <div class="card-body" style="padding:0">
-    <?php if (empty($payments)): ?>
-      <div class="empty-state">
-        <div class="empty-icon"><?= ui_icon('wallet') ?></div>
-        <p>No payment records found.</p>
-      </div>
-    <?php else: ?>
-      <div class="tbl-wrap dashboard-table-preview">
-        <table>
-          <thead>
-            <tr>
-              <th>Reference #</th>
-              <th>Amount</th>
-              <th>Method</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th>Application</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($payments as $pay): ?>
-              <tr>
-                <td><?php echo htmlspecialchars($pay['receipt_number'] ?? $pay['reference_number'] ?? '—'); ?></td>
-                <td style="font-weight:500">₱ <?php echo number_format($pay['amount'], 2); ?></td>
-                <td><?php echo htmlspecialchars(ucfirst($pay['payment_method'] ?? '—')); ?></td>
-                <td><?php echo statusPill($pay['status']); ?></td>
-                <td><?php echo $pay['paid_at'] ? date('M d, Y', strtotime($pay['paid_at'])) : date('M d, Y', strtotime($pay['created_at'])); ?></td>
-                <td>#<?php echo $pay['app_id']; ?></td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    <?php endif; ?>
-  </div>
-</div>
-
 <!-- ============================================================ -->
 <!-- Mass Schedules & Events (side by side) -->
 <!-- ============================================================ -->
@@ -598,5 +556,5 @@ function fmtTime(t) {
 let dashboardDigest=<?=json_encode(hash('sha256',json_encode([$applications,$payments])))?>;
 setInterval(async()=>{if(document.hidden)return;try{const data=await fetch('dashboard.php?'+new URLSearchParams({...Object.fromEntries(new URLSearchParams(location.search)),ajax:'live'})).then(r=>r.json());if(data.digest&&data.digest!==dashboardDigest){const html=await fetch('dashboard.php'+location.search).then(r=>r.text());const doc=new DOMParser().parseFromString(html,'text/html');const oldTables=document.querySelectorAll('.page-content table'),newTables=doc.querySelectorAll('.page-content table');if(oldTables.length===newTables.length)oldTables.forEach((t,i)=>t.replaceWith(newTables[i]));const stats=document.querySelector('.stats-grid');if(stats)stats.replaceWith(doc.querySelector('.stats-grid'));appData=data.applications;dashboardDigest=data.digest;}}catch(e){}},5000);
 </script>
-<?php require APP_ROOT.'/includes/service_trend.php'; ?>
+
 <?php require_once __DIR__ . '/includes/layout_footer.php'; ?>

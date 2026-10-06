@@ -150,6 +150,7 @@ try:
  exec(compile((ROOT/'tools/latest_pdf_checks.py').read_text(encoding='utf-8'), 'latest_pdf_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/recommendation_checks.py').read_text(encoding='utf-8'), 'recommendation_checks.py', 'exec'), globals())
  exec(compile((ROOT/'tools/reported_issue_checks.py').read_text(encoding='utf-8'), 'reported_issue_checks.py', 'exec'), globals())
+ exec(compile((ROOT/'tools/recommendation_pdf_checks.py').read_text(encoding='utf-8'), 'recommendation_pdf_checks.py', 'exec'), globals())
 finally:
  server.terminate();server.wait(timeout=10);log.close()
  report={'database':fixture['database'],'tests':results,'passed':sum(r['passed']for r in results),'failed':sum(not r['passed']for r in results)}
